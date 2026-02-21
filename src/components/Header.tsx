@@ -81,11 +81,13 @@ const Header = () => {
             className="group flex items-center gap-2.5"
             aria-label="TIGLEV — на главную"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary transition-transform duration-300 group-hover:scale-105">
-              <span className="text-base font-black tracking-tighter text-white">
-                T
-              </span>
-            </div>
+            <img
+              src="/logo.svg"
+              alt="TIGLEV"
+              width={40}
+              height={40}
+              className="h-10 w-10 transition-transform duration-300 group-hover:scale-105"
+            />
             <span
               className={`text-xl font-extrabold tracking-tight transition-colors duration-500 ${
                 isScrolled ? "text-dark" : "text-white"

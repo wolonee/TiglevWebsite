@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Red octagon (stop sign shape) with slightly rounded corners -->
+  <polygon
+    points="59,6 141,6 194,59 194,141 141,194 59,194 6,141 6,59"
+    fill="#C41E24"
+    stroke="#C41E24"
+    stroke-width="6"
+    stroke-linejoin="round"
+  />
+  <!-- White inner border (>:0=B>2:0) -->
+  <polygon
+    points="65,20 135,20 180,65 180,135 135,180 65,180 20,135 20,65"
+    fill="none"
+    stroke="white"
+    stroke-width="3.5"
+    stroke-linejoin="round"
+  />
+  <!-- TIGLEV text -->
+  <text
+    x="100" y="108"
+    text-anchor="middle"
+    fill="white"
+    font-size="32"
+    font-weight="800"
+    font-family="Inter, system-ui, -apple-system, sans-serif"
+    letter-spacing="2"
+  >TIGLEV</text>
+</svg>

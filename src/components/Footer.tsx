@@ -33,11 +33,13 @@ const Footer = () => {
         <div className="grid grid-cols-1 gap-10 border-b border-white/[0.06] pb-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           <div>
             <div className="mb-5 flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                <span className="text-base font-black tracking-tighter text-white">
-                  T
-                </span>
-              </div>
+              <img
+                src="/logo.svg"
+                alt="TIGLEV"
+                width={36}
+                height={36}
+                className="h-9 w-9"
+              />
               <span className="text-lg font-extrabold text-white">
                 TIGLEV
               </span>
