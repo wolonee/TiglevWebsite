@@ -79,11 +79,11 @@ const Header = () => {
           <a
             href="#"
             className="group flex items-center gap-2.5"
-            aria-label="TIGLEV — на главную"
+            aria-label="TIGLEV.COM — на главную"
           >
             <img
               src="/logo.svg"
-              alt="TIGLEV"
+              alt="TIGLEV.COM"
               width={40}
               height={40}
               className="h-10 w-10 transition-transform duration-300 group-hover:scale-105"
@@ -93,7 +93,7 @@ const Header = () => {
                 isScrolled ? "text-dark" : "text-white"
               }`}
             >
-              TIGLEV
+              TIGLEV.COM
             </span>
           </a>
 

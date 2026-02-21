@@ -35,13 +35,13 @@ const Footer = () => {
             <div className="mb-5 flex items-center gap-2.5">
               <img
                 src="/logo.svg"
-                alt="TIGLEV"
+                alt="TIGLEV.COM"
                 width={36}
                 height={36}
                 className="h-9 w-9"
               />
               <span className="text-lg font-extrabold text-white">
-                TIGLEV
+                TIGLEV.COM
               </span>
             </div>
             <p className="mb-6 text-sm leading-relaxed text-white/40">
@@ -119,7 +119,7 @@ const Footer = () => {
 
         <div className="mt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
           <p className="text-xs text-white/25">
-            &copy; {new Date().getFullYear()} TIGLEV. Все права защищены.
+            &copy; {new Date().getFullYear()} TIGLEV.COM. Все права защищены.
           </p>
 
           <a

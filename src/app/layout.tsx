@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "TIGLEV — Автомобили с пробегом в Тольятти",
+  title: "TIGLEV.COM — Автомобили с пробегом в Тольятти",
   description:
     "Продажа подержанных автомобилей, срочный выкуп и заказ авто из Европы. Автосалон в Тольятти с 2009 года. +7 (8482) 750-750",
   keywords: [
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     "авто из европы",
   ],
   openGraph: {
-    title: "TIGLEV — Автомобили с пробегом в Тольятти",
+    title: "TIGLEV.COM — Автомобили с пробегом в Тольятти",
     description:
       "Продажа, выкуп и заказ автомобилей. Более 15 лет на рынке — честные цены и прозрачные сделки.",
     type: "website",

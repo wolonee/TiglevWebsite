@@ -110,7 +110,7 @@ const Contacts = () => {
                 width="100%"
                 height="260"
                 className="block"
-                title="Карта — расположение автосалона TIGLEV в Тольятти"
+                title="Карта — расположение автосалона TIGLEV.COM в Тольятти"
                 loading="lazy"
               />
             </div>
