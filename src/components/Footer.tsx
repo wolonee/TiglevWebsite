@@ -4,9 +4,9 @@ const NAV_SECTIONS = [
   {
     title: "Навигация",
     links: [
-      { href: "#about", label: "О компании" },
-      { href: "#catalog", label: "Каталог" },
       { href: "#services", label: "Услуги" },
+      { href: "#catalog", label: "Каталог" },
+      { href: "#about", label: "О компании" },
       { href: "#contacts", label: "Контакты" },
     ],
   },

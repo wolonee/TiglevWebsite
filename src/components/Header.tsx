@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import { Phone, Menu, X, MessageCircle } from "lucide-react";
 
 const NAV_LINKS = [
-  { href: "#about", label: "О компании" },
-  { href: "#catalog", label: "Каталог" },
   { href: "#services", label: "Услуги" },
+  { href: "#catalog", label: "Каталог" },
+  { href: "#about", label: "О компании" },
   { href: "#contacts", label: "Контакты" },
 ] as const;
 
