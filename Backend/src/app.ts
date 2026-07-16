@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-import rateLimit from "express-rate-limit";
+import { rateLimit } from "express-rate-limit";
 import { webhookCallback } from "grammy";
 import multer from "multer";
 import { z } from "zod";
