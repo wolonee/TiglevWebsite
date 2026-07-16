@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+a{color:#C41E24;text-decoration:none}
+a:hover{color:#9B171C}
+::selection{background:#C41E2430;color:#0F172A}
+:focus-visible{outline:2px solid #C41E24;outline-offset:2px;border-radius:4px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</helmet>
+
+<div style="font-family:'Inter',system-ui,-apple-system,sans-serif;background:#FFFFFF;color:#1E293B;position:relative;overflow-x:hidden;">
+
+<dc-import name="Header" active-page="asia" hint-size="100%,80px"></dc-import>
+
+<main>
+
+<section style="background:#F8FAFC;padding:144px 24px 56px;">
+  <div style="margin: 0 auto; max-width: 900px; text-align: center; animation: fadeIn .6s ease-out both">
+    <p style="margin:0 0 12px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.2em;color:#C41E24;">Авто на заказ</p>
+    <h1 style="margin:0 0 16px;font-size:clamp(32px,5vw,48px);line-height:1.1;font-weight:800;letter-spacing:-0.02em;color:#0F172A;">Заказ авто из Японии, Китая и Кореи</h1>
+    <p style="margin:0;font-size:16px;line-height:1.6;color:#64748B;">Подбираем и доставляем автомобили напрямую из азиатских аукционов и дилеров. Полное сопровождение сделки — от подбора до постановки на учёт.</p>
+  </div>
+</section>
+
+<section style="padding:40px 24px clamp(64px,9vw,112px);">
+  <div style="margin:0 auto;max-width:800px;border-radius:24px;border:1px solid #E2E8F0;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,.04);padding:clamp(24px,4vw,40px);">
+    <h2 style="margin:0 0 24px;font-size:18px;font-weight:700;color:#0F172A;">Свяжитесь с нами, чтобы обсудить заказ</h2>
+    <div style="display:flex;flex-direction:column;gap:24px;">
+      <sc-for list="{{ contactInfo }}" as="item" hint-placeholder-count="3">
+        <div style="display:flex;align-items:flex-start;gap:16px;">
+          <div style="display:flex;height:44px;width:44px;flex-shrink:0;align-items:center;justify-content:center;border-radius:12px;background:#C41E241A;color:#C41E24;">
+            <sc-if value="{{ item.isMapPin }}" hint-placeholder-val="{{ false }}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+            </sc-if>
+            <sc-if value="{{ item.isPhone }}" hint-placeholder-val="{{ false }}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .7-.2 1z"></path></svg>
+            </sc-if>
+            <sc-if value="{{ item.isClock }}" hint-placeholder-val="{{ false }}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
+            </sc-if>
+          </div>
+          <div>
+            <p style="margin:0 0 4px;font-size:14px;font-weight:600;color:#0F172A;">{{ item.title }}</p>
+            <sc-for list="{{ item.lines }}" as="line" hint-placeholder-count="2">
+              <sc-if value="{{ line.hasHref }}" hint-placeholder-val="{{ false }}">
+                <a href="{{ line.href }}" style="display:block;font-size:14px;color:#64748B;" style-hover="color:#C41E24;">{{ line.text }}</a>
+              </sc-if>
+              <sc-if value="{{ line.noHref }}" hint-placeholder-val="{{ true }}">
+                <p style="margin:0;font-size:14px;color:#64748B;">{{ line.text }}</p>
+              </sc-if>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <a href="Contacts.dc.html" style="margin-top:32px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;background:#C41E24;padding:14px;font-size:14px;font-weight:700;color:#fff;transition:all .3s;" style-hover="background:#9B171C;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 01-4.5 7.4 8.4 8.4 0 01-8.3 0L4 20l1.1-4.2A8.4 8.4 0 1121 11.5z"></path></svg>
+      Оставить заявку
+    </a>
+  </div>
+</section>
+
+</main>
+
+<footer style="position:relative;background:#0F172A;padding-top:64px;padding-bottom:32px;">
+  <div style="position:absolute;inset:0;opacity:.02;background-image:radial-gradient(circle at 1px 1px, white 1px, transparent 0);background-size:32px 32px;"></div>
+  <div style="position:relative;margin:0 auto;max-width:1280px;padding:0 24px;">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img src="public/logo.svg" alt="TIGLEV.COM" width="32" height="32" style="width:32px;height:32px;display:block;">
+        <span style="font-size:16px;font-weight:800;color:#fff;">TIGLEV.COM</span>
+      </div>
+      <p style="margin:0;font-size:12px;color:rgba(255,255,255,.4);">Тольятти, Офицерская ул. 46 · +7 (8482) 750-750</p>
+      <p style="margin:0;font-size:12px;color:rgba(255,255,255,.25);">© {{ currentYear }} TIGLEV.COM. Все права защищены.</p>
+    </div>
+  </div>
+</footer>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  static CONTACT_INFO = [
+    { icon: "mapPin", title: "Адрес", lines: [{ text: "Тольятти, Офицерская ул. 46, ГСК 66" }] },
+    { icon: "phone", title: "Телефон", lines: [{ text: "+7 (8482) 750-750", href: "tel:+78482750750" }, { text: "8-800-500-0015", href: "tel:88005000015" }] },
+    { icon: "clock", title: "Режим работы", lines: [{ text: "Пн–Пт: 9:00 — 18:00" }, { text: "Сб: 9:00 — 17:00" }, { text: "Вс: 10:00 — 14:00" }] },
+    { icon: "messenger", title: "Мессенджер", lines: [{ text: "ВКонтакте", href: "https://vk.com/tiglev" }] },
+    { icon: "mail", title: "E-mail", lines: [{ text: "tiglev2013@yandex.ru", href: "mailto:tiglev2013@yandex.ru" }] },
+  ];
+
+  state = {
+  };
+
+  renderVals() {
+    const s = this.state;
+    const contactInfo = Component.CONTACT_INFO.map((c) => ({
+      title: c.title,
+      isMapPin: c.icon === "mapPin",
+      isPhone: c.icon === "phone",
+      isClock: c.icon === "clock",
+      isMessenger: c.icon === "messenger",
+      isMail: c.icon === "mail",
+      lines: c.lines.map((l) => ({ text: l.text, href: l.href || "", hasHref: !!l.href, noHref: !l.href })),
+    }));
+
+    return {
+      currentYear: new Date().getFullYear(),
+      contactInfo: contactInfo,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

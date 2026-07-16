@@ -1,81 +1,57 @@
 # TIGLEV.COM
 
-Сайт автосалона на [Next.js 16](https://nextjs.org) + React 19 + Tailwind CSS 4.
+- `Frontend` — Next.js-сайт и серверный proxy для заявок.
+- `Backend` — Vercel-compatible Express API, Telegram webhook и PostgreSQL.
 
-## Запуск через Docker (рекомендуется)
+## Локальный запуск через Docker
 
-Не требует установки Node.js и зависимостей на вашу машину — нужен только Docker.
+Скопируйте `.env.example` в `.env`, создайте новый BotFather-токен и два секрета:
+
+```bash
+openssl rand -hex 32
+```
 
 ```bash
 docker compose up --build
 ```
 
-Откройте [http://localhost:3000](http://localhost:3000).
+Сайт: `http://localhost:3000`
 
-Остановить:
+Backend: `http://localhost:4000/health`
 
-```bash
-docker compose down
+Локальный Telegram webhook требует публичный HTTPS-туннель. Без него формы и PostgreSQL работают, но Telegram не сможет отправлять `/start` в локальный backend.
+
+## Размещение на Vercel
+
+Создайте два Vercel Project из одного репозитория:
+
+1. Frontend с Root Directory `Frontend`.
+2. Backend с Root Directory `Backend`.
+
+Для Backend подключите Neon Postgres через Vercel Marketplace и добавьте переменные:
+
+```text
+DATABASE_URL
+TELEGRAM_BOT_TOKEN
+TELEGRAM_WEBHOOK_SECRET
+BACKEND_API_KEY
+FRONTEND_ORIGIN=https://ваш-frontend.vercel.app
+WEBHOOK_URL=https://ваш-backend.vercel.app
 ```
 
-Запуск в фоне — добавьте флаг `-d`: `docker compose up --build -d`.
+Для Frontend добавьте:
 
-### Если Docker ещё не установлен
-
-Проверить наличие можно командой `docker --version`. Если команда не найдена — установите Docker:
-
-- **Windows / macOS** — [Docker Desktop](https://www.docker.com/products/docker-desktop/). Скачайте установщик, запустите и следуйте инструкциям, затем откройте приложение Docker Desktop, чтобы движок начал работать.
-- **Linux** — [Docker Engine](https://docs.docker.com/engine/install/). Выберите свой дистрибутив и выполните команды из официальной инструкции.
-- **macOS (альтернатива)** — [Colima](https://github.com/abtreece/colima) для запуска без Docker Desktop: `brew install colima docker docker-compose`, затем `colima start`.
-
-После установки убедитесь, что всё работает:
-
-```bash
-docker --version
-docker compose version
+```text
+BACKEND_URL=https://ваш-backend.vercel.app
+BACKEND_API_KEY=тот-же-секрет
 ```
 
-Обе команды должны вывести номер версии. После этого можно запускать проект командой выше.
-
-## Запуск без Docker
-
-Требуется [Node.js](https://nodejs.org) версии 20 или новее.
-
-Установите зависимости (один раз):
+После первого production-деплоя Backend локально выполните:
 
 ```bash
-npm install
+cd Backend
+vercel env pull .env --yes
+npm run webhook:setup
 ```
 
-### Режим разработки
-
-С горячей перезагрузкой при изменении файлов:
-
-```bash
-npm run dev
-```
-
-Откройте [http://localhost:3000](http://localhost:3000). Страницы обновляются автоматически при редактировании файлов в `src/`.
-
-### Продакшен-режим
-
-```bash
-npm run build
-npm start
-```
-
-## Структура проекта
-
-- `src/app/` — страницы и layout (App Router)
-- `src/components/` — React-компоненты (Header, Footer и др.)
-- `public/` — статические файлы (изображения, логотип)
-- `Dockerfile`, `docker-compose.yml` — конфигурация Docker
-
-## Полезные команды
-
-| Команда | Описание |
-| --- | --- |
-| `npm run dev` | Сервер разработки |
-| `npm run build` | Сборка для продакшена |
-| `npm start` | Запуск собранного приложения |
-| `npm run lint` | Проверка кода ESLint |
+Команда создаст таблицу `telegram_subscribers` и зарегистрирует endpoint `/api/telegram` в Telegram. Пользователь подписывается командой `/start`, отписывается командой `/stop`.

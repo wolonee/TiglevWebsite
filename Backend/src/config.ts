@@ -1,0 +1,14 @@
+import "dotenv/config";
+import { z } from "zod";
+
+const schema = z.object({
+  TELEGRAM_BOT_TOKEN: z.string().min(20),
+  TELEGRAM_WEBHOOK_SECRET: z.string().min(16),
+  WEBHOOK_URL: z.string().url().optional(),
+  BACKEND_API_KEY: z.string().min(16),
+  PORT: z.coerce.number().int().positive().default(4000),
+  FRONTEND_ORIGIN: z.string().default("http://localhost:3000"),
+  DATABASE_URL: z.string().url(),
+});
+
+export const config = schema.parse(process.env);

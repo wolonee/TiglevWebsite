@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function NotFound() { return <main className="flex min-h-screen items-center justify-center bg-gray-bg px-4 text-center"><div><h1 className="text-3xl font-extrabold text-dark">Автомобиль не найден</h1><p className="mt-3 text-gray-text">Возможно, он уже продан или ссылка устарела.</p><Link href="/catalog" className="mt-7 inline-block rounded-xl bg-dark px-6 py-3 font-semibold text-white">Вернуться в каталог</Link></div></main>; }

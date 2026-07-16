@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+a{color:#C41E24;text-decoration:none}
+a:hover{color:#9B171C}
+::selection{background:#C41E2430;color:#0F172A}
+:focus-visible{outline:2px solid #C41E24;outline-offset:2px;border-radius:4px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</helmet>
+
+<div style="font-family:'Inter',system-ui,-apple-system,sans-serif;background:#FFFFFF;color:#1E293B;position:relative;overflow-x:hidden;">
+
+<dc-import name="Header" active-page="" hint-size="100%,80px"></dc-import>
+
+<main>
+
+<sc-if value="{{ carNotFound }}" hint-placeholder-val="{{ false }}">
+  <section style="min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:144px 24px 64px;text-align:center;">
+    <h1 style="margin:0 0 12px;font-size:28px;font-weight:800;color:#0F172A;">Автомобиль не найден</h1>
+    <p style="margin:0 0 24px;color:#64748B;">Возможно, объявление снято с продажи</p>
+    <a href="Catalog.dc.html" style="border-radius:10px;background:#0F172A;padding:12px 24px;font-size:14px;font-weight:600;color:#fff;">Вернуться в каталог</a>
+  </section>
+</sc-if>
+
+<sc-if value="{{ carFound }}" hint-placeholder-val="{{ true }}">
+<section style="background:#F8FAFC;padding:120px 24px 40px;">
+  <div style="margin:0 auto;max-width:1280px;">
+    <nav aria-label="Хлебные крошки" style="display:flex;align-items:center;gap:8px;font-size:14px;color:#64748B;margin-bottom:20px;">
+      <a href="Tiglev.dc.html" style="color:#64748B;" style-hover="color:#C41E24;">Главная</a>
+      <span>/</span>
+      <a href="Catalog.dc.html" style="color:#64748B;" style-hover="color:#C41E24;">Каталог</a>
+      <span>/</span>
+      <span style="color:#0F172A;">{{ car.brand }} {{ car.model }}</span>
+    </nav>
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;">
+      <h1 style="margin:0;font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-0.02em;color:#0F172A;">{{ car.brand }} {{ car.model }}</h1>
+      <p style="margin:0;font-size:clamp(24px,3vw,32px);font-weight:800;color:#C41E24;">{{ car.priceLabel }}</p>
+    </div>
+  </div>
+</section>
+
+<section style="padding:40px 24px clamp(64px,9vw,112px);">
+  <div style="margin:0 auto;max-width:1280px;">
+    <div style="display: grid; grid-template-columns: minmax(280px,1fr) minmax(0,1.4fr); gap: 80px; align-items: start; justify-content: flex-start">
+
+      <div>
+        <h2 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#0F172A;">Характеристики</h2>
+        <div style="border-radius: 16px; overflow: hidden">
+          <sc-for list="{{ car.specs }}" as="spec" hint-placeholder-count="12">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 20px; padding-left: 0px; padding-right: 0px">
+              <span style="font-size:14px;color:#64748B;">{{ spec.label }}</span>
+              <span style="font-size:14px;font-weight:600;color:#0F172A;text-align:right;">{{ spec.value }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div>
+        <div style="position:relative;aspect-ratio:4/3;overflow:hidden;border-radius:20px;border:1px solid #E2E8F0;background:#F8FAFC;">
+          <img src="{{ car.activeImage }}" alt="{{ car.alt }}" style="height:100%;width:100%;object-fit:cover;">
+          <button type="button" onClick="{{ car.prevImage }}" aria-label="Предыдущее фото" style="position:absolute;top:50%;left:12px;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;height:40px;width:40px;border:none;border-radius:999px;background:rgba(15,23,42,.55);color:#fff;cursor:pointer;backdrop-filter:blur(4px);" style-hover="background:rgba(15,23,42,.8);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+          </button>
+          <button type="button" onClick="{{ car.nextImage }}" aria-label="Следующее фото" style="position:absolute;top:50%;right:12px;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;height:40px;width:40px;border:none;border-radius:999px;background:rgba(15,23,42,.55);color:#fff;cursor:pointer;backdrop-filter:blur(4px);" style-hover="background:rgba(15,23,42,.8);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+          </button>
+          <span style="position:absolute;bottom:12px;right:12px;border-radius:999px;background:rgba(15,23,42,.55);padding:4px 10px;font-size:12px;font-weight:600;color:#fff;backdrop-filter:blur(4px);">{{ car.imageCounter }}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:12px;margin-top:12px;">
+          <sc-for list="{{ car.thumbnails }}" as="thumb" hint-placeholder-count="4">
+            <button type="button" onClick="{{ thumb.onClick }}" aria-label="{{ thumb.ariaLabel }}" style="{{ thumb.style }}">
+              <img src="{{ thumb.src }}" alt="" style="height:100%;width:100%;object-fit:cover;display:block;">
+            </button>
+          </sc-for>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:40px;">
+      <h2 style="margin:0 0 12px;font-size:20px;font-weight:700;color:#0F172A;">Описание</h2>
+      <p style="margin:0;max-width:800px;font-size:15px;line-height:1.7;color:#64748B;">{{ car.description }}</p>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+</main>
+
+<footer style="position:relative;background:#0F172A;padding-top:64px;padding-bottom:32px;">
+  <div style="position:absolute;inset:0;opacity:.02;background-image:radial-gradient(circle at 1px 1px, white 1px, transparent 0);background-size:32px 32px;"></div>
+  <div style="position:relative;margin:0 auto;max-width:1280px;padding:0 24px;">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img src="public/logo.svg" alt="TIGLEV.COM" width="32" height="32" style="width:32px;height:32px;display:block;">
+        <span style="font-size:16px;font-weight:800;color:#fff;">TIGLEV.COM</span>
+      </div>
+      <p style="margin:0;font-size:12px;color:rgba(255,255,255,.4);">Тольятти, Офицерская ул. 46 · +7 (8482) 750-750</p>
+      <p style="margin:0;font-size:12px;color:rgba(255,255,255,.25);">© {{ currentYear }} TIGLEV.COM. Все права защищены.</p>
+    </div>
+  </div>
+</footer>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  static CARS = [
+    { id: "151698", brand: "KIA", model: "Sportage", price: 3750000, year: 2023, image: "https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=1200&h=750&fit=crop", bodyType: "Кроссовер", engine: "Бензин", engineVolume: "2000 см3", power: "150 л.с.", transmission: "Автомат", mileage: 18000, drive: "Полный", wheel: "Левый, ГУР", color: "Белый", damage: "Нет" },
+    { id: "151704", brand: "KIA", model: "Sorento", price: 3850000, year: 2023, image: "https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=1200&h=750&fit=crop", bodyType: "Внедорожник", engine: "Бензин", engineVolume: "2200 см3", power: "200 л.с.", transmission: "Автомат", mileage: 12000, drive: "Полный", wheel: "Левый, ГУР", color: "Серый", damage: "Нет" },
+    { id: "151709", brand: "KIA", model: "K5", price: 4195000, year: 2023, image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=1200&h=750&fit=crop", bodyType: "Седан", engine: "Бензин", engineVolume: "2500 см3", power: "180 л.с.", transmission: "Автомат", mileage: 22000, drive: "Полный", wheel: "Левый, ГУР", color: "Чёрный", damage: "Нет", description: "Абсолютно новый автомобиль, вы будете первым владельцем." },
+    { id: "151710", brand: "KIA", model: "Sorento", price: 4190000, year: 2023, image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=1200&h=750&fit=crop", bodyType: "Кроссовер", engine: "Бензин", engineVolume: "2200 см3", power: "199 л.с.", transmission: "Автомат", mileage: 9000, drive: "Передний", wheel: "Левый, ГУР", color: "Синий", damage: "Нет" },
+    { id: "151716", brand: "KIA", model: "Sorento", price: 4950000, year: 2023, image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&h=750&fit=crop", bodyType: "Кроссовер", engine: "Бензин", engineVolume: "2500 см3", power: "191 л.с.", transmission: "Автомат", mileage: 0, drive: "Полный", wheel: "Левый, ГУР", color: "Чёрный", damage: "Нет", description: "Абсолютно новый автомобиль, вы будете первым владельцем." },
+    { id: "151723", brand: "LADA", model: "Granta", price: 390000, year: 2012, image: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=1200&h=750&fit=crop", bodyType: "Седан", engine: "Бензин", engineVolume: "1600 см3", power: "98 л.с.", transmission: "Механика", mileage: 165000, drive: "Передний", wheel: "Левый, ГУР", color: "Серебристый", damage: "Незначительные" },
+    { id: "151727", brand: "LADA", model: "Granta", price: 1010000, year: 2023, image: "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=1200&h=750&fit=crop", bodyType: "Седан", engine: "Бензин", engineVolume: "1600 см3", power: "106 л.с.", transmission: "Автомат", mileage: 5000, drive: "Передний", wheel: "Левый, ГУР", color: "Белый", damage: "Нет" },
+    { id: "151743", brand: "LADA", model: "Нива Тревел", price: 850000, year: 2021, image: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=1200&h=750&fit=crop", bodyType: "Внедорожник", engine: "Бензин", engineVolume: "1700 см3", power: "122 л.с.", transmission: "Механика", mileage: 42000, drive: "Полный", wheel: "Левый, ГУР", color: "Зелёный", damage: "Нет" },
+    { id: "151740", brand: "Land Rover", model: "Discovery", price: 1550000, year: 2011, image: "https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?w=1200&h=750&fit=crop", bodyType: "Внедорожник", engine: "Дизель", engineVolume: "3000 см3", power: "245 л.с.", transmission: "Автомат", mileage: 210000, drive: "Полный", wheel: "Левый, ГУР", color: "Чёрный", damage: "Незначительные" },
+    { id: "151734", brand: "KIA", model: "Sorento", price: 5490000, year: 2024, image: "https://images.unsplash.com/photo-1542362567-b07e54358753?w=1200&h=750&fit=crop", bodyType: "Внедорожник", engine: "Бензин", engineVolume: "2500 см3", power: "191 л.с.", transmission: "Автомат", mileage: 0, drive: "Полный", wheel: "Левый, ГУР", color: "Белый", damage: "Нет", description: "Новый автомобиль KIA Sorento 2024, 2.5 АКПП, бензин." },
+    { id: "151721", brand: "KIA", model: "Ceed", price: 2770000, year: 2023, image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=1200&h=750&fit=crop", bodyType: "Хэтчбэк", engine: "Бензин", engineVolume: "1600 см3", power: "128 л.с.", transmission: "Автомат", mileage: 15000, drive: "Передний", wheel: "Левый, ГУР", color: "Красный", damage: "Нет" },
+    { id: "151800", brand: "BMW", model: "3 Series", price: 4200000, year: 2022, image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=1200&h=750&fit=crop", bodyType: "Седан", engine: "Бензин", engineVolume: "2000 см3", power: "184 л.с.", transmission: "Автомат", mileage: 28000, drive: "Задний", wheel: "Левый, ГУР", color: "Серый", damage: "Нет" },
+  ];
+
+  static NAV_LINKS = [
+    { href: "Tiglev.dc.html#services" },
+    { href: "Catalog.dc.html" },
+    { href: "Tiglev.dc.html#about" },
+    { href: "Contacts.dc.html" },
+  ];
+
+  static GALLERY_POOL = [
+    "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200&h=900&fit=crop",
+    "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=1200&h=900&fit=crop",
+    "https://images.unsplash.com/photo-1541443131876-44b03de101c5?w=1200&h=900&fit=crop",
+    "https://images.unsplash.com/photo-1502877338535-766e1452684a?w=1200&h=900&fit=crop",
+    "https://images.unsplash.com/photo-1494905998402-395d579af36f?w=1200&h=900&fit=crop",
+    "https://images.unsplash.com/photo-1552930294-6b595f43b41b?w=1200&h=900&fit=crop",
+    "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=1200&h=900&fit=crop",
+  ];
+
+  state = {
+    activeImageIndex: 0,
+  };
+
+  setActiveImage(i) {
+    this.setState({ activeImageIndex: i });
+  }
+
+  stepImage(delta, total) {
+    this.setState((prev) => ({ activeImageIndex: (prev.activeImageIndex + delta + total) % total }));
+  }
+
+  formatPrice(price) {
+    return new Intl.NumberFormat("ru-RU").format(price) + " \u20BD";
+  }
+
+  formatMileage(km) {
+    if (km === 0) return "Новый автомобиль";
+    return new Intl.NumberFormat("ru-RU").format(km) + " км";
+  }
+
+  generateDescription(car) {
+    const mileagePhrase = car.mileage === 0 ? "Автомобиль не эксплуатировался, вы будете первым владельцем." : "Пробег подтверждён, автомобиль обслуживался по регламенту.";
+    const damagePhrase = car.damage === "Нет" ? "Кузов без повреждений и следов ДТП." : "Присутствуют незначительные следы эксплуатации кузова.";
+    return car.brand + " " + car.model + " " + car.year + " года выпуска, " + car.engineVolume + " (" + car.power + "), " + car.engine.toLowerCase() + ", коробка — " + car.transmission.toLowerCase() + ", привод — " + car.drive.toLowerCase() + ". " + mileagePhrase + " " + damagePhrase + " Автомобиль проверен нашими специалистами и готов к оформлению.";
+  }
+
+  renderVals() {
+    const s = this.state;
+    const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
+    const id = params.get("id");
+    const found = Component.CARS.find((c) => c.id === id) || (id === null ? Component.CARS[0] : null);
+
+    const base = {
+      currentYear: new Date().getFullYear(),
+    };
+
+    if (!found) {
+      return Object.assign(base, { carNotFound: true, carFound: false });
+    }
+
+    const specs = [
+      { label: "Цена", value: this.formatPrice(found.price) },
+      { label: "Двигатель", value: found.engine.toUpperCase() },
+      { label: "Объём двигателя", value: found.engineVolume },
+      { label: "Мощность", value: found.power },
+      { label: "Трансмиссия", value: found.transmission },
+      { label: "Пробег", value: this.formatMileage(found.mileage) },
+      { label: "Год выпуска", value: found.year + " год" },
+      { label: "Привод", value: found.drive },
+      { label: "Руль", value: found.wheel },
+      { label: "Тип кузова", value: found.bodyType },
+      { label: "Цвет", value: found.color },
+      { label: "Повреждения кузова", value: found.damage },
+    ];
+
+    const idx = Component.CARS.indexOf(found);
+    const pool = Component.GALLERY_POOL;
+    const GALLERY_SIZE = 6;
+    const gallery = [found.image];
+    for (let i = 0; i < GALLERY_SIZE - 1; i++) {
+      gallery.push(pool[(idx + i) % pool.length]);
+    }
+    const activeIndex = Math.min(s.activeImageIndex, gallery.length - 1);
+    const thumbnails = gallery.map((src, i) => {
+      const isActive = i === activeIndex;
+      return {
+        src: src,
+        ariaLabel: "Фото " + (i + 1) + " из " + gallery.length,
+        onClick: () => this.setActiveImage(i),
+        style: { aspectRatio: "1/1", overflow: "hidden", borderRadius: 10, border: isActive ? "2px solid #C41E24" : "2px solid #E2E8F0", padding: 0, cursor: "pointer", background: "none" },
+      };
+    });
+
+    const car = {
+      brand: found.brand,
+      model: found.model,
+      year: found.year,
+      image: found.image,
+      activeImage: gallery[activeIndex],
+      imageCounter: (activeIndex + 1) + " / " + gallery.length,
+      prevImage: () => this.stepImage(-1, gallery.length),
+      nextImage: () => this.stepImage(1, gallery.length),
+      thumbnails: thumbnails,
+      alt: found.brand + " " + found.model + " " + found.year,
+      priceLabel: this.formatPrice(found.price),
+      mileageLabel: this.formatMileage(found.mileage),
+      transmission: found.transmission,
+      description: found.description || this.generateDescription(found),
+      specs: specs,
+    };
+
+    return Object.assign(base, { carNotFound: false, carFound: true, car: car });
+  }
+}
+
+</script>
+</body>
+</html>

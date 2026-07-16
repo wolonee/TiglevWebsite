@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+a{color:#C41E24;text-decoration:none}
+a:hover{color:#9B171C}
+::selection{background:#C41E2430;color:#0F172A}
+:focus-visible{outline:2px solid #C41E24;outline-offset:2px;border-radius:4px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulseOpacity{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes bounceY{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
+@keyframes spin360{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes headlightGlow{0%,100%{opacity:.35;transform:scale(1)}50%{opacity:.85;transform:scale(1.15)}}
+</style>
+</helmet>
+
+<div style="font-family:'Inter',system-ui,-apple-system,sans-serif;background:#FFFFFF;color:#1E293B;position:relative;overflow-x:hidden;">
+
+<dc-import name="Header" active-page="" transparent-on-top="{{ true }}" hint-size="100%,80px"></dc-import>
+
+<main>
+
+<section style="position: relative; display: flex; min-height: 100vh; align-items: center; overflow: hidden; background-color: #0F172A">
+  <div style="position: absolute; inset: 0; background-image: url('uploads/ChatGPT Image 16 июл. 2026 г., 15_08_05.png'); background-size: cover; background-position: center" role="img" aria-label="Фон — автомобиль"></div>
+  <div style="position: absolute; inset: 0; background: linear-gradient(180deg, #0F172A26, #0F172A59, #0F172AA7)"></div>
+  <div style="position: absolute; inset: 0; background: linear-gradient(90deg, #0F172AB2, #00000000)"></div>
+
+  <div style="position:relative;z-index:10;margin:0 auto;width:100%;max-width:1280px;padding:112px 24px 80px;">
+    <div style="max-width:640px;animation:fadeIn .6s ease-out both;">
+      <div style="margin-bottom:20px;display:inline-flex;align-items:center;gap:8px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);padding:6px 16px;backdrop-filter:blur(4px);">
+        <span style="height:8px;width:8px;border-radius:999px;background:#4ADE80;animation:pulseOpacity 2s ease-in-out infinite;"></span>
+        <span style="font-size:12px;font-weight:500;letter-spacing:.03em;color:rgba(255,255,255,.7);">Автосалон в Тольятти — с 2009 года</span>
+      </div>
+
+      <h1 style="margin:0 0 24px;font-size:clamp(36px,6vw,60px);line-height:1.1;font-weight:800;letter-spacing:-0.02em;color:#fff;">Автомобили <span style="background:linear-gradient(90deg,#E8353C,#C41E24);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">с пробегом</span></h1>
+
+      <p style="margin:0 0 48px;max-width:480px;font-size:18px;line-height:1.6;color:rgba(255,255,255,.6);">Продажа, выкуп и заказ автомобилей из Европы. Честные цены, юридическая чистота и прозрачные сделки.</p>
+    </div>
+
+    <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:32px;animation:fadeIn .6s ease-out both;animation-delay:400ms;">
+      <sc-for list="{{ heroStats }}" as="stat" hint-placeholder-count="3">
+        <div>
+          <p style="margin:0;font-size:clamp(24px,3vw,30px);font-weight:800;color:#fff;">{{ stat.value }}</p>
+          <p style="margin:4px 0 0;font-size:13px;letter-spacing:.02em;color:rgba(255,255,255,.4);">{{ stat.label }}</p>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:24px;left:50%;animation:bounceY 1.5s ease-in-out infinite;">
+    <a href="#services" aria-label="Прокрутить вниз" style="display:flex;height:40px;width:24px;align-items:flex-start;justify-content:center;border-radius:999px;border:2px solid rgba(255,255,255,.2);padding-top:6px;">
+      <span style="height:8px;width:4px;border-radius:999px;background:rgba(255,255,255,.5);"></span>
+    </a>
+  </div>
+</section>
+
+<section id="services" style="background:#F8FAFC;padding:clamp(64px,9vw,112px) 0;">
+  <div style="margin:0 auto;max-width:1280px;padding:0 24px;">
+    <div style="margin:0 auto 64px;max-width:640px;text-align:center;">
+      <p style="margin:0 0 12px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.2em;color:#C41E24;">Наши услуги</p>
+      <h2 style="margin:0;font-size:clamp(28px,4vw,36px);font-weight:800;color:#0F172A;">Чем мы можем помочь</h2>
+      <p style="margin:16px 0 0;color:#64748B;">Полный спектр услуг по продаже, покупке и доставке автомобилей</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px;">
+      <sc-for list="{{ services }}" as="service" hint-placeholder-count="3">
+        <a href="{{ service.href }}" aria-label="{{ service.ariaLabel }}" style="position:relative;display:flex;flex-direction:column;overflow:hidden;border-radius:20px;border:1px solid #E2E8F0;background:#fff;padding:40px;transition:all .3s;text-decoration:none;" style-hover="transform:translateY(-6px);box-shadow:0 20px 40px rgba(15,23,42,.1);">
+          <div style="margin-bottom:24px;display:flex;height:56px;width:56px;align-items:center;justify-content:center;border-radius:16px;background:#C41E241A;color:#C41E24;">
+            <sc-if value="{{ service.isCar }}" hint-placeholder-val="{{ false }}">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11l1.5-4.5A2 2 0 018.4 5h7.2a2 2 0 011.9 1.5L19 11"></path><rect x="3" y="11" width="18" height="6" rx="2"></rect><circle cx="7.5" cy="17" r="1.5"></circle><circle cx="16.5" cy="17" r="1.5"></circle></svg>
+            </sc-if>
+            <sc-if value="{{ service.isShield }}" hint-placeholder-val="{{ false }}">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3.5v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9v-5z"></path><path d="M9 12l2 2 4-4"></path></svg>
+            </sc-if>
+            <sc-if value="{{ service.isGlobe }}" hint-placeholder-val="{{ false }}">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="3" y1="12" x2="21" y2="12"></line><path d="M12 3c2.5 2.5 4 5.5 4 9s-1.5 6.5-4 9c-2.5-2.5-4-5.5-4-9s1.5-6.5 4-9z"></path></svg>
+            </sc-if>
+          </div>
+          <h3 style="margin:0 0 12px;font-size:20px;font-weight:700;color:#0F172A;">{{ service.title }}</h3>
+          <p style="margin:0 0 32px;line-height:1.6;color:#64748B;">{{ service.description }}</p>
+          <span style="margin-top:auto;display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:#C41E24;">
+            {{ service.cta }}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><path d="M12 5l7 7-7 7"></path></svg>
+          </span>
+        </a>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<section id="about" style="position:relative;overflow:hidden;background:#0F172A;padding:clamp(64px,9vw,112px) 0;">
+  <div style="position:absolute;inset:0;opacity:.03;background-image:radial-gradient(circle at 1px 1px, white 1px, transparent 0);background-size:40px 40px;"></div>
+
+  <div style="position:relative;margin:0 auto;max-width:1280px;padding:0 24px;">
+    <div style="margin-bottom:80px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:32px;">
+      <sc-for list="{{ whyUsStats }}" as="stat" hint-placeholder-count="4">
+        <div style="text-align:center;">
+          <div style="margin:0 auto 16px;display:flex;height:48px;width:48px;align-items:center;justify-content:center;border-radius:12px;background:rgba(255,255,255,.1);color:#E8353C;">
+            <sc-if value="{{ stat.isAward }}" hint-placeholder-val="{{ false }}">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L6 22l6-3 6 3-2.5-8.5"></path></svg>
+            </sc-if>
+            <sc-if value="{{ stat.isCar }}" hint-placeholder-val="{{ false }}">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11l1.5-4.5A2 2 0 018.4 5h7.2a2 2 0 011.9 1.5L19 11"></path><rect x="3" y="11" width="18" height="6" rx="2"></rect><circle cx="7.5" cy="17" r="1.5"></circle><circle cx="16.5" cy="17" r="1.5"></circle></svg>
+            </sc-if>
+            <sc-if value="{{ stat.isThumbsUp }}" hint-placeholder-val="{{ false }}">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 22V11l4-9a2 2 0 012 2v6h5.5a2 2 0 011.9 2.7l-2.2 6A2 2 0 0116.4 22H7z"></path><path d="M7 11H4v11h3"></path></svg>
+            </sc-if>
+            <sc-if value="{{ stat.isClock }}" hint-placeholder-val="{{ false }}">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
+            </sc-if>
+          </div>
+          <p style="margin:0;font-size:clamp(32px,5vw,48px);font-weight:800;color:#fff;font-variant-numeric:tabular-nums;">{{ stat.displayValue }}</p>
+          <p style="margin:8px 0 0;font-size:14px;letter-spacing:.02em;color:rgba(255,255,255,.5);">{{ stat.label }}</p>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin:0 auto 56px;max-width:640px;text-align:center;">
+      <p style="margin:0 0 12px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.2em;color:#E8353C;">Почему мы</p>
+      <h2 style="margin:0 0 20px;font-size:clamp(28px,4vw,36px);font-weight:800;color:#fff;">Наши преимущества</h2>
+      <p style="margin:0;color:rgba(255,255,255,.4);">Работаем на доверии и репутации — каждый клиент для нас важен</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;">
+      <sc-for list="{{ advantages }}" as="item" hint-placeholder-count="4">
+        <div style="border-radius:20px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);padding:28px;transition:all .3s;" style-hover="border-color:rgba(196,30,36,.3);background:rgba(255,255,255,.07);">
+          <div style="margin-bottom:20px;display:flex;height:48px;width:48px;align-items:center;justify-content:center;border-radius:12px;background:rgba(196,30,36,.1);">
+            <sc-if value="{{ item.isShield }}" hint-placeholder-val="{{ false }}">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E8353C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3.5v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9v-5z"></path></svg>
+            </sc-if>
+            <sc-if value="{{ item.isClock }}" hint-placeholder-val="{{ false }}">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E8353C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
+            </sc-if>
+            <sc-if value="{{ item.isCheckCircle }}" hint-placeholder-val="{{ false }}">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E8353C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 12.5l2.5 2.5 5-5"></path></svg>
+            </sc-if>
+            <sc-if value="{{ item.isAward }}" hint-placeholder-val="{{ false }}">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E8353C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L6 22l6-3 6 3-2.5-8.5"></path></svg>
+            </sc-if>
+          </div>
+          <h3 style="margin:0 0 8px;font-size:18px;font-weight:700;color:#fff;">{{ item.title }}</h3>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:rgba(255,255,255,.5);">{{ item.description }}</p>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<section id="contacts" style="background:#F8FAFC;padding:clamp(64px,9vw,112px) 0;">
+  <div style="margin:0 auto;max-width:1280px;padding:0 24px;">
+    <div style="margin:0 auto 56px;max-width:640px;text-align:center;">
+      <p style="margin:0 0 12px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.2em;color:#C41E24;">Контакты</p>
+      <h2 style="margin:0;font-size:clamp(28px,4vw,36px);font-weight:800;color:#0F172A;">Свяжитесь с нами</h2>
+      <p style="margin:16px 0 0;color:#64748B;">Ответим на любые вопросы и поможем подобрать автомобиль</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:32px;margin-bottom:32px;">
+      <div style="border-radius:20px;border:1px solid #E2E8F0;background:#fff;padding:32px;">
+          <div style="display:flex;flex-direction:column;gap:24px;">
+            <sc-for list="{{ contactInfo }}" as="item" hint-placeholder-count="3">
+              <div style="display:flex;align-items:flex-start;gap:16px;">
+                <div style="display:flex;height:44px;width:44px;flex-shrink:0;align-items:center;justify-content:center;border-radius:12px;background:#C41E241A;color:#C41E24;">
+                  <sc-if value="{{ item.isMapPin }}" hint-placeholder-val="{{ false }}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+                  </sc-if>
+                  <sc-if value="{{ item.isPhone }}" hint-placeholder-val="{{ false }}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .7-.2 1z"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{ item.isClock }}" hint-placeholder-val="{{ false }}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{ item.isMessenger }}" hint-placeholder-val="{{ false }}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 01-4.5 7.4 8.4 8.4 0 01-8.3 0L4 20l1.1-4.2A8.4 8.4 0 1121 11.5z"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{ item.isMail }}" hint-placeholder-val="{{ false }}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+                  </sc-if>
+                </div>
+                <div>
+                  <p style="margin:0 0 4px;font-size:14px;font-weight:600;color:#0F172A;">{{ item.title }}</p>
+                  <sc-for list="{{ item.lines }}" as="line" hint-placeholder-count="2">
+                    <sc-if value="{{ line.hasHref }}" hint-placeholder-val="{{ false }}">
+                      <a href="{{ line.href }}" style="display:block;font-size:14px;color:#64748B;" style-hover="color:#C41E24;">{{ line.text }}</a>
+                    </sc-if>
+                    <sc-if value="{{ line.noHref }}" hint-placeholder-val="{{ true }}">
+                      <p style="margin:0;font-size:14px;color:#64748B;">{{ line.text }}</p>
+                    </sc-if>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+      </div>
+
+      <div style="border-radius:20px;border:1px solid #E2E8F0;background:#fff;padding:40px;">
+        <sc-if value="{{ isFormSuccess }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;min-height:360px;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+            <div style="margin-bottom:16px;display:flex;height:64px;width:64px;align-items:center;justify-content:center;border-radius:999px;background:#DCFCE7;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 12.5l2.5 2.5 5-5"></path></svg>
+            </div>
+            <h3 style="margin:0 0 8px;font-size:20px;font-weight:700;color:#0F172A;">Заявка отправлена</h3>
+            <p style="margin:0;color:#64748B;">Мы свяжемся с вами в ближайшее время</p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isFormNotSuccess }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <h3 style="margin:0 0 8px;font-size:20px;font-weight:700;color:#0F172A;">Написать нам</h3>
+            <p style="margin:0 0 32px;font-size:14px;color:#64748B;">Оставьте заявку, и мы перезвоним в течение 15 минут в рабочее время</p>
+
+            <form onSubmit="{{ handleContactSubmit }}" style="display:flex;flex-direction:column;gap:20px;">
+              <div>
+                <label for="contact-name" style="margin-bottom:6px;display:block;font-size:14px;font-weight:500;color:#0F172A;">Ваше имя <span style="color:#C41E24;">*</span></label>
+                <input id="contact-name" type="text" value="{{ contactName }}" onChange="{{ setContactName }}" placeholder="Иван Иванов" style="width:100%;border:1px solid #E2E8F0;border-radius:12px;background:#F8FAFC;padding:14px 16px;font-size:14px;color:#1E293B;outline:none;">
+              </div>
+              <div>
+                <label for="contact-phone" style="margin-bottom:6px;display:block;font-size:14px;font-weight:500;color:#0F172A;">Телефон <span style="color:#C41E24;">*</span></label>
+                <input id="contact-phone" type="tel" value="{{ contactPhone }}" onChange="{{ setContactPhone }}" placeholder="+7 (___) ___-__-__" style="width:100%;border:1px solid #E2E8F0;border-radius:12px;background:#F8FAFC;padding:14px 16px;font-size:14px;color:#1E293B;outline:none;">
+              </div>
+              <div>
+                <label for="contact-message" style="margin-bottom:6px;display:block;font-size:14px;font-weight:500;color:#0F172A;">Сообщение</label>
+                <textarea id="contact-message" value="{{ contactMessage }}" onChange="{{ setContactMessage }}" placeholder="Интересует автомобиль..." rows="4" style="width:100%;resize:none;border:1px solid #E2E8F0;border-radius:12px;background:#F8FAFC;padding:14px 16px;font-size:14px;color:#1E293B;outline:none;"></textarea>
+              </div>
+
+              <button type="submit" disabled="{{ isSubmitDisabled }}" style="{{ submitButtonStyle }}">
+                <sc-if value="{{ isSubmitting }}" hint-placeholder-val="{{ false }}">
+                  <span style="height:16px;width:16px;border-radius:999px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin360 .8s linear infinite;"></span>
+                  Отправка...
+                </sc-if>
+                <sc-if value="{{ isSubmitNotSubmitting }}" hint-placeholder-val="{{ true }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"></path><path d="M22 2l-7 20-4-9-9-4z"></path></svg>
+                  Отправить заявку
+                </sc-if>
+              </button>
+
+              <p style="margin:0;text-align:center;font-size:12px;color:#64748B;">Нажимая кнопку, вы соглашаетесь на обработку персональных данных</p>
+            </form>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="margin:50px 0 40px;text-align:center;">
+      <p style="margin:0 0 12px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.2em;color:#C41E24;">Где нас найти</p>
+      <h2 style="margin:0;font-size:clamp(28px,4vw,36px);font-weight:800;color:#0F172A;">Местоположение</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:32px;">
+      <div style="border-radius:20px;border:1px solid #E2E8F0;background:#fff;overflow:hidden;">
+        <div style="display:flex;flex-direction:column;gap:2px;height:100%;">
+          <img src="{{ salonPhotoMain.src }}" alt="{{ salonPhotoMain.alt }}" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2px;">
+            <sc-for list="{{ salonPhotosSecondary }}" as="photo" hint-placeholder-count="2">
+              <img src="{{ photo.src }}" alt="{{ photo.alt }}" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="overflow:hidden;border-radius:20px;border:1px solid #E2E8F0;box-shadow:0 1px 2px rgba(0,0,0,.05);">
+        <iframe src="https://yandex.ru/map-widget/v1/?text=Тольятти%2C%20Офицерская%20улица%2C%2046&amp;z=16" width="100%" height="100%" style="display:block;border:none;min-height:100%;" title="Карта — расположение автосалона TIGLEV.COM в Тольятти" loading="lazy"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer style="position:relative;background:#0F172A;padding-top:64px;padding-bottom:32px;">
+  <div style="position:absolute;inset:0;opacity:.02;background-image:radial-gradient(circle at 1px 1px, white 1px, transparent 0);background-size:32px 32px;"></div>
+
+  <div style="position:relative;margin:0 auto;max-width:1280px;padding:0 24px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:40px;border-bottom:1px solid rgba(255,255,255,.06);padding-bottom:48px;">
+      <div>
+        <div style="margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+          <img src="public/logo.svg" alt="TIGLEV.COM" width="36" height="36" style="width:36px;height:36px;display:block;">
+          <span style="font-size:18px;font-weight:800;color:#fff;">TIGLEV.COM</span>
+        </div>
+        <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:rgba(255,255,255,.4);">Автосалон в Тольятти. Продажа, выкуп и заказ автомобилей с 2009 года. Честные цены и прозрачные сделки.</p>
+        <a href="https://vk.com/tiglev" target="_blank" rel="noopener noreferrer" aria-label="Мы ВКонтакте" style="display:inline-flex;align-items:center;gap:6px;border-radius:10px;border:1px solid rgba(255,255,255,.1);padding:8px 14px;font-size:12px;font-weight:500;color:rgba(255,255,255,.5);" style-hover="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);">
+          ВКонтакте
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><path d="M7 7h10v10"></path></svg>
+        </a>
+      </div>
+
+      <sc-for list="{{ footerNavSections }}" as="section" hint-placeholder-count="2">
+        <div>
+          <h4 style="margin:0 0 20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.6);">{{ section.title }}</h4>
+          <nav aria-label="{{ section.ariaLabel }}" style="display:flex;flex-direction:column;gap:12px;">
+            <sc-for list="{{ section.links }}" as="link" hint-placeholder-count="4">
+              <a href="{{ link.href }}" style="font-size:14px;color:rgba(255,255,255,.4);" style-hover="color:#fff;">{{ link.label }}</a>
+            </sc-for>
+          </nav>
+        </div>
+      </sc-for>
+
+      <div>
+        <h4 style="margin:0 0 20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.6);">Контакты</h4>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <a href="tel:+78482750750" aria-label="Позвонить: +7 (8482) 750-750" style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.4);" style-hover="color:#fff;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C41E2499" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .7-.2 1z"></path></svg>
+            +7 (8482) 750-750
+          </a>
+          <a href="tel:88005000015" aria-label="Бесплатная линия: 8-800-500-0015" style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.4);" style-hover="color:#fff;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C41E2499" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .7-.2 1z"></path></svg>
+            8-800-500-0015
+          </a>
+          <p style="margin:0;display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.4);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C41E2499" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 22s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+            Тольятти, Офицерская ул. 46
+          </p>
+        </div>
+
+        <div style="margin-top:20px;display:flex;flex-direction:column;gap:6px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);padding:14px;">
+          <p style="margin:0;font-size:12px;font-weight:500;color:rgba(255,255,255,.5);">Пн–Пт: 9:00 — 18:00</p>
+          <p style="margin:0;font-size:12px;font-weight:500;color:rgba(255,255,255,.5);">Сб: 9:00 — 17:00</p>
+          <p style="margin:0;font-size:12px;font-weight:500;color:rgba(255,255,255,.5);">Вс: 10:00 — 14:00</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;">
+      <p style="margin:0;font-size:12px;color:rgba(255,255,255,.25);">© {{ currentYear }} TIGLEV.COM. Все права защищены.</p>
+      <a href="#" aria-label="Наверх" style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.25);" style-hover="color:rgba(255,255,255,.5);">
+        Наверх
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"></path></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  static NAV_LINKS = [
+    { href: "Catalog.dc.html", label: "Каталог" },
+    { href: "SellCar.dc.html", label: "Продать авто" },
+    { href: "ImportCars.dc.html", label: "Авто на Заказ" },
+    { href: "#contacts", label: "Контакты" },
+  ];
+
+  static SERVICES = [
+    { icon: "car", title: "Каталог автомобилей", description: "Широкий выбор подержанных автомобилей по честным ценам. Каждый автомобиль проходит полную техническую и юридическую проверку.", cta: "Смотреть каталог", href: "Catalog.dc.html" },
+    { icon: "shield", title: "Выкуп автомобилей", description: "Срочный выкуп вашего автомобиля за 30 минут. Оценка, оформление и выплата всей суммы в день обращения. Любые марки.", cta: "Оценить авто", href: "SellCar.dc.html" },
+    { icon: "globe", title: "Авто на заказ", description: "Подбор и доставка автомобилей из Европы на заказ. Полное таможенное оформление, страхование, доставка от 10 дней.", cta: "Узнать подробнее", href: "ImportCars.dc.html" },
+  ];
+
+  static STATS = [
+    { target: 15, suffix: "+", label: "Лет на рынке", icon: "award" },
+    { target: 3000, suffix: "+", label: "Продано авто", icon: "car" },
+    { target: 98, suffix: "%", label: "Довольных клиентов", icon: "thumbsUp" },
+    { target: 30, suffix: "", label: "Минут на оценку", icon: "clock" },
+  ];
+
+  static ADVANTAGES = [
+    { icon: "shield", title: "Юридическая чистота", description: "Проверяем каждый автомобиль по базам ГИБДД, ФНП, ФССП и залоговых реестров" },
+    { icon: "clock", title: "Быстрое оформление", description: "Полное сопровождение сделки: от осмотра до регистрации за 1 день" },
+    { icon: "checkCircle", title: "Гарантия качества", description: "Независимая техническая диагностика каждого автомобиля перед продажей" },
+    { icon: "award", title: "Честные цены", description: "Рыночная оценка без скрытых наценок и навязанных дополнительных услуг" },
+  ];
+
+  static SALON_PHOTOS = [
+    { src: "uploads/autosalon_2.jpg", alt: "Автосалон TIGLEV.COM — здание" },
+    { src: "uploads/autosalon_1.jpg", alt: "Автосалон TIGLEV.COM — вид с дороги" },
+    { src: "uploads/autosalon_3.jpg", alt: "Автосалон TIGLEV.COM — вход" },
+  ];
+
+  static CONTACT_INFO = [
+    { icon: "mapPin", title: "Адрес", lines: [{ text: "Тольятти, Офицерская ул. 46, ГСК 66" }] },
+    { icon: "phone", title: "Телефон", lines: [{ text: "+7 (8482) 750-750", href: "tel:+78482750750" }, { text: "8-800-500-0015", href: "tel:88005000015" }] },
+    { icon: "clock", title: "Режим работы", lines: [{ text: "Пн–Пт: 9:00 — 18:00" }, { text: "Сб: 9:00 — 17:00" }, { text: "Вс: 10:00 — 14:00" }] },
+    { icon: "messenger", title: "Мессенджер", lines: [{ text: "ВКонтакте", href: "https://vk.com/tiglev" }] },
+    { icon: "mail", title: "E-mail", lines: [{ text: "tiglev2013@yandex.ru", href: "mailto:tiglev2013@yandex.ru" }] },
+  ];
+
+  static FOOTER_NAV = [
+    { title: "Навигация", links: [{ href: "#services", label: "Услуги" }, { href: "Catalog.dc.html", label: "Каталог" }, { href: "#about", label: "О компании" }, { href: "#contacts", label: "Контакты" }] },
+    { title: "Услуги", links: [{ href: "Catalog.dc.html", label: "Продажа авто" }, { href: "#contacts", label: "Выкуп авто" }, { href: "#contacts", label: "Авто из Европы" }, { href: "#contacts", label: "Оценка авто" }] },
+  ];
+
+  state = {
+    whyUsVisible: false,
+    whyUsCounts: [0, 0, 0, 0],
+    contactName: "",
+    contactPhone: "",
+    contactMessage: "",
+    contactFormState: "idle",
+  };
+
+  componentDidMount() {
+    this.whyUsObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries[0] && entries[0].isIntersecting && !this.state.whyUsVisible) {
+          this.setState({ whyUsVisible: true });
+          this.animateStats();
+        }
+      },
+      { threshold: 0.2 }
+    );
+    const aboutEl = document.getElementById("about");
+    if (aboutEl) this.whyUsObserver.observe(aboutEl);
+  }
+
+  componentWillUnmount() {
+    if (this.whyUsObserver) this.whyUsObserver.disconnect();
+  }
+
+  animateStats() {
+    const duration = 2000;
+    const start = performance.now();
+    const targets = Component.STATS.map((s) => s.target);
+    const step = (now) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      this.setState({ whyUsCounts: targets.map((t) => Math.floor(eased * t)) });
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  setContactName = (e) => this.setState({ contactName: e.target.value });
+  setContactPhone = (e) => this.setState({ contactPhone: e.target.value });
+  setContactMessage = (e) => this.setState({ contactMessage: e.target.value });
+
+  handleContactSubmit = (e) => {
+    e.preventDefault();
+    const name = this.state.contactName;
+    const phone = this.state.contactPhone;
+    if (name.trim().length < 2 || phone.trim().length < 7) return;
+    this.setState({ contactFormState: "submitting" });
+    setTimeout(() => {
+      this.setState({ contactFormState: "success", contactName: "", contactPhone: "", contactMessage: "" });
+      setTimeout(() => this.setState({ contactFormState: "idle" }), 3000);
+    }, 800);
+  };
+
+  formatPrice(price) {
+    return new Intl.NumberFormat("ru-RU").format(price) + " \u20BD";
+  }
+
+  renderVals() {
+    const s = this.state;
+    const primary = "#C41E24", darkC = "#0F172A", darkLight = "#1E293B", grayText = "#64748B", grayBorder = "#E2E8F0";
+
+    const heroStats = [
+      { value: "3 000+", label: "автомобилей продано" },
+      { value: "15+", label: "лет на рынке" },
+      { value: "98%", label: "довольных клиентов" },
+    ];
+
+    const services = Component.SERVICES.map((sv, i) => ({
+      title: sv.title,
+      description: sv.description,
+      cta: sv.cta,
+      href: sv.href,
+      number: "0" + (i + 1),
+      isCar: sv.icon === "car",
+      isShield: sv.icon === "shield",
+      isGlobe: sv.icon === "globe",
+      ariaLabel: sv.cta + " — " + sv.title,
+    }));
+
+    const whyUsStats = Component.STATS.map((st, i) => {
+      const count = s.whyUsVisible ? s.whyUsCounts[i] || 0 : 0;
+      const displayValue = (s.whyUsVisible ? new Intl.NumberFormat("ru-RU").format(count) : "0") + st.suffix;
+      return { label: st.label, displayValue: displayValue, isAward: st.icon === "award", isCar: st.icon === "car", isThumbsUp: st.icon === "thumbsUp", isClock: st.icon === "clock" };
+    });
+
+    const advantages = Component.ADVANTAGES.map((a) => ({ title: a.title, description: a.description, isShield: a.icon === "shield", isClock: a.icon === "clock", isCheckCircle: a.icon === "checkCircle", isAward: a.icon === "award" }));
+
+    const contactInfo = Component.CONTACT_INFO.map((c) => ({
+      title: c.title,
+      isMapPin: c.icon === "mapPin",
+      isPhone: c.icon === "phone",
+      isClock: c.icon === "clock",
+      isMessenger: c.icon === "messenger",
+      isMail: c.icon === "mail",
+      lines: c.lines.map((l) => ({ text: l.text, href: l.href || "", hasHref: !!l.href, noHref: !l.href })),
+    }));
+
+    const footerNavSections = Component.FOOTER_NAV.map((sec) => ({ title: sec.title, ariaLabel: sec.title + " — ссылки", links: sec.links }));
+
+    const isFormValid = s.contactName.trim().length >= 2 && s.contactPhone.trim().length >= 7;
+    const isFormSuccess = s.contactFormState === "success";
+    const isSubmitting = s.contactFormState === "submitting";
+    const isSubmitDisabled = isSubmitting || !isFormValid;
+
+    return {
+      heroStats: heroStats,
+
+      services: services,
+
+      whyUsStats: whyUsStats,
+      advantages: advantages,
+
+      salonPhotos: Component.SALON_PHOTOS,
+      salonPhotoMain: Component.SALON_PHOTOS[0],
+      salonPhotosSecondary: Component.SALON_PHOTOS.slice(1),
+      contactInfo: contactInfo,
+      isFormSuccess: isFormSuccess,
+      isFormNotSuccess: !isFormSuccess,
+      contactName: s.contactName,
+      contactPhone: s.contactPhone,
+      contactMessage: s.contactMessage,
+      setContactName: this.setContactName,
+      setContactPhone: this.setContactPhone,
+      setContactMessage: this.setContactMessage,
+      handleContactSubmit: this.handleContactSubmit,
+      isSubmitting: isSubmitting,
+      isSubmitNotSubmitting: !isSubmitting,
+      isSubmitDisabled: isSubmitDisabled,
+      submitButtonStyle: { display: "flex", width: "100%", alignItems: "center", justifyContent: "center", gap: 8, border: "none", borderRadius: 12, background: primary, padding: "16px 24px", fontSize: 14, fontWeight: 700, color: "#fff", cursor: isSubmitDisabled ? "not-allowed" : "pointer", opacity: isSubmitDisabled ? 0.6 : 1, transition: "all .3s" },
+
+      footerNavSections: footerNavSections,
+      currentYear: new Date().getFullYear(),
+    };
+  }
+}
+
+</script>
+</body>
+</html>
