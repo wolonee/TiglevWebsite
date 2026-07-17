@@ -4,7 +4,7 @@ import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { upload } from "@vercel/blob/client";
 import { ArrowDown, ArrowUp, CheckCircle2, ImagePlus, LoaderCircle, X } from "lucide-react";
-import { bodyTypes, brands } from "@/data/cars";
+import { bodyTypes, brands, colors, damageOptions, driveTypes, engineTypes, transmissions, wheelPositions } from "@/data/cars";
 import AppSelect from "./AppSelect";
 
 const initialState = {
@@ -53,7 +53,7 @@ export default function AdminCarForm() {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!form.brand || !form.bodyType) { setStatus("error"); setMessage("Выберите марку и тип кузова"); return; }
+    if (!form.brand || !form.bodyType || !form.engine) { setStatus("error"); setMessage("Выберите марку, тип кузова и двигатель"); return; }
     if (!images.length) { setStatus("error"); setMessage("Добавьте хотя бы одну фотографию"); return; }
     setStatus("loading"); setMessage(""); setUploadProgress(0);
     const uploadedUrls: string[] = [];
@@ -84,19 +84,24 @@ export default function AdminCarForm() {
       <section className="rounded-2xl border border-gray-border bg-white p-6 sm:p-8">
         <h2 className="text-xl font-bold text-dark">Основная информация</h2>
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <label className="space-y-2 text-sm font-medium text-dark"><span>Марка *</span><AppSelect ariaLabel="Марка" placeholder="Выберите марку" clearLabel="Не выбрана" options={brands} value={form.brand} onValueChange={(value) => set("brand", value)} /></label>
+          <label className="space-y-2 text-sm font-medium text-dark"><span>Марка *</span><AppSelect searchable searchPlaceholder="Найти марку…" ariaLabel="Марка" placeholder="Выберите марку" clearLabel="Не выбрана" options={brands} value={form.brand} onValueChange={(value) => set("brand", value)} /></label>
           <label className="space-y-2 text-sm font-medium text-dark"><span>Модель *</span><input required className={field} value={form.model} onChange={(e) => set("model", e.target.value)} /></label>
           <label className="space-y-2 text-sm font-medium text-dark"><span>Цена, ₽ *</span><input required min="1" type="number" className={field} value={form.price} onChange={(e) => set("price", e.target.value)} /></label>
           <label className="space-y-2 text-sm font-medium text-dark"><span>Год *</span><input required min="1900" max={new Date().getFullYear() + 1} type="number" className={field} value={form.year} onChange={(e) => set("year", e.target.value)} /></label>
-          <label className="space-y-2 text-sm font-medium text-dark"><span>Кузов *</span><AppSelect ariaLabel="Тип кузова" placeholder="Выберите кузов" clearLabel="Не выбран" options={bodyTypes} value={form.bodyType} onValueChange={(value) => set("bodyType", value)} /></label>
-          <label className="space-y-2 text-sm font-medium text-dark"><span>Двигатель *</span><input required className={field} placeholder="Бензин" value={form.engine} onChange={(e) => set("engine", e.target.value)} /></label>
+          <label className="space-y-2 text-sm font-medium text-dark"><span>Кузов *</span><AppSelect searchable ariaLabel="Тип кузова" placeholder="Выберите кузов" clearLabel="Не выбран" options={bodyTypes} value={form.bodyType} onValueChange={(value) => set("bodyType", value)} /></label>
+          <label className="space-y-2 text-sm font-medium text-dark"><span>Двигатель *</span><AppSelect ariaLabel="Тип двигателя" placeholder="Выберите двигатель" clearLabel="Не выбран" options={engineTypes} value={form.engine} onValueChange={(value) => set("engine", value)} /></label>
         </div>
       </section>
 
       <section className="rounded-2xl border border-gray-border bg-white p-6 sm:p-8">
         <h2 className="text-xl font-bold text-dark">Характеристики</h2>
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {([['engineVolume','Объём двигателя'],['power','Мощность'],['transmission','Трансмиссия'],['mileage','Пробег, км'],['drive','Привод'],['wheel','Руль'],['color','Цвет'],['damage','Повреждения']] as const).map(([name, label]) => <label key={name} className="space-y-2 text-sm font-medium text-dark"><span>{label}</span><input className={field} type={name === "mileage" ? "number" : "text"} value={form[name]} onChange={(e) => set(name, e.target.value)} /></label>)}
+          {([['engineVolume','Объём двигателя'],['power','Мощность'],['mileage','Пробег, км']] as const).map(([name, label]) => <label key={name} className="space-y-2 text-sm font-medium text-dark"><span>{label}</span><input className={field} type={name === "mileage" ? "number" : "text"} value={form[name]} onChange={(e) => set(name, e.target.value)} /></label>)}
+          <label className="space-y-2 text-sm font-medium text-dark"><span>Трансмиссия</span><AppSelect ariaLabel="Трансмиссия" placeholder="Выберите трансмиссию" clearLabel="Не выбрана" options={transmissions} value={form.transmission} onValueChange={(value) => set("transmission", value)} /></label>
+          <label className="space-y-2 text-sm font-medium text-dark"><span>Привод</span><AppSelect ariaLabel="Привод" placeholder="Выберите привод" clearLabel="Не выбран" options={driveTypes} value={form.drive} onValueChange={(value) => set("drive", value)} /></label>
+          <label className="space-y-2 text-sm font-medium text-dark"><span>Руль</span><AppSelect ariaLabel="Положение руля" placeholder="Выберите положение" clearLabel="Не выбрано" options={wheelPositions} value={form.wheel} onValueChange={(value) => set("wheel", value)} /></label>
+          <label className="space-y-2 text-sm font-medium text-dark"><span>Цвет</span><AppSelect searchable ariaLabel="Цвет" placeholder="Выберите цвет" clearLabel="Не выбран" options={colors} value={form.color} onValueChange={(value) => set("color", value)} /></label>
+          <label className="space-y-2 text-sm font-medium text-dark"><span>Состояние кузова</span><AppSelect ariaLabel="Состояние кузова" placeholder="Выберите состояние" clearLabel="Не выбрано" options={damageOptions} value={form.damage} onValueChange={(value) => set("damage", value)} /></label>
         </div>
         <label className="mt-5 block space-y-2 text-sm font-medium text-dark"><span>Описание</span><textarea rows={5} className={field} value={form.description} onChange={(e) => set("description", e.target.value)} /></label>
       </section>
