@@ -8,7 +8,7 @@ export default function AdminSignInPage() {
     <main className="flex min-h-screen items-center justify-center bg-gray-bg px-4 py-12">
       <SignIn
         fallbackRedirectUrl="/admin"
-        appearance={{ elements: { footerAction: "hidden" } }}
+        appearance={{ elements: { footerAction: { display: "none" } } }}
       />
     </main>
   );

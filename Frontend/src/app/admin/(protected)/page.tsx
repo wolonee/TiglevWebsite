@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
+import AdminCarForm from "@/components/AdminCarForm";
 
 export const metadata: Metadata = { title: "Админка — TIGLEV.COM" };
 
 export default function AdminPage() {
   return (
-    <section className="rounded-2xl border border-gray-border bg-white p-8 sm:p-10">
+    <div>
       <p className="eyebrow">Панель управления</p>
-      <h1 className="mt-3 text-3xl font-bold text-dark">Админка подключена</h1>
-      <p className="mt-3 max-w-2xl text-gray-text">
-        Аутентификация и проверка роли администратора работают. Разделы управления добавим следующим этапом.
-      </p>
-    </section>
+      <h1 className="mt-3 text-3xl font-bold text-dark">Добавить автомобиль</h1>
+      <p className="mb-8 mt-3 max-w-2xl text-gray-text">Заполните карточку автомобиля. После сохранения она сразу появится в каталоге.</p>
+      <AdminCarForm />
+    </div>
   );
 }
