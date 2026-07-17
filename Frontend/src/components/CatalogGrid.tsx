@@ -2,20 +2,20 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
-import { bodyTypes, brands, cars } from "@/data/cars";
+import { bodyTypes, brands, type Car } from "@/data/cars";
 import CarCard from "./CarCard";
 import SectionHeading from "./SectionHeading";
 import AppSelect from "./AppSelect";
 
 type CatalogFilters = { brand: string; body: string; min: string; max: string };
 
-export default function CatalogGrid({ initialFilters }: { initialFilters: CatalogFilters }) {
+export default function CatalogGrid({ initialFilters, cars }: { initialFilters: CatalogFilters; cars: Car[] }) {
   const [brand, setBrand] = useState(initialFilters.brand); const [body, setBody] = useState(initialFilters.body);
   const [min, setMin] = useState(initialFilters.min); const [max, setMax] = useState(initialFilters.max);
   const [appliedBrand, setAppliedBrand] = useState(initialFilters.brand); const [appliedBody, setAppliedBody] = useState(initialFilters.body);
   const [appliedMin, setAppliedMin] = useState(initialFilters.min); const [appliedMax, setAppliedMax] = useState(initialFilters.max); const [visible, setVisible] = useState(6);
   const sentinel = useRef<HTMLDivElement>(null);
-  const filtered = useMemo(() => cars.filter(c => (!appliedBrand || c.brand === appliedBrand) && (!appliedBody || c.bodyType === appliedBody) && (!appliedMin || c.price >= Number(appliedMin)) && (!appliedMax || c.price <= Number(appliedMax))), [appliedBrand, appliedBody, appliedMin, appliedMax]);
+  const filtered = useMemo(() => cars.filter(c => (!appliedBrand || c.brand === appliedBrand) && (!appliedBody || c.bodyType === appliedBody) && (!appliedMin || c.price >= Number(appliedMin)) && (!appliedMax || c.price <= Number(appliedMax))), [cars, appliedBrand, appliedBody, appliedMin, appliedMax]);
   const applyFilters = () => {
     setAppliedBrand(brand); setAppliedBody(body); setAppliedMin(min); setAppliedMax(max); setVisible(6);
     const params = new URLSearchParams();

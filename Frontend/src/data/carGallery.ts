@@ -1,4 +1,4 @@
-import { cars } from "./cars";
+import { cars, type Car } from "./cars";
 
 const galleryPool = [
   "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200&h=900&fit=crop",
@@ -8,8 +8,8 @@ const galleryPool = [
   "https://images.unsplash.com/photo-1494905998402-395d579af36f?w=1200&h=900&fit=crop",
 ];
 
-export function getCarGallery(carId: string): string[] {
-  const carIndex = Math.max(0, cars.findIndex((car) => car.id === carId));
-  const car = cars[carIndex];
+export function getCarGallery(car: Car): string[] {
+  if (car.images?.length) return car.images;
+  const carIndex = Math.max(0, cars.findIndex((item) => item.id === car.id));
   return [car.image, ...galleryPool.map((_, index) => galleryPool[(carIndex + index) % galleryPool.length])];
 }

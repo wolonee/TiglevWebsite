@@ -3,10 +3,12 @@ import express from "express";
 import { rateLimit } from "express-rate-limit";
 import { webhookCallback } from "grammy";
 import multer from "multer";
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { config } from "./config.js";
 import { sendContactRequestEmail, sendSellRequestEmail } from "./email.js";
 import { bot, broadcastContactRequest, broadcastSellRequest } from "./telegram.js";
+import { carRecords } from "./database.js";
 
 export const app = express();
 app.set("trust proxy", 1);
@@ -32,8 +34,30 @@ const contactRequestSchema = z.object({
   message: z.string().trim().max(2000).optional(),
   source: z.string().trim().max(100).optional(),
 });
+const optionalText = z.string().trim().max(200).optional();
+const carSchema = z.object({
+  brand: z.string().trim().min(1).max(80), model: z.string().trim().min(1).max(100),
+  price: z.coerce.number().int().positive().max(1_000_000_000), year: z.coerce.number().int().min(1900).max(new Date().getFullYear() + 1),
+  images: z.array(z.string().url()).min(1).max(20), bodyType: z.string().trim().min(1).max(80),
+  engine: z.string().trim().min(1).max(80), description: z.string().trim().max(5000).optional(),
+  engineVolume: optionalText, power: optionalText, transmission: optionalText,
+  mileage: z.coerce.number().int().nonnegative().max(10_000_000).optional(), drive: optionalText,
+  wheel: optionalText, color: optionalText, damage: optionalText,
+});
 
 app.get("/health", (_request, response) => response.json({ ok: true }));
+app.get("/api/cars", async (_request, response) => response.json({ cars: await carRecords.all() }));
+app.get("/api/cars/:id", async (request, response) => {
+  const car = await carRecords.find(request.params.id);
+  return car ? response.json({ car }) : response.status(404).json({ error: "Car not found" });
+});
+app.post("/api/admin/cars", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  const parsed = carSchema.safeParse(request.body);
+  if (!parsed.success) return response.status(400).json({ error: "Validation failed", details: parsed.error.flatten().fieldErrors });
+  const car = await carRecords.create({ id: randomUUID(), ...parsed.data });
+  return response.status(201).json({ car });
+});
 app.post("/api/telegram", (request, response) => {
   if (request.header("x-telegram-bot-api-secret-token") !== config.TELEGRAM_WEBHOOK_SECRET) return response.sendStatus(401);
   return webhookCallback(bot, "express")(request, response);
