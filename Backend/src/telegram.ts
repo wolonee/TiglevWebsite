@@ -66,7 +66,10 @@ export async function broadcastSellRequest(data: SellRequest, photos: Express.Mu
   for (const subscriber of recipients) {
     try {
       await bot.api.sendMessage(subscriber.chat_id, text, { parse_mode: "MarkdownV2" });
-      if (photos.length) {
+      if (photos.length === 1) {
+        const photo = photos[0]!;
+        await bot.api.sendPhoto(subscriber.chat_id, new InputFile(photo.buffer, photo.originalname));
+      } else if (photos.length > 1) {
         const media: InputMediaPhoto[] = photos.slice(0, 10).map((photo) => ({ type: "photo", media: new InputFile(photo.buffer, photo.originalname) }));
         await bot.api.sendMediaGroup(subscriber.chat_id, media);
       }
