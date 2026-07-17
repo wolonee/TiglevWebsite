@@ -16,6 +16,7 @@ type AppSelectProps = {
 };
 
 const CLEAR_VALUE = "__all__";
+const itemClassName = "relative flex cursor-pointer select-none items-center rounded-lg border border-transparent py-2.5 pl-3 pr-9 text-sm text-dark outline-none shadow-none data-[highlighted]:bg-gray-bg data-[highlighted]:text-primary data-[state=checked]:text-primary";
 
 export default function AppSelect({
   ariaLabel,
@@ -57,7 +58,7 @@ export default function AppSelect({
             {clearLabel && (
               <SelectPrimitive.Item
                 value={CLEAR_VALUE}
-                className="relative flex cursor-pointer select-none items-center rounded-lg py-2.5 pl-3 pr-9 text-sm text-dark outline-none data-[highlighted]:bg-gray-bg data-[highlighted]:text-primary"
+                className={itemClassName}
               >
                 <SelectPrimitive.ItemText>{clearLabel}</SelectPrimitive.ItemText>
                 <SelectPrimitive.ItemIndicator className="absolute right-3">
@@ -69,7 +70,7 @@ export default function AppSelect({
               <SelectPrimitive.Item
                 key={option}
                 value={option}
-                className="relative flex cursor-pointer select-none items-center rounded-lg py-2.5 pl-3 pr-9 text-sm text-dark outline-none data-[highlighted]:bg-gray-bg data-[highlighted]:text-primary"
+                className={itemClassName}
               >
                 <SelectPrimitive.ItemText>{option}</SelectPrimitive.ItemText>
                 <SelectPrimitive.ItemIndicator className="absolute right-3">
