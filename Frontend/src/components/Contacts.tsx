@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Send, CheckCircle2 } from "lucide-react";
+import { AlertCircle, Send, CheckCircle2 } from "lucide-react";
 import ContactList from "./ContactList";
 import SectionHeading from "./SectionHeading";
 
@@ -13,23 +13,32 @@ const Contacts = ({ hideHeading = false }: { hideHeading?: boolean }) => {
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [formState, setFormState] = useState<FormState>("idle");
+  const [submitError, setSubmitError] = useState("");
 
   const isFormValid = name.trim().length >= 2 && phone.trim().length >= 7;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) return;
 
+    setSubmitError("");
     setFormState("submitting");
-
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/contact-requests", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name, phone, message, source: window.location.pathname }),
+      });
+      if (!response.ok) throw new Error("Request failed");
       setFormState("success");
       setName("");
       setPhone("");
       setMessage("");
-
       setTimeout(() => setFormState("idle"), 3000);
-    }, 800);
+    } catch {
+      setSubmitError("Не удалось отправить заявку. Попробуйте ещё раз или позвоните нам.");
+      setFormState("idle");
+    }
   };
 
   const inputClassName =
@@ -72,6 +81,7 @@ const Contacts = ({ hideHeading = false }: { hideHeading?: boolean }) => {
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                  {submitError && <div role="alert" className="flex items-start gap-2 rounded-xl border border-primary/20 bg-red-50 p-4 text-sm text-primary"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />{submitError}</div>}
                   <div>
                     <label
                       htmlFor="contact-name"
