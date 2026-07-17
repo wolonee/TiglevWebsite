@@ -5,6 +5,7 @@ import { webhookCallback } from "grammy";
 import multer from "multer";
 import { z } from "zod";
 import { config } from "./config.js";
+import { sendSellRequestEmail } from "./email.js";
 import { bot, broadcastSellRequest } from "./telegram.js";
 
 export const app = express();
@@ -36,8 +37,20 @@ app.post("/api/sell-requests", limiter, upload.array("photos", 10), async (reque
   const parsed = requestSchema.safeParse(request.body);
   if (!parsed.success) return response.status(400).json({ error: "Validation failed", details: parsed.error.flatten().fieldErrors });
   try {
-    const result = await broadcastSellRequest(parsed.data, (request.files ?? []) as Express.Multer.File[]);
-    return response.status(201).json({ ok: true, ...result });
+    const photos = (request.files ?? []) as Express.Multer.File[];
+    const [telegramResult, emailResult] = await Promise.allSettled([
+      broadcastSellRequest(parsed.data, photos),
+      sendSellRequestEmail(parsed.data, photos),
+    ]);
+    if (telegramResult.status === "rejected") console.error("Telegram delivery failed:", telegramResult.reason);
+    if (emailResult.status === "rejected") console.error("Email delivery failed:", emailResult.reason);
+
+    const telegram = telegramResult.status === "fulfilled" ? telegramResult.value : { recipients: 0, delivered: 0 };
+    const emailDelivered = emailResult.status === "fulfilled";
+    if (telegram.delivered === 0 && !emailDelivered) {
+      return response.status(502).json({ error: "Failed to deliver request" });
+    }
+    return response.status(201).json({ ok: true, telegram, emailDelivered });
   } catch (error) {
     console.error("Sell request broadcast failed:", error);
     return response.status(500).json({ error: "Failed to deliver request" });

@@ -9,6 +9,9 @@ const schema = z.object({
   PORT: z.coerce.number().int().positive().default(4000),
   FRONTEND_ORIGIN: z.string().default("http://localhost:3000"),
   DATABASE_URL: z.string().url(),
+  RESEND_API_KEY: z.string().min(10).optional(),
+  EMAIL_RECIPIENT: z.string().email().default("expin12267@gmail.com"),
+  EMAIL_FROM: z.string().default("TIGLEV.COM <onboarding@resend.dev>"),
 });
 
 export const config = schema.parse(process.env);
