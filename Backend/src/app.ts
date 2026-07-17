@@ -58,6 +58,21 @@ app.post("/api/admin/cars", async (request, response) => {
   const car = await carRecords.create({ id: randomUUID(), ...parsed.data });
   return response.status(201).json({ car });
 });
+app.patch("/api/admin/cars/:id", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  const parsed = carSchema.safeParse(request.body);
+  if (!parsed.success) return response.status(400).json({ error: "Validation failed", details: parsed.error.flatten().fieldErrors });
+  const previous = await carRecords.find(request.params.id);
+  if (!previous) return response.status(404).json({ error: "Car not found" });
+  const car = await carRecords.update(request.params.id, parsed.data);
+  const removedImages = previous.images.filter((image) => !parsed.data.images.includes(image));
+  return response.json({ car, removedImages });
+});
+app.delete("/api/admin/cars/:id", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  const car = await carRecords.remove(request.params.id);
+  return car ? response.json({ car }) : response.status(404).json({ error: "Car not found" });
+});
 app.post("/api/telegram", (request, response) => {
   if (request.header("x-telegram-bot-api-secret-token") !== config.TELEGRAM_WEBHOOK_SECRET) return response.sendStatus(401);
   return webhookCallback(bot, "express")(request, response);

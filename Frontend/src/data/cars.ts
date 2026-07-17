@@ -192,7 +192,7 @@ export async function getCatalogCars(): Promise<Car[]> {
     if (!response.ok) return cars;
     const payload = await response.json() as { cars?: Array<Omit<Car, "image"> & { images: string[] }> };
     const stored = (payload.cars ?? []).map((car) => ({ ...car, image: car.images[0] }));
-    return [...stored, ...cars];
+    return stored;
   } catch {
     return cars;
   }
