@@ -1,35 +1,65 @@
-import { bot } from "../src/telegram.js";
+import { config } from "../src/config.js";
 import { subscribers } from "../src/database.js";
 
 const message = [
-  "🚘 *Тестовая заявка: авто на заказ*",
+  "# 🚘 Новая заявка: авто на заказ",
   "",
-  "> _Демонстрация форматирования Telegram MarkdownV2_",
+  "> Клиент ищет автомобиль из Японии под ключ.",
   "",
-  "*Пожелания клиента*",
-  "• Автомобиль: *Toyota Camry*",
-  "• Год выпуска: `2023`",
-  "• Страна: Япония 🇯🇵",
-  "• Бюджет: __до 4 500 000 ₽__",
-  "• Цвет: белый или чёрный",
+  "---",
   "",
-  "*Контактные данные*",
-  "• Имя: Иван Петров",
-  "• Телефон: `+7 999 123\-45\-67`",
+  "## Параметры автомобиля",
   "",
-  "~Старое пожелание: левый руль~",
-  "||Внутренняя заметка: клиент готов внести предоплату||",
+  "| Параметр | Значение |",
+  "|:--|:--|",
+  "| Марка | **Toyota Camry** |",
+  "| Год | `2023` |",
+  "| Страна | Япония 🇯🇵 |",
+  "| Бюджет | ==до 4 500 000 ₽== |",
+  "| Цвет | белый или чёрный |",
   "",
-  "Идентификатор заявки: `TEST\-ORDER\-001`",
+  "## Этапы работы",
+  "",
+  "- [x] Получить заявку",
+  "- [x] Уточнить требования",
+  "- [ ] Подобрать варианты",
+  "- [ ] Рассчитать доставку",
+  "",
+  "## Контактные данные",
+  "",
+  "1. **Клиент:** Иван Петров",
+  "2. **Телефон:** [позвонить](tel:+79991234567)",
+  "3. **Код заявки:** `TEST-ORDER-002`",
+  "",
+  "<details><summary>Комментарий для менеджера</summary>",
+  "",
+  "Клиент готов внести предоплату. ||Не сообщать окончательную цену до проверки аукционного листа.||",
+  "",
+  "</details>",
+  "",
+  "![](https://tiglev-website.vercel.app/images/hero-car.png \"Пример автомобиля\")",
+  "",
   "[Открыть страницу «Авто на заказ»](https://tiglev-website.vercel.app/import)",
 ].join("\n");
+
+type TelegramResponse = { ok: boolean; description?: string };
+
+async function sendRichMessage(chatId: number) {
+  const response = await fetch(`https://api.telegram.org/bot${config.TELEGRAM_BOT_TOKEN}/sendRichMessage`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, rich_message: { markdown: message } }),
+  });
+  const result = await response.json() as TelegramResponse;
+  if (!response.ok || !result.ok) throw new Error(result.description ?? `Telegram API error ${response.status}`);
+}
 
 async function sendMock() {
   const recipients = await subscribers.all();
   if (recipients.length === 0) throw new Error("No Telegram subscribers found");
 
   const results = await Promise.allSettled(
-    recipients.map((subscriber) => bot.api.sendMessage(subscriber.chat_id, message, { parse_mode: "MarkdownV2" })),
+    recipients.map((subscriber) => sendRichMessage(subscriber.chat_id)),
   );
   const delivered = results.filter((result) => result.status === "fulfilled").length;
   const failed = results.length - delivered;
