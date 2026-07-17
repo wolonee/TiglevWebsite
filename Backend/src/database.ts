@@ -1,5 +1,6 @@
 import postgres, { type Sql } from "postgres";
 import { config } from "./config.js";
+import { catalogSeed } from "./catalog-seed.js";
 
 export type Subscriber = { chat_id: number; username: string | null; first_name: string | null; last_name: string | null };
 export type CarRecord = {
@@ -52,6 +53,24 @@ export function ensureSchema() {
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         )
       `;
+      await transaction`CREATE TABLE IF NOT EXISTS app_migrations (key TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`;
+      const [catalogMigration] = await transaction`
+        INSERT INTO app_migrations (key) VALUES ('catalog_seed_v1')
+        ON CONFLICT (key) DO NOTHING RETURNING key
+      `;
+      if (catalogMigration) {
+        for (const car of catalogSeed) {
+          await transaction`
+            INSERT INTO cars (id, brand, model, price, year, images, body_type, engine, description,
+              engine_volume, power, transmission, mileage, drive, wheel, color, damage)
+            VALUES (${car.id}, ${car.brand}, ${car.model}, ${car.price}, ${car.year}, ${transaction.json(car.images)},
+              ${car.bodyType}, ${car.engine}, ${car.description ?? null}, ${car.engineVolume ?? null},
+              ${car.power ?? null}, ${car.transmission ?? null}, ${car.mileage ?? null}, ${car.drive ?? null},
+              ${car.wheel ?? null}, ${car.color ?? null}, ${car.damage ?? null})
+            ON CONFLICT (id) DO NOTHING
+          `;
+        }
+      }
     }).then(() => undefined);
   }
   return schemaPromise;
@@ -119,6 +138,25 @@ export const carRecords = {
     await ensureSchema();
     const sql = getSql();
     const [row] = await sql`SELECT * FROM cars WHERE id = ${id}`;
+    return row ? mapCar(row) : null;
+  },
+  async update(id: string, car: Omit<CarRecord, "id">) {
+    await ensureSchema();
+    const sql = getSql();
+    const [row] = await sql`
+      UPDATE cars SET brand = ${car.brand}, model = ${car.model}, price = ${car.price}, year = ${car.year},
+        images = ${sql.json(car.images)}, body_type = ${car.bodyType}, engine = ${car.engine},
+        description = ${car.description ?? null}, engine_volume = ${car.engineVolume ?? null},
+        power = ${car.power ?? null}, transmission = ${car.transmission ?? null}, mileage = ${car.mileage ?? null},
+        drive = ${car.drive ?? null}, wheel = ${car.wheel ?? null}, color = ${car.color ?? null}, damage = ${car.damage ?? null}
+      WHERE id = ${id} RETURNING *
+    `;
+    return row ? mapCar(row) : null;
+  },
+  async remove(id: string) {
+    await ensureSchema();
+    const sql = getSql();
+    const [row] = await sql`DELETE FROM cars WHERE id = ${id} RETURNING *`;
     return row ? mapCar(row) : null;
   },
 };

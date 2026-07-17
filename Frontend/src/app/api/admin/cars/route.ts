@@ -2,6 +2,21 @@ import { getAdminAccess } from "@/lib/admin-auth";
 
 export const runtime = "nodejs";
 
+export async function GET() {
+  const access = await getAdminAccess();
+  if (!access.userId) return Response.json({ error: "Необходим вход" }, { status: 401 });
+  if (!access.isAdmin) return Response.json({ error: "Недостаточно прав" }, { status: 403 });
+  const backendUrl = process.env.BACKEND_URL;
+  if (!backendUrl) return Response.json({ error: "Backend не настроен" }, { status: 503 });
+  try {
+    const response = await fetch(`${backendUrl}/api/cars`, { cache: "no-store" });
+    return Response.json(await response.json(), { status: response.status });
+  } catch (error) {
+    console.error("Admin cars loading failed:", error);
+    return Response.json({ error: "Не удалось загрузить автомобили" }, { status: 502 });
+  }
+}
+
 export async function POST(request: Request) {
   const access = await getAdminAccess();
   if (!access.userId) return Response.json({ error: "Необходим вход" }, { status: 401 });
