@@ -27,8 +27,8 @@ export default function CatalogGrid({ initialFilters, cars }: { initialFilters: 
   return <section id="catalog" className="section-space bg-gray-bg"><div className="shell">
     <div className="mb-10 flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><SectionHeading eyebrow="Каталог" title="Автомобили в наличии" description={`${filtered.length} автомобилей`} align="left"/><SlidersHorizontal className="text-primary"/></div>
     <div className="mb-10 grid gap-3 rounded-[20px] border border-gray-border bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-5">
-      <AppSelect ariaLabel="Марка автомобиля" placeholder="Все марки" clearLabel="Все марки" options={brands} value={brand} onValueChange={value => { setBrand(value); setVisible(6); }}/>
-      <AppSelect ariaLabel="Тип кузова" placeholder="Все кузова" clearLabel="Все кузова" options={bodyTypes} value={body} onValueChange={value => { setBody(value); setVisible(6); }}/>
+      <AppSelect searchable searchPlaceholder="Найти марку…" ariaLabel="Марка автомобиля" placeholder="Все марки" clearLabel="Все марки" options={brands} value={brand} onValueChange={value => { setBrand(value); setVisible(6); }}/>
+      <AppSelect searchable ariaLabel="Тип кузова" placeholder="Все кузова" clearLabel="Все кузова" options={bodyTypes} value={body} onValueChange={value => { setBody(value); setVisible(6); }}/>
       <input className={field} inputMode="numeric" placeholder="Цена от, ₽" value={min} onChange={e => setMin(e.target.value.replace(/\D/g, ""))} onKeyDown={e => { if (e.key === "Enter") applyFilters(); }}/>
       <input className={field} inputMode="numeric" placeholder="Цена до, ₽" value={max} onChange={e => setMax(e.target.value.replace(/\D/g, ""))} onKeyDown={e => { if (e.key === "Enter") applyFilters(); }}/>
       <button onClick={applyFilters} className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-primary-dark"><Search className="h-4 w-4"/>Найти</button>

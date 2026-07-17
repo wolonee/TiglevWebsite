@@ -158,16 +158,27 @@ cars.forEach((car, index) => {
 });
 
 export const brands = [
-  "BMW", "CHEVROLET", "HONDA", "HYUNDAI", "KIA", "LADA",
-  "Land Rover", "LEXUS", "MAZDA", "MERCEDES", "MITSUBISHI",
-  "NISSAN", "OPEL", "RENAULT", "SKODA", "SUBARU", "SUZUKI",
-  "TOYOTA", "VOLKSWAGEN", "VOLVO",
+  "Abarth", "Acura", "Alfa Romeo", "Audi", "BAIC", "Bentley", "BMW", "Brilliance", "Buick", "BYD",
+  "Cadillac", "Changan", "Chery", "CHEVROLET", "Chrysler", "Citroën", "Dacia", "Daewoo", "Daihatsu", "Dodge",
+  "Dongfeng", "EXEED", "FAW", "Ferrari", "Fiat", "Ford", "GAC", "Geely", "Genesis", "GMC", "Great Wall",
+  "Haval", "HONDA", "Hongqi", "HYUNDAI", "Infiniti", "Isuzu", "JAC", "Jaguar", "Jeep", "Jetour", "KAIYI",
+  "KIA", "LADA", "Lamborghini", "Land Rover", "LEXUS", "Li Auto", "Lincoln", "Lotus", "Maserati", "MAZDA",
+  "MERCEDES", "MINI", "MITSUBISHI", "Moskvich", "NISSAN", "Omoda", "OPEL", "Peugeot", "Porsche", "RAM",
+  "Ravon", "RENAULT", "Rolls-Royce", "SEAT", "SKODA", "Smart", "SUBARU", "SUZUKI", "Tank", "Tesla", "TOYOTA",
+  "UAZ", "VOLKSWAGEN", "VOLVO", "Voyah", "Zeekr",
 ];
 
 export const bodyTypes = [
-  "Внедорожник", "Кроссовер", "Купе", "Минивэн",
-  "Пикап", "Седан", "Универсал", "Хэтчбэк",
+  "Внедорожник", "Кабриолет", "Компактвэн", "Кроссовер", "Купе", "Лифтбэк", "Минивэн",
+  "Микроавтобус", "Пикап", "Родстер", "Седан", "Тарга", "Универсал", "Фургон", "Хэтчбэк",
 ];
+
+export const engineTypes = ["Бензин", "Дизель", "Газ", "Газ/бензин", "Гибрид", "Электро"];
+export const transmissions = ["Автомат", "Вариатор", "Механика", "Робот"];
+export const driveTypes = ["Передний", "Задний", "Полный"];
+export const wheelPositions = ["Левый", "Правый"];
+export const colors = ["Бежевый", "Белый", "Бирюзовый", "Бордовый", "Бронзовый", "Голубой", "Жёлтый", "Зелёный", "Золотой", "Коричневый", "Красный", "Оранжевый", "Розовый", "Серебристый", "Серый", "Синий", "Фиолетовый", "Чёрный"];
+export const damageOptions = ["Нет", "Есть", "Восстановлен"];
 
 export const formatPrice = (price: number): string => {
   return price.toLocaleString("ru-RU") + " \u20BD";

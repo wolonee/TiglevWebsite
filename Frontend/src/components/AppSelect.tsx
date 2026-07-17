@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, ChevronDown } from "lucide-react";
+import { useState } from "react";
+import { Check, ChevronDown, Search } from "lucide-react";
 import { Select as SelectPrimitive } from "radix-ui";
 
 type AppSelectProps = {
@@ -13,6 +14,8 @@ type AppSelectProps = {
   onValueChange?: (value: string) => void;
   className?: string;
   clearLabel?: string;
+  searchable?: boolean;
+  searchPlaceholder?: string;
 };
 
 const CLEAR_VALUE = "__all__";
@@ -28,15 +31,22 @@ export default function AppSelect({
   onValueChange,
   className = "",
   clearLabel,
+  searchable = false,
+  searchPlaceholder = "Поиск…",
 }: AppSelectProps) {
+  const [search, setSearch] = useState("");
   const selectedValue = clearLabel && value === "" ? CLEAR_VALUE : value;
   const selectedDefaultValue = clearLabel && defaultValue === "" ? CLEAR_VALUE : defaultValue;
+  const filteredOptions = searchable
+    ? options.filter((option) => option.toLocaleLowerCase("ru-RU").includes(search.trim().toLocaleLowerCase("ru-RU")))
+    : options;
 
   return (
     <SelectPrimitive.Root
       name={name}
       value={selectedValue}
       defaultValue={selectedDefaultValue}
+      onOpenChange={(open) => { if (!open) setSearch(""); }}
       onValueChange={(nextValue) => onValueChange?.(nextValue === CLEAR_VALUE ? "" : nextValue)}
     >
       <SelectPrimitive.Trigger
@@ -52,9 +62,10 @@ export default function AppSelect({
         <SelectPrimitive.Content
           position="popper"
           sideOffset={6}
-          className="z-[100] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-xl border border-gray-border bg-white p-1.5 shadow-xl"
+          className="z-[100] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-xl border border-gray-border bg-white p-1.5 shadow-xl"
         >
-          <SelectPrimitive.Viewport>
+          {searchable && <div className="relative mb-1.5 border-b border-gray-border pb-1.5"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-[calc(50%+3px)] text-gray-text" /><input autoFocus value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={(event) => event.stopPropagation()} placeholder={searchPlaceholder} className="w-full rounded-lg bg-gray-bg py-2.5 pl-9 pr-3 text-sm text-dark outline-none placeholder:text-gray-text focus:ring-0" /></div>}
+          <SelectPrimitive.Viewport className="max-h-64">
             {clearLabel && (
               <SelectPrimitive.Item
                 value={CLEAR_VALUE}
@@ -66,7 +77,7 @@ export default function AppSelect({
                 </SelectPrimitive.ItemIndicator>
               </SelectPrimitive.Item>
             )}
-            {options.map((option) => (
+            {filteredOptions.map((option) => (
               <SelectPrimitive.Item
                 key={option}
                 value={option}
@@ -78,6 +89,7 @@ export default function AppSelect({
                 </SelectPrimitive.ItemIndicator>
               </SelectPrimitive.Item>
             ))}
+            {!filteredOptions.length && <p className="px-3 py-4 text-center text-sm text-gray-text">Ничего не найдено</p>}
           </SelectPrimitive.Viewport>
         </SelectPrimitive.Content>
       </SelectPrimitive.Portal>
