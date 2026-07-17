@@ -5,8 +5,8 @@ import { webhookCallback } from "grammy";
 import multer from "multer";
 import { z } from "zod";
 import { config } from "./config.js";
-import { sendSellRequestEmail } from "./email.js";
-import { bot, broadcastSellRequest } from "./telegram.js";
+import { sendContactRequestEmail, sendSellRequestEmail } from "./email.js";
+import { bot, broadcastContactRequest, broadcastSellRequest } from "./telegram.js";
 
 export const app = express();
 app.set("trust proxy", 1);
@@ -25,6 +25,12 @@ const requestSchema = z.object({
   transmission: z.string().max(50).optional(), mileage: z.string().max(20).optional(),
   firstName: z.string().trim().min(2).max(50), lastName: z.string().trim().min(2).max(50),
   email: z.union([z.literal(""), z.string().email()]).optional(), phone: z.string().min(7).max(30),
+});
+const contactRequestSchema = z.object({
+  name: z.string().trim().min(2).max(100),
+  phone: z.string().trim().min(7).max(30),
+  message: z.string().trim().max(2000).optional(),
+  source: z.string().trim().max(100).optional(),
 });
 
 app.get("/health", (_request, response) => response.json({ ok: true }));
@@ -55,6 +61,25 @@ app.post("/api/sell-requests", limiter, upload.array("photos", 10), async (reque
     console.error("Sell request broadcast failed:", error);
     return response.status(500).json({ error: "Failed to deliver request" });
   }
+});
+app.post("/api/contact-requests", limiter, async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  const parsed = contactRequestSchema.safeParse(request.body);
+  if (!parsed.success) return response.status(400).json({ error: "Validation failed", details: parsed.error.flatten().fieldErrors });
+
+  const [telegramResult, emailResult] = await Promise.allSettled([
+    broadcastContactRequest(parsed.data),
+    sendContactRequestEmail(parsed.data),
+  ]);
+  if (telegramResult.status === "rejected") console.error("Contact Telegram delivery failed:", telegramResult.reason);
+  if (emailResult.status === "rejected") console.error("Contact email delivery failed:", emailResult.reason);
+
+  const telegram = telegramResult.status === "fulfilled" ? telegramResult.value : { recipients: 0, delivered: 0 };
+  const emailDelivered = emailResult.status === "fulfilled";
+  if (telegram.delivered === 0 && !emailDelivered) {
+    return response.status(502).json({ error: "Failed to deliver contact request" });
+  }
+  return response.status(201).json({ ok: true, telegram, emailDelivered });
 });
 app.use((error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
   console.error("Unhandled backend error:", error);

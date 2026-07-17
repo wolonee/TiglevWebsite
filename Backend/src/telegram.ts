@@ -46,6 +46,13 @@ export type SellRequest = {
   phone: string;
 };
 
+export type ContactRequest = {
+  name: string;
+  phone: string;
+  message?: string;
+  source?: string;
+};
+
 const line = (label: string, value?: string) => value ? `*${escapeMarkdown(label)}:* ${escapeMarkdown(value)}` : null;
 
 function formatRequest(data: SellRequest): string {
@@ -76,6 +83,30 @@ export async function broadcastSellRequest(data: SellRequest, photos: Express.Mu
       delivered += 1;
     } catch (error) {
       console.error(`Failed to deliver request to ${subscriber.chat_id}:`, error);
+      if (error instanceof GrammyError && [400, 403].includes(error.error_code)) await subscribers.remove(subscriber.chat_id);
+    }
+  }
+  return { recipients: recipients.length, delivered };
+}
+
+export async function broadcastContactRequest(data: ContactRequest) {
+  const recipients = await subscribers.all();
+  const text = [
+    "💬 *Новая заявка с формы «Написать нам»*",
+    "",
+    line("Имя", data.name),
+    line("Телефон", data.phone),
+    line("Сообщение", data.message),
+    line("Страница", data.source),
+  ].filter((item): item is string => item !== null).join("\n");
+  let delivered = 0;
+
+  for (const subscriber of recipients) {
+    try {
+      await bot.api.sendMessage(subscriber.chat_id, text, { parse_mode: "MarkdownV2" });
+      delivered += 1;
+    } catch (error) {
+      console.error(`Failed to deliver contact request to ${subscriber.chat_id}:`, error);
       if (error instanceof GrammyError && [400, 403].includes(error.error_code)) await subscribers.remove(subscriber.chat_id);
     }
   }
