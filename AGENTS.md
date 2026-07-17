@@ -17,14 +17,18 @@ Run commands from the appropriate application directory:
 ```bash
 cd Frontend && npm run dev       # Next.js development server
 cd Frontend && npm run lint      # ESLint checks
+cd Frontend && npm test          # Vitest unit and component tests
+cd Frontend && npm run test:coverage  # test coverage report
 cd Frontend && npm run build     # production build and TypeScript validation
 cd Backend && npm run dev        # watched Express server
 cd Backend && npm run typecheck  # TypeScript without emitting files
+cd Backend && npm test           # Vitest API tests
+cd Backend && npm run test:coverage  # test coverage report
 cd Backend && npm run build      # compile into dist/
 docker compose up --build        # run the complete local stack
 ```
 
-No automated test suite is configured yet. For every change, run the relevant lint, typecheck, and production build commands. Add tests alongside new behavior when introducing a test framework; use descriptive names such as `contact-request.test.ts`.
+Tests live in `Frontend/tests/` and `Backend/tests/`. Add tests alongside new behavior using descriptive names such as `contact-request.test.ts`. For every change, run the relevant test, lint, typecheck, and production build commands.
 
 ## Coding Style & Naming Conventions
 
