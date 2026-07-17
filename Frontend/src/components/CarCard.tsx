@@ -13,7 +13,7 @@ type CarCardProps = {
 };
 
 const CarCard = ({ car }: CarCardProps) => {
-  const images = getCarGallery(car.id);
+  const images = getCarGallery(car);
   const [activeImage, setActiveImage] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const stepImage = useCallback((direction: number) => setActiveImage((current) => (current + direction + images.length) % images.length), [images.length]);
@@ -49,6 +49,7 @@ const CarCard = ({ car }: CarCardProps) => {
           alt={`${car.brand} ${car.model} ${car.year}`}
           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
           fill
+          unoptimized
           sizes="(max-width: 768px) 100vw, 33vw"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-dark/30 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />

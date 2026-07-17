@@ -5,6 +5,7 @@ export type Car = {
   price: number;
   year: number;
   image: string;
+  images?: string[];
   bodyType: string;
   engine: string;
   description?: string;
@@ -171,3 +172,32 @@ export const bodyTypes = [
 export const formatPrice = (price: number): string => {
   return price.toLocaleString("ru-RU") + " \u20BD";
 };
+
+export async function getCatalogCars(): Promise<Car[]> {
+  const backendUrl = process.env.BACKEND_URL;
+  if (!backendUrl) return cars;
+  try {
+    const response = await fetch(`${backendUrl}/api/cars`, { cache: "no-store" });
+    if (!response.ok) return cars;
+    const payload = await response.json() as { cars?: Array<Omit<Car, "image"> & { images: string[] }> };
+    const stored = (payload.cars ?? []).map((car) => ({ ...car, image: car.images[0] }));
+    return [...stored, ...cars];
+  } catch {
+    return cars;
+  }
+}
+
+export async function getCar(id: string): Promise<Car | undefined> {
+  const local = cars.find((car) => car.id === id);
+  if (local) return local;
+  const backendUrl = process.env.BACKEND_URL;
+  if (!backendUrl) return undefined;
+  try {
+    const response = await fetch(`${backendUrl}/api/cars/${id}`, { cache: "no-store" });
+    if (!response.ok) return undefined;
+    const { car } = await response.json() as { car: Omit<Car, "image"> & { images: string[] } };
+    return { ...car, image: car.images[0] };
+  } catch {
+    return undefined;
+  }
+}
