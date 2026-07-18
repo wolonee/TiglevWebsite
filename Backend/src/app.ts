@@ -8,7 +8,7 @@ import { z } from "zod";
 import { config } from "./config.js";
 import { sendContactRequestEmail, sendSellRequestEmail } from "./email.js";
 import { bot, broadcastContactRequest, broadcastSellRequest } from "./telegram.js";
-import { carRecords } from "./database.js";
+import { carRecords, carStatuses, customerRequests } from "./database.js";
 
 export const app = express();
 app.set("trust proxy", 1);
@@ -43,11 +43,23 @@ const carSchema = z.object({
   engineVolume: optionalText, power: optionalText, transmission: optionalText,
   mileage: z.coerce.number().int().nonnegative().max(10_000_000).optional(), drive: optionalText,
   wheel: optionalText, color: optionalText, damage: optionalText,
+  status: z.enum(carStatuses).default("active"),
 });
+const requestUpdateSchema = z.object({ status: z.enum(["new", "in_progress", "completed", "archived"]), note: z.string().trim().max(4000).optional() });
+const orderSchema = z.object({ ids: z.array(z.string().min(1)).min(1).max(500) });
 
 app.get("/health", (_request, response) => response.json({ ok: true }));
-app.get("/api/cars", async (_request, response) => response.json({ cars: await carRecords.all() }));
+app.get("/api/cars", async (_request, response) => response.json({ cars: await carRecords.active() }));
 app.get("/api/cars/:id", async (request, response) => {
+  const car = await carRecords.find(request.params.id);
+  return car?.status === "active" ? response.json({ car }) : response.status(404).json({ error: "Car not found" });
+});
+app.get("/api/admin/cars", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  return response.json({ cars: await carRecords.all() });
+});
+app.get("/api/admin/cars/:id", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
   const car = await carRecords.find(request.params.id);
   return car ? response.json({ car }) : response.status(404).json({ error: "Car not found" });
 });
@@ -73,6 +85,23 @@ app.delete("/api/admin/cars/:id", async (request, response) => {
   const car = await carRecords.remove(request.params.id);
   return car ? response.json({ car }) : response.status(404).json({ error: "Car not found" });
 });
+app.put("/api/admin/cars/order", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  const parsed = orderSchema.safeParse(request.body);
+  if (!parsed.success) return response.status(400).json({ error: "Validation failed" });
+  return response.json({ cars: await carRecords.reorder(parsed.data.ids) });
+});
+app.get("/api/admin/requests", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  return response.json({ requests: await customerRequests.all() });
+});
+app.patch("/api/admin/requests/:id", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  const parsed = requestUpdateSchema.safeParse(request.body);
+  if (!parsed.success) return response.status(400).json({ error: "Validation failed" });
+  const customerRequest = await customerRequests.update(request.params.id, parsed.data);
+  return customerRequest ? response.json({ request: customerRequest }) : response.status(404).json({ error: "Request not found" });
+});
 app.post("/api/telegram", (request, response) => {
   if (request.header("x-telegram-bot-api-secret-token") !== config.TELEGRAM_WEBHOOK_SECRET) return response.sendStatus(401);
   return webhookCallback(bot, "express")(request, response);
@@ -83,6 +112,7 @@ app.post("/api/sell-requests", limiter, upload.array("photos", 10), async (reque
   if (!parsed.success) return response.status(400).json({ error: "Validation failed", details: parsed.error.flatten().fieldErrors });
   try {
     const photos = (request.files ?? []) as Express.Multer.File[];
+    await customerRequests.create({ id: randomUUID(), kind: "sell", payload: parsed.data, photoCount: photos.length });
     const [telegramResult, emailResult] = await Promise.allSettled([
       broadcastSellRequest(parsed.data, photos),
       sendSellRequestEmail(parsed.data, photos),
@@ -106,6 +136,7 @@ app.post("/api/contact-requests", limiter, async (request, response) => {
   const parsed = contactRequestSchema.safeParse(request.body);
   if (!parsed.success) return response.status(400).json({ error: "Validation failed", details: parsed.error.flatten().fieldErrors });
 
+  await customerRequests.create({ id: randomUUID(), kind: "contact", payload: parsed.data, photoCount: 0 });
   const [telegramResult, emailResult] = await Promise.allSettled([
     broadcastContactRequest(parsed.data),
     sendContactRequestEmail(parsed.data),

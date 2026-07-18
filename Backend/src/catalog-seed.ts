@@ -22,5 +22,5 @@ const seedCars = [
 ] as const;
 
 export const catalogSeed: CarRecord[] = seedCars.map(([id, brand, model, price, year, bodyType, engine, image], index) => ({
-  id, brand, model, price, year, bodyType, engine, images: [image], wheel: "Левый", damage: "Нет", ...defaults[index % defaults.length],
+  id, brand, model, price, year, bodyType, engine, images: [image], wheel: "Левый", damage: "Нет", status: "active", sortOrder: index, ...defaults[index % defaults.length],
 }));

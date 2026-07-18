@@ -10,13 +10,14 @@ import AppSelect from "./AppSelect";
 const initialState = {
   brand: "", model: "", price: "", year: String(new Date().getFullYear()), bodyType: "", engine: "",
   description: "", engineVolume: "", power: "", transmission: "", mileage: "", drive: "",
-  wheel: "", color: "", damage: "",
+  wheel: "", color: "", damage: "", status: "active",
 };
 
 export type ManagedCar = {
   id: string; brand: string; model: string; price: number; year: number; images: string[];
   bodyType: string; engine: string; description?: string; engineVolume?: string; power?: string;
   transmission?: string; mileage?: number; drive?: string; wheel?: string; color?: string; damage?: string;
+  status: "draft" | "active" | "reserved" | "sold" | "hidden"; sortOrder: number;
 };
 type SelectedImage = { id: string; preview: string; file?: File; url?: string };
 type AdminCarFormProps = { car?: ManagedCar | null; onSaved?: (car: ManagedCar) => void; onCancel?: () => void };
@@ -27,7 +28,7 @@ const formFromCar = (car?: ManagedCar | null) => car ? {
   brand: car.brand, model: car.model, price: String(car.price), year: String(car.year), bodyType: car.bodyType, engine: car.engine,
   description: car.description ?? "", engineVolume: car.engineVolume ?? "", power: car.power ?? "",
   transmission: car.transmission ?? "", mileage: car.mileage == null ? "" : String(car.mileage), drive: car.drive ?? "",
-  wheel: car.wheel ?? "", color: car.color ?? "", damage: car.damage ?? "",
+  wheel: car.wheel ?? "", color: car.color ?? "", damage: car.damage ?? "", status: car.status,
 } : initialState;
 const imagesFromCar = (car?: ManagedCar | null): SelectedImage[] => car?.images.map((url) => ({ id: url, preview: url, url })) ?? [];
 
@@ -116,6 +117,7 @@ export default function AdminCarForm({ car, onSaved, onCancel }: AdminCarFormPro
           <label className="space-y-2 text-sm font-medium text-dark"><span>Год *</span><input required min="1900" max={new Date().getFullYear() + 1} type="number" className={field} value={form.year} onChange={(e) => set("year", e.target.value)} /></label>
           <label className="space-y-2 text-sm font-medium text-dark"><span>Кузов *</span><AppSelect searchable ariaLabel="Тип кузова" placeholder="Выберите кузов" clearLabel="Не выбран" options={bodyTypes} value={form.bodyType} onValueChange={(value) => set("bodyType", value)} /></label>
           <label className="space-y-2 text-sm font-medium text-dark"><span>Двигатель *</span><AppSelect ariaLabel="Тип двигателя" placeholder="Выберите двигатель" clearLabel="Не выбран" options={engineTypes} value={form.engine} onValueChange={(value) => set("engine", value)} /></label>
+          <label className="space-y-2 text-sm font-medium text-dark"><span>Статус</span><AppSelect ariaLabel="Статус автомобиля" placeholder="Выберите статус" options={["Черновик", "Активно", "Забронировано", "Продано", "Скрыто"]} value={({ draft: "Черновик", active: "Активно", reserved: "Забронировано", sold: "Продано", hidden: "Скрыто" } as Record<string, string>)[form.status]} onValueChange={(value) => set("status", ({ "Черновик": "draft", "Активно": "active", "Забронировано": "reserved", "Продано": "sold", "Скрыто": "hidden" } as Record<string, string>)[value] ?? "draft")} /></label>
         </div>
       </section>
 
