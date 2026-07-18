@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { upload } from "@vercel/blob/client";
 import { ArrowDown, ArrowUp, CheckCircle2, ImagePlus, LoaderCircle, X } from "lucide-react";
@@ -70,7 +70,7 @@ export default function AdminCarForm({ car, onSaved, onCancel }: AdminCarFormPro
     setImages((current) => { const next = [...current]; const target = index + direction; if (target < 0 || target >= next.length) return current; [next[index], next[target]] = [next[target], next[index]]; return next; });
   }
 
-  async function submit(event: FormEvent) {
+  async function submit(event: { preventDefault: () => void }, requestedStatus?: "draft" | "active") {
     event.preventDefault();
     if (!form.brand || !form.bodyType || !form.engine) { setStatus("error"); setMessage("Выберите марку, тип кузова и двигатель"); return; }
     if (!images.length) { setStatus("error"); setMessage("Добавьте хотя бы одну фотографию"); return; }
@@ -91,7 +91,7 @@ export default function AdminCarForm({ car, onSaved, onCancel }: AdminCarFormPro
         uploadedUrls.push(blob.url);
         uploadedCount += 1;
       }
-      const payload = { ...form, price: Number(form.price), year: Number(form.year), mileage: form.mileage ? Number(form.mileage) : undefined, images: uploadedUrls };
+      const payload = { ...form, status: requestedStatus ?? form.status, price: Number(form.price), year: Number(form.year), mileage: form.mileage ? Number(form.mileage) : undefined, images: uploadedUrls };
       const response = await fetch(car ? `/api/admin/cars/${car.id}` : "/api/admin/cars", { method: car ? "PATCH" : "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error ?? "Не удалось добавить автомобиль");
@@ -107,7 +107,7 @@ export default function AdminCarForm({ car, onSaved, onCancel }: AdminCarFormPro
   }
 
   return (
-    <form onSubmit={submit} className="space-y-8">
+    <form onSubmit={(event) => void submit(event, car ? undefined : "active")} className="space-y-8">
       <section className="rounded-2xl border border-gray-border bg-white p-6 sm:p-8">
         <h2 className="text-xl font-bold text-dark">Основная информация</h2>
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -141,7 +141,7 @@ export default function AdminCarForm({ car, onSaved, onCancel }: AdminCarFormPro
       </section>
 
       {message && <p className={`flex items-center gap-2 rounded-xl px-4 py-3 text-sm ${status === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>{status === "success" && <CheckCircle2 className="h-5 w-5" />}{message}</p>}
-      <div className="flex flex-wrap gap-3"><button disabled={status === "loading"} className="inline-flex min-w-56 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 font-bold text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60">{status === "loading" && <LoaderCircle className="h-5 w-5 animate-spin" />}{status === "loading" ? `Загрузка ${uploadProgress}%` : car ? "Сохранить изменения" : "Добавить в каталог"}</button>{car && <button type="button" onClick={onCancel} className="rounded-xl border border-gray-border bg-white px-6 py-3.5 font-semibold text-dark hover:border-primary hover:text-primary">Отмена</button>}</div>
+      <div className="flex flex-wrap gap-3"><button disabled={status === "loading"} className="inline-flex min-w-56 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 font-bold text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60">{status === "loading" && <LoaderCircle className="h-5 w-5 animate-spin" />}{status === "loading" ? `Загрузка ${uploadProgress}%` : car ? "Сохранить изменения" : "Опубликовать в каталоге"}</button>{!car && <button type="button" disabled={status === "loading"} onClick={(event) => void submit(event, "draft")} className="rounded-xl border border-gray-border bg-white px-6 py-3.5 font-semibold text-dark hover:border-primary hover:text-primary disabled:opacity-60">Сохранить как черновик</button>}{car && <button type="button" onClick={onCancel} className="rounded-xl border border-gray-border bg-white px-6 py-3.5 font-semibold text-dark hover:border-primary hover:text-primary">Отмена</button>}</div>
     </form>
   );
 }
