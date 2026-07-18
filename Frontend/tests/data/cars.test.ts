@@ -20,7 +20,7 @@ describe("catalog data", () => {
     await expect(getCatalogCars()).resolves.toEqual(cars);
   });
 
-  it("places stored cars before stock cars", async () => {
+  it("uses the stored catalog without duplicating stock cars", async () => {
     vi.stubEnv("BACKEND_URL", "https://backend.example.com");
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ cars: [{
       id: "db-car", brand: "BMW", model: "X5", price: 5000000, year: 2024,
@@ -29,6 +29,6 @@ describe("catalog data", () => {
 
     const result = await getCatalogCars();
     expect(result[0]).toMatchObject({ id: "db-car", image: "https://example.com/x5.jpg" });
-    expect(result).toHaveLength(cars.length + 1);
+    expect(result).toHaveLength(1);
   });
 });
