@@ -7,9 +7,10 @@ export async function GET() {
   if (!access.userId) return Response.json({ error: "Необходим вход" }, { status: 401 });
   if (!access.isAdmin) return Response.json({ error: "Недостаточно прав" }, { status: 403 });
   const backendUrl = process.env.BACKEND_URL;
-  if (!backendUrl) return Response.json({ error: "Backend не настроен" }, { status: 503 });
+  const apiKey = process.env.BACKEND_API_KEY;
+  if (!backendUrl || !apiKey) return Response.json({ error: "Backend не настроен" }, { status: 503 });
   try {
-    const response = await fetch(`${backendUrl}/api/cars`, { cache: "no-store" });
+    const response = await fetch(`${backendUrl}/api/admin/cars`, { headers: { "x-api-key": apiKey }, cache: "no-store" });
     return Response.json(await response.json(), { status: response.status });
   } catch (error) {
     console.error("Admin cars loading failed:", error);
