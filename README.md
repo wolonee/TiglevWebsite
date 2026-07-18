@@ -11,8 +11,10 @@
 openssl rand -hex 32
 ```
 
+Передайте Compose переменные backend и frontend из локальных env-файлов:
+
 ```bash
-docker compose up --build
+docker compose --env-file Backend/.env --env-file Frontend/.env.local up --build
 ```
 
 Сайт: `http://localhost:3000`
