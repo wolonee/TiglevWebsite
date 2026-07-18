@@ -32,7 +32,7 @@ services:
       FRONTEND_ORIGIN: http://localhost:3000
       DATABASE_URL: postgresql://postgres:postgres@database:5432/tiglev
       RESEND_API_KEY: ${RESEND_API_KEY:-}
-      EMAIL_RECIPIENT: ${EMAIL_RECIPIENT:-expin12267@gmail.com}
+      EMAIL_RECIPIENT: ${EMAIL_RECIPIENT:?EMAIL_RECIPIENT is required}
       EMAIL_FROM: ${EMAIL_FROM:-TIGLEV.COM <onboarding@resend.dev>}
       PORT: 4000
     depends_on:
