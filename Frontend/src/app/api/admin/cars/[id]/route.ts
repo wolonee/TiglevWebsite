@@ -27,8 +27,8 @@ async function backendRequest(id: string, method: "PATCH" | "DELETE", body?: unk
       body: body === undefined ? undefined : JSON.stringify(body), cache: "no-store",
     });
     const result = await response.json().catch(() => ({ error: "Некорректный ответ backend" }));
-    if (response.ok) {
-      const staleImages = method === "DELETE" ? blobUrls(result.car?.images) : blobUrls(result.removedImages);
+    if (response.ok && method === "PATCH") {
+      const staleImages = blobUrls(result.removedImages);
       if (staleImages.length) await del(staleImages).catch((error) => console.error("Blob cleanup failed:", error));
     }
     return Response.json(result, { status: response.status });

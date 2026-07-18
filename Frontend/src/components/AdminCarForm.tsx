@@ -17,7 +17,7 @@ export type ManagedCar = {
   id: string; brand: string; model: string; price: number; year: number; images: string[];
   bodyType: string; engine: string; description?: string; engineVolume?: string; power?: string;
   transmission?: string; mileage?: number; drive?: string; wheel?: string; color?: string; damage?: string;
-  status: "draft" | "active" | "reserved" | "sold" | "hidden"; sortOrder: number;
+  status: "draft" | "active" | "reserved" | "sold" | "hidden"; sortOrder: number; deletedAt?: string;
 };
 type SelectedImage = { id: string; preview: string; file?: File; url?: string };
 type AdminCarFormProps = { car?: ManagedCar | null; onSaved?: (car: ManagedCar) => void; onCancel?: () => void };

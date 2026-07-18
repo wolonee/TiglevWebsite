@@ -56,11 +56,20 @@ app.get("/api/cars/:id", async (request, response) => {
 });
 app.get("/api/admin/cars", async (request, response) => {
   if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
-  return response.json({ cars: await carRecords.all() });
+  return response.json({ cars: await carRecords.all(request.query.deleted === "true") });
 });
 app.get("/api/admin/cars/:id", async (request, response) => {
   if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
-  const car = await carRecords.find(request.params.id);
+  const car = await carRecords.find(request.params.id, true);
+  return car ? response.json({ car }) : response.status(404).json({ error: "Car not found" });
+});
+app.get("/api/admin/cars/:id/history", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  return response.json({ history: await carRecords.history(request.params.id) });
+});
+app.post("/api/admin/cars/:id/restore", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  const car = await carRecords.restore(request.params.id);
   return car ? response.json({ car }) : response.status(404).json({ error: "Car not found" });
 });
 app.post("/api/admin/cars", async (request, response) => {
