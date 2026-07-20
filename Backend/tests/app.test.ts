@@ -1,7 +1,7 @@
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const carRecords = { all: vi.fn(), active: vi.fn(), find: vi.fn(), create: vi.fn(), update: vi.fn(), remove: vi.fn(), restore: vi.fn(), history: vi.fn(), reorder: vi.fn() };
+const carRecords = { all: vi.fn(), active: vi.fn(), find: vi.fn(), create: vi.fn(), update: vi.fn(), remove: vi.fn(), restore: vi.fn(), reorder: vi.fn() };
 const customerRequests = { create: vi.fn(), all: vi.fn(), update: vi.fn() };
 const broadcastSellRequest = vi.fn();
 const broadcastContactRequest = vi.fn();
@@ -26,7 +26,6 @@ describe("backend API", () => {
     carRecords.find.mockResolvedValue(null);
     carRecords.create.mockImplementation(async (car) => car);
     carRecords.reorder.mockResolvedValue([]);
-    carRecords.history.mockResolvedValue([]);
     customerRequests.create.mockResolvedValue({ id: "request-1" });
     broadcastContactRequest.mockResolvedValue({ recipients: 1, delivered: 1 });
     sendContactRequestEmail.mockResolvedValue(undefined);
@@ -84,12 +83,6 @@ describe("backend API", () => {
     await request(app).post("/api/admin/cars/car-1/restore").set("x-api-key", "test-api-key").expect(200);
     expect(carRecords.remove).toHaveBeenCalledWith("car-1");
     expect(carRecords.restore).toHaveBeenCalledWith("car-1");
-  });
-
-  it("returns car change history", async () => {
-    carRecords.history.mockResolvedValue([{ id: 1, action: "created" }]);
-    const response = await request(app).get("/api/admin/cars/car-1/history").set("x-api-key", "test-api-key").expect(200);
-    expect(response.body.history).toEqual([{ id: 1, action: "created" }]);
   });
 
   it("rejects invalid contact requests before delivery", async () => {

@@ -7,7 +7,6 @@ vi.mock("@/lib/admin-auth", () => ({ getAdminAccess }));
 vi.mock("@vercel/blob", () => ({ del: deleteBlobs }));
 
 const { DELETE, PATCH } = await import("@/app/api/admin/cars/[id]/route");
-const { GET: GET_HISTORY } = await import("@/app/api/admin/cars/[id]/history/route");
 const { POST: RESTORE } = await import("@/app/api/admin/cars/[id]/restore/route");
 
 const context = { params: Promise.resolve({ id: "car 1" }) };
@@ -57,13 +56,4 @@ describe("admin car actions", () => {
     expect(fetchMock).toHaveBeenCalledWith("https://backend.example.com/api/admin/cars/car%201/restore", expect.objectContaining({ method: "POST", headers: { "x-api-key": "private-key" } }));
   });
 
-  it("loads change history from the private backend", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ history: [{ id: 1, action: "created" }] }), { status: 200 }));
-    vi.stubGlobal("fetch", fetchMock);
-
-    const response = await GET_HISTORY(new Request("http://localhost/api/admin/cars/car%201/history"), context);
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ history: [{ id: 1, action: "created" }] });
-    expect(fetchMock).toHaveBeenCalledWith("https://backend.example.com/api/admin/cars/car%201/history", expect.objectContaining({ headers: { "x-api-key": "private-key" } }));
-  });
 });
