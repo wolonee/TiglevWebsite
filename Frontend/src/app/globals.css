@@ -71,6 +71,7 @@
 ::view-transition-group(*) { animation-duration: .48s; animation-timing-function: cubic-bezier(.22, 1, .36, 1); }
 ::view-transition-group(admin-nav-indicator) { animation-duration: .24s; }
 ::view-transition-old(admin-nav-indicator), ::view-transition-new(admin-nav-indicator) { height: 100%; }
+::view-transition-group(public-nav-indicator) { animation-duration: .28s; animation-timing-function: cubic-bezier(.22, 1, .36, 1); }
 
 html {
   scroll-behavior: smooth;

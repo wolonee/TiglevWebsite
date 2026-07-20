@@ -47,7 +47,7 @@ const CarCard = ({ car }: CarCardProps) => {
         <Image
           src={images[activeImage]}
           alt={`${car.brand} ${car.model} ${car.year}`}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-[1.06]"
           fill
           sizes="(max-width: 768px) 100vw, 33vw"
         />
