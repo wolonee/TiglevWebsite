@@ -47,6 +47,10 @@ const carSchema = z.object({
 });
 const requestUpdateSchema = z.object({ status: z.enum(["new", "in_progress", "completed", "archived"]), note: z.string().trim().max(4000).optional() });
 const orderSchema = z.object({ ids: z.array(z.string().min(1)).min(1).max(500) });
+const paginationSchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(50),
+});
 
 app.get("/health", (_request, response) => response.json({ ok: true }));
 app.get("/api/cars", async (_request, response) => response.json({ cars: await carRecords.active() }));
@@ -98,7 +102,10 @@ app.put("/api/admin/cars/order", async (request, response) => {
 });
 app.get("/api/admin/requests", async (request, response) => {
   if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
-  return response.json({ requests: await customerRequests.all() });
+  const parsed = paginationSchema.safeParse(request.query);
+  if (!parsed.success) return response.status(400).json({ error: "Invalid pagination" });
+  const result = await customerRequests.all(parsed.data.page, parsed.data.limit);
+  return response.json({ requests: result.items, pagination: { page: result.page, limit: result.limit, total: result.total } });
 });
 app.patch("/api/admin/requests/:id", async (request, response) => {
   if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
@@ -117,11 +124,12 @@ app.post("/api/sell-requests", limiter, upload.array("photos", 10), async (reque
   if (!parsed.success) return response.status(400).json({ error: "Validation failed", details: parsed.error.flatten().fieldErrors });
   try {
     const photos = (request.files ?? []) as Express.Multer.File[];
-    await customerRequests.create({ id: randomUUID(), kind: "sell", payload: parsed.data, photoCount: photos.length });
-    const [telegramResult, emailResult] = await Promise.allSettled([
+    const [storageResult, telegramResult, emailResult] = await Promise.allSettled([
+      customerRequests.create({ id: randomUUID(), kind: "sell", payload: parsed.data, photoCount: photos.length }),
       broadcastSellRequest(parsed.data, photos),
       sendSellRequestEmail(parsed.data, photos),
     ]);
+    if (storageResult.status === "rejected") throw storageResult.reason;
     if (telegramResult.status === "rejected") console.error("Telegram delivery failed:", telegramResult.reason);
     if (emailResult.status === "rejected") console.error("Email delivery failed:", emailResult.reason);
 
@@ -141,11 +149,12 @@ app.post("/api/contact-requests", limiter, async (request, response) => {
   const parsed = contactRequestSchema.safeParse(request.body);
   if (!parsed.success) return response.status(400).json({ error: "Validation failed", details: parsed.error.flatten().fieldErrors });
 
-  await customerRequests.create({ id: randomUUID(), kind: "contact", payload: parsed.data, photoCount: 0 });
-  const [telegramResult, emailResult] = await Promise.allSettled([
+  const [storageResult, telegramResult, emailResult] = await Promise.allSettled([
+    customerRequests.create({ id: randomUUID(), kind: "contact", payload: parsed.data, photoCount: 0 }),
     broadcastContactRequest(parsed.data),
     sendContactRequestEmail(parsed.data),
   ]);
+  if (storageResult.status === "rejected") throw storageResult.reason;
   if (telegramResult.status === "rejected") console.error("Contact Telegram delivery failed:", telegramResult.reason);
   if (emailResult.status === "rejected") console.error("Contact email delivery failed:", emailResult.reason);
 

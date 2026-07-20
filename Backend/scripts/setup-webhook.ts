@@ -1,9 +1,9 @@
 import { bot } from "../src/telegram.js";
 import { config } from "../src/config.js";
-import { ensureSchema } from "../src/database.js";
+import { migrateDatabase } from "../src/database.js";
 
 if (!config.WEBHOOK_URL) throw new Error("WEBHOOK_URL is required to configure Telegram webhook");
-await ensureSchema();
+await migrateDatabase();
 const webhookUrl = `${config.WEBHOOK_URL.replace(/\/$/, "")}/api/telegram`;
 await bot.api.setMyCommands([
   { command: "start", description: "Включить уведомления о заявках" },

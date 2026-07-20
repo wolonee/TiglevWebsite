@@ -188,7 +188,9 @@ export async function getCatalogCars(): Promise<Car[]> {
   const backendUrl = process.env.BACKEND_URL;
   if (!backendUrl) return cars;
   try {
-    const response = await fetch(`${backendUrl}/api/cars`, { cache: "no-store" });
+    const response = await fetch(`${backendUrl}/api/cars`, {
+      next: { revalidate: 60, tags: ["catalog"] },
+    });
     if (!response.ok) return cars;
     const payload = await response.json() as { cars?: Array<Omit<Car, "image"> & { images: string[] }> };
     const stored = (payload.cars ?? []).map((car) => ({ ...car, image: car.images[0] }));
@@ -199,16 +201,17 @@ export async function getCatalogCars(): Promise<Car[]> {
 }
 
 export async function getCar(id: string): Promise<Car | undefined> {
-  const local = cars.find((car) => car.id === id);
-  if (local) return local;
   const backendUrl = process.env.BACKEND_URL;
-  if (!backendUrl) return undefined;
+  const local = cars.find((car) => car.id === id);
+  if (!backendUrl) return local;
   try {
-    const response = await fetch(`${backendUrl}/api/cars/${id}`, { cache: "no-store" });
-    if (!response.ok) return undefined;
+    const response = await fetch(`${backendUrl}/api/cars/${id}`, {
+      next: { revalidate: 60, tags: ["catalog", `car:${id}`] },
+    });
+    if (!response.ok) return local;
     const { car } = await response.json() as { car: Omit<Car, "image"> & { images: string[] } };
     return { ...car, image: car.images[0] };
   } catch {
-    return undefined;
+    return local;
   }
 }

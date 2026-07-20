@@ -1,4 +1,5 @@
 import { getAdminAccess } from "@/lib/admin-auth";
+import { invalidateCatalogCache } from "@/lib/catalog-cache";
 
 export const runtime = "nodejs";
 
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
       cache: "no-store",
     });
     const result = await response.json().catch(() => ({ error: "Некорректный ответ backend" }));
+    if (response.ok) invalidateCatalogCache();
     return Response.json(result, { status: response.status });
   } catch (error) {
     console.error("Admin car creation failed:", error);

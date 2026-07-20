@@ -1,4 +1,5 @@
 import { getAdminAccess } from "@/lib/admin-auth";
+import { invalidateCatalogCache } from "@/lib/catalog-cache";
 
 export const runtime = "nodejs";
 
@@ -13,7 +14,9 @@ export async function PUT(request: Request) {
     const response = await fetch(`${backendUrl}/api/admin/cars/order`, {
       method: "PUT", headers: { "content-type": "application/json", "x-api-key": apiKey }, body: JSON.stringify(await request.json()), cache: "no-store",
     });
-    return Response.json(await response.json(), { status: response.status });
+    const result = await response.json();
+    if (response.ok) invalidateCatalogCache();
+    return Response.json(result, { status: response.status });
   } catch (error) {
     console.error("Car order update failed:", error);
     return Response.json({ error: "Не удалось сохранить порядок" }, { status: 502 });

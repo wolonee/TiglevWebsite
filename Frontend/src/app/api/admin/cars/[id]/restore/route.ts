@@ -1,4 +1,5 @@
 import { getAdminAccess } from "@/lib/admin-auth";
+import { invalidateCatalogCache } from "@/lib/catalog-cache";
 
 export const runtime = "nodejs";
 
@@ -11,7 +12,9 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
   const { id } = await context.params;
   try {
     const response = await fetch(`${backendUrl}/api/admin/cars/${encodeURIComponent(id)}/restore`, { method: "POST", headers: { "x-api-key": apiKey }, cache: "no-store" });
-    return Response.json(await response.json(), { status: response.status });
+    const result = await response.json();
+    if (response.ok) invalidateCatalogCache();
+    return Response.json(result, { status: response.status });
   } catch (error) {
     console.error("Car restore failed:", error);
     return Response.json({ error: "Не удалось восстановить автомобиль" }, { status: 502 });

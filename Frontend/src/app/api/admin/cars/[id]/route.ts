@@ -1,5 +1,6 @@
 import { del } from "@vercel/blob";
 import { getAdminAccess } from "@/lib/admin-auth";
+import { invalidateCatalogCache } from "@/lib/catalog-cache";
 
 export const runtime = "nodejs";
 
@@ -31,6 +32,7 @@ async function backendRequest(id: string, method: "PATCH" | "DELETE", body?: unk
       const staleImages = blobUrls(result.removedImages);
       if (staleImages.length) await del(staleImages).catch((error) => console.error("Blob cleanup failed:", error));
     }
+    if (response.ok) invalidateCatalogCache();
     return Response.json(result, { status: response.status });
   } catch (error) {
     console.error(`Admin car ${method.toLowerCase()} failed:`, error);

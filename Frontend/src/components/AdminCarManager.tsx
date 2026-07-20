@@ -167,7 +167,7 @@ export default function AdminCarManager() {
             return (
               <article key={car.id} className="overflow-hidden rounded-2xl border border-gray-border bg-white">
                 <div className="relative aspect-[16/10] bg-gray-bg">
-                  <Image src={car.images[0]} alt={`${car.brand} ${car.model}`} fill unoptimized className="object-cover" />
+                  <Image src={car.images[0]} alt={`${car.brand} ${car.model}`} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
                   <span className={`absolute left-3 top-3 rounded-lg px-2.5 py-1 text-xs font-semibold ${trash ? "bg-red-100 text-red-700" : statusColor[car.status]}`}>{trash ? "Удалено" : statusLabel[car.status]}</span>
                 </div>
                 <div className="p-5">

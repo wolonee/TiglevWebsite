@@ -8,6 +8,8 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/src/server.js",
     "typecheck": "tsc --noEmit",
+    "db:migrate": "node dist/scripts/migrate.js",
+    "db:migrate:dev": "tsx scripts/migrate.ts",
     "webhook:setup": "tsx scripts/setup-webhook.ts",
     "test": "vitest run",
     "test:watch": "vitest",

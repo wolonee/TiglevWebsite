@@ -57,3 +57,13 @@ npm run webhook:setup
 ```
 
 Команда создаст таблицу `telegram_subscribers` и зарегистрирует endpoint `/api/telegram` в Telegram. Пользователь подписывается командой `/start`, отписывается командой `/stop`.
+
+После последующих изменений схемы выполняйте миграции после сборки Backend и до переключения production-трафика:
+
+```bash
+cd Backend
+npm run build
+npm run db:migrate
+```
+
+В Docker Compose миграции запускаются автоматически перед Backend. Обработчики HTTP-запросов схему не изменяют, поэтому холодный запуск serverless-функций остаётся быстрым.
