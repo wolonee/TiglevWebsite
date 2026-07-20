@@ -4,6 +4,7 @@ import Services from "@/components/Services";
 import WhyUs from "@/components/WhyUs";
 import Contacts from "@/components/Contacts";
 import Footer from "@/components/Footer";
+import RevealSection from "@/components/RevealSection";
 
 const HomePage = () => {
   return (
@@ -11,9 +12,9 @@ const HomePage = () => {
       <Header />
       <main>
         <Hero />
-        <Services />
-        <WhyUs />
-        <Contacts />
+        <RevealSection><Services /></RevealSection>
+        <RevealSection><WhyUs /></RevealSection>
+        <RevealSection><Contacts /></RevealSection>
       </main>
       <Footer />
     </>

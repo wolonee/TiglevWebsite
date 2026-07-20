@@ -126,7 +126,7 @@ export default function SellForm() {
     }
   };
 
-  if (formState === "success") return <div className="rounded-[20px] border border-gray-border bg-white p-12 text-center"><CheckCircle2 className="mx-auto text-green-500" size={64} /><h2 className="mt-5 text-2xl font-bold text-dark">Спасибо за заявку!</h2><p className="mt-2 text-gray-text">Наш специалист свяжется с вами для оценки автомобиля.</p></div>;
+  if (formState === "success") return <div className="animate-fade-in rounded-[20px] border border-gray-border bg-white p-12 text-center"><CheckCircle2 className="success-icon mx-auto text-green-500" size={64} /><h2 className="mt-5 text-2xl font-bold text-dark">Спасибо за заявку!</h2><p className="mt-2 text-gray-text">Наш специалист свяжется с вами для оценки автомобиля.</p></div>;
 
   return <form onSubmit={submit} noValidate className="rounded-[20px] border border-gray-border bg-white p-6 shadow-sm sm:p-10">
     <h2 className="text-xl font-bold text-dark">Данные об автомобиле</h2>

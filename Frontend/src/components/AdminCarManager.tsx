@@ -7,6 +7,7 @@ import { ArrowDown, ArrowUp, Eye, LoaderCircle, Pencil, Plus, RefreshCw, RotateC
 import { brands, formatPrice } from "@/data/cars";
 import type { ManagedCar } from "./AdminCarForm";
 import AppSelect from "./AppSelect";
+import ConfirmDialog from "./ConfirmDialog";
 
 const statusLabel: Record<ManagedCar["status"], string> = {
   draft: "Черновик",
@@ -35,6 +36,7 @@ export default function AdminCarManager() {
   const [search, setSearch] = useState("");
   const [brand, setBrand] = useState("");
   const [status, setStatus] = useState("");
+  const [carToRemove, setCarToRemove] = useState<ManagedCar | null>(null);
 
   const loadCars = useCallback(async () => {
     setLoading(true);
@@ -67,7 +69,7 @@ export default function AdminCarManager() {
   const orderingEnabled = !trash && !filtersActive;
 
   async function remove(car: ManagedCar) {
-    if (!window.confirm(`Переместить ${car.brand} ${car.model} в корзину? Автомобиль можно будет восстановить.`)) return;
+    setCarToRemove(null);
     setWorkingId(car.id);
     setError("");
     try {
@@ -103,7 +105,10 @@ export default function AdminCarManager() {
     if (index < 0 || target < 0 || target >= cars.length) return;
     const next = [...cars];
     [next[index], next[target]] = [next[target], next[index]];
-    setCars(next);
+    const update = () => setCars(next);
+    const documentWithTransitions = document as Document & { startViewTransition?: (callback: () => void) => void };
+    if (documentWithTransitions.startViewTransition) documentWithTransitions.startViewTransition(update);
+    else update();
     setOrderChanged(true);
   }
 
@@ -129,6 +134,7 @@ export default function AdminCarManager() {
   }
 
   return (
+    <>
     <section>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -165,7 +171,7 @@ export default function AdminCarManager() {
           {visibleCars.map((car) => {
             const index = cars.findIndex((item) => item.id === car.id);
             return (
-              <article key={car.id} className="overflow-hidden rounded-2xl border border-gray-border bg-white">
+              <article key={car.id} style={{ viewTransitionName: `admin-car-${car.id}` }} className="overflow-hidden rounded-2xl border border-gray-border bg-white transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-lg">
                 <div className="relative aspect-[16/10] bg-gray-bg">
                   <Image src={car.images[0]} alt={`${car.brand} ${car.model}`} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
                   <span className={`absolute left-3 top-3 rounded-lg px-2.5 py-1 text-xs font-semibold ${trash ? "bg-red-100 text-red-700" : statusColor[car.status]}`}>{trash ? "Удалено" : statusLabel[car.status]}</span>
@@ -182,7 +188,7 @@ export default function AdminCarManager() {
                         <Link href={`/admin/cars/${car.id}/edit`} className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-border px-3 py-2.5 text-sm font-semibold text-dark hover:border-primary hover:text-primary"><Pencil className="h-4 w-4" />Редактировать</Link>
                         <Link href={`/admin/preview/${car.id}`} className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-border px-3 py-2.5 text-sm font-semibold text-dark hover:border-primary hover:text-primary"><Eye className="h-4 w-4" />Просмотр</Link>
                         {orderingEnabled && <><button type="button" disabled={savingOrder || index === 0} onClick={() => move(car.id, -1)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-border px-3 py-2.5 text-sm font-semibold text-dark disabled:opacity-40"><ArrowUp className="h-4 w-4" />Выше</button><button type="button" disabled={savingOrder || index === cars.length - 1} onClick={() => move(car.id, 1)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-border px-3 py-2.5 text-sm font-semibold text-dark disabled:opacity-40"><ArrowDown className="h-4 w-4" />Ниже</button></>}
-                        <button type="button" disabled={workingId === car.id} onClick={() => void remove(car)} className="col-span-2 inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"><Trash2 className="h-4 w-4" />В корзину</button>
+                        <button type="button" disabled={workingId === car.id} onClick={() => setCarToRemove(car)} className="col-span-2 inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"><Trash2 className="h-4 w-4" />В корзину</button>
                       </>
                     )}
                   </div>
@@ -193,5 +199,7 @@ export default function AdminCarManager() {
         </div>
       )}
     </section>
+    <ConfirmDialog open={Boolean(carToRemove)} title="Переместить автомобиль в корзину?" description={carToRemove ? `${carToRemove.brand} ${carToRemove.model} исчезнет из каталога. Автомобиль можно будет восстановить.` : ""} confirmLabel="В корзину" onCancel={() => setCarToRemove(null)} onConfirm={() => { if (carToRemove) void remove(carToRemove); }} />
+    </>
   );
 }

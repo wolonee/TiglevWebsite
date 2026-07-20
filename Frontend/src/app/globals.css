@@ -33,6 +33,42 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: translateY(-6px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes success-pop {
+  0% { opacity: 0; transform: scale(.65) rotate(-8deg); }
+  70% { transform: scale(1.08) rotate(2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+@keyframes dialog-in {
+  from { opacity: 0; transform: translate(-50%, -48%) scale(.96); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes overlay-in { from { opacity: 0; } to { opacity: 1; } }
+
+.reveal-section { opacity: 0; transform: translateY(22px); }
+.reveal-section[data-visible="true"] { animation: reveal-up .55s cubic-bezier(.22, 1, .36, 1) both; }
+.select-motion[data-state="open"] { animation: scale-in .18s cubic-bezier(.22, 1, .36, 1) both; transform-origin: var(--radix-select-content-transform-origin); }
+.catalog-results { transition: opacity .2s ease, transform .2s ease; }
+.catalog-results[data-updating="true"] { opacity: .55; transform: translateY(4px); }
+.success-icon { animation: success-pop .55s cubic-bezier(.2, .9, .25, 1.2) both; }
+.admin-page-enter { animation: reveal-up .3s cubic-bezier(.22, 1, .36, 1) both; }
+.admin-form-section { animation: reveal-up .4s cubic-bezier(.22, 1, .36, 1) both; }
+.dialog-overlay[data-state="open"] { animation: overlay-in .16s ease-out both; }
+.dialog-content[data-state="open"] { animation: dialog-in .2s cubic-bezier(.22, 1, .36, 1) both; }
+
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .28s; }
+
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 5rem;
@@ -68,4 +104,10 @@ button, input, select, textarea { font: inherit; }
 [role="option"]:focus-visible {
   outline: none;
   box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+  .reveal-section { opacity: 1; transform: none; }
 }

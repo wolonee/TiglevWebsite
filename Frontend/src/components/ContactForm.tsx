@@ -39,7 +39,7 @@ export default function ContactForm() {
   if (formState === "success") {
     return (
       <div className="flex h-full min-h-[400px] flex-col items-center justify-center text-center">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-50"><CheckCircle2 className="h-8 w-8 text-green-500" /></div>
+        <div className="success-icon mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-50"><CheckCircle2 className="h-8 w-8 text-green-500" /></div>
         <h3 className="mb-2 text-xl font-bold text-dark">Заявка отправлена</h3>
         <p className="text-gray-text">Мы свяжемся с вами в ближайшее время</p>
         <button type="button" onClick={() => setFormState("idle")} className="mt-6 text-sm font-semibold text-primary">Отправить ещё одну</button>

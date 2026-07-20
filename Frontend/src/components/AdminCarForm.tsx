@@ -108,7 +108,7 @@ export default function AdminCarForm({ car, onSaved, onCancel }: AdminCarFormPro
 
   return (
     <form onSubmit={(event) => void submit(event, car ? undefined : "active")} className="space-y-8">
-      <section className="rounded-2xl border border-gray-border bg-white p-6 sm:p-8">
+      <section className="admin-form-section rounded-2xl border border-gray-border bg-white p-6 sm:p-8">
         <h2 className="text-xl font-bold text-dark">Основная информация</h2>
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <label className="space-y-2 text-sm font-medium text-dark"><span>Марка *</span><AppSelect searchable searchPlaceholder="Найти марку…" ariaLabel="Марка" placeholder="Выберите марку" clearLabel="Не выбрана" options={brands} value={form.brand} onValueChange={(value) => set("brand", value)} /></label>
@@ -121,7 +121,7 @@ export default function AdminCarForm({ car, onSaved, onCancel }: AdminCarFormPro
         </div>
       </section>
 
-      <section className="rounded-2xl border border-gray-border bg-white p-6 sm:p-8">
+      <section className="admin-form-section rounded-2xl border border-gray-border bg-white p-6 sm:p-8" style={{ animationDelay: "60ms" }}>
         <h2 className="text-xl font-bold text-dark">Характеристики</h2>
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {([['engineVolume','Объём двигателя'],['power','Мощность'],['mileage','Пробег, км']] as const).map(([name, label]) => <label key={name} className="space-y-2 text-sm font-medium text-dark"><span>{label}</span><input className={field} type={name === "mileage" ? "number" : "text"} value={form[name]} onChange={(e) => set(name, e.target.value)} /></label>)}
@@ -134,13 +134,13 @@ export default function AdminCarForm({ car, onSaved, onCancel }: AdminCarFormPro
         <label className="mt-5 block space-y-2 text-sm font-medium text-dark"><span>Описание</span><textarea rows={5} className={field} value={form.description} onChange={(e) => set("description", e.target.value)} /></label>
       </section>
 
-      <section className="rounded-2xl border border-gray-border bg-white p-6 sm:p-8">
+      <section className="admin-form-section rounded-2xl border border-gray-border bg-white p-6 sm:p-8" style={{ animationDelay: "120ms" }}>
         <h2 className="text-xl font-bold text-dark">Фотографии</h2><p className="mt-1 text-sm text-gray-text">JPEG, PNG или WebP, до 8 МБ каждый. Первая фотография станет обложкой.</p>
         {images.length > 0 && <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{images.map((image, index) => <div key={image.id} className="overflow-hidden rounded-xl border border-gray-border bg-gray-bg"><div className="relative aspect-[4/3]"><Image src={image.preview} alt={`Фотография ${index + 1}`} fill unoptimized className="object-cover" />{index === 0 && <span className="absolute left-2 top-2 rounded-lg bg-primary px-2 py-1 text-xs font-semibold text-white">Обложка</span>}</div><div className="flex items-center justify-between gap-2 p-2"><span className="min-w-0 truncate text-xs text-gray-text">{image.file?.name ?? `Фото ${index + 1}`}</span><div className="flex shrink-0"><button type="button" disabled={index === 0} onClick={() => moveImage(index, -1)} aria-label="Переместить выше" className="p-1.5 text-gray-text hover:text-primary disabled:opacity-25"><ArrowUp className="h-4 w-4" /></button><button type="button" disabled={index === images.length - 1} onClick={() => moveImage(index, 1)} aria-label="Переместить ниже" className="p-1.5 text-gray-text hover:text-primary disabled:opacity-25"><ArrowDown className="h-4 w-4" /></button><button type="button" onClick={() => removeImage(image.id)} aria-label="Удалить фотографию" className="p-1.5 text-gray-text hover:text-primary"><X className="h-4 w-4" /></button></div></div></div>)}</div>}
         {images.length < 20 && <label className="mt-5 flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-gray-border px-5 py-8 text-sm font-semibold text-gray-text transition-colors hover:border-primary hover:text-primary"><ImagePlus className="h-5 w-5" />Выбрать фотографии<input type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" onChange={selectImages} /></label>}
       </section>
 
-      {message && <p className={`flex items-center gap-2 rounded-xl px-4 py-3 text-sm ${status === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>{status === "success" && <CheckCircle2 className="h-5 w-5" />}{message}</p>}
+      {message && <p className={`animate-fade-in flex items-center gap-2 rounded-xl px-4 py-3 text-sm ${status === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>{status === "success" && <CheckCircle2 className="success-icon h-5 w-5" />}{message}</p>}
       <div className="flex flex-wrap gap-3"><button disabled={status === "loading"} className="inline-flex min-w-56 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 font-bold text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60">{status === "loading" && <LoaderCircle className="h-5 w-5 animate-spin" />}{status === "loading" ? `Загрузка ${uploadProgress}%` : car ? "Сохранить изменения" : "Опубликовать в каталоге"}</button>{!car && <button type="button" disabled={status === "loading"} onClick={(event) => void submit(event, "draft")} className="rounded-xl border border-gray-border bg-white px-6 py-3.5 font-semibold text-dark hover:border-primary hover:text-primary disabled:opacity-60">Сохранить как черновик</button>}{onCancel && <button type="button" onClick={onCancel} className="rounded-xl border border-gray-border bg-white px-6 py-3.5 font-semibold text-dark hover:border-primary hover:text-primary">Отмена</button>}</div>
     </form>
   );
