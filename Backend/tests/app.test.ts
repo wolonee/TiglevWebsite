@@ -27,6 +27,7 @@ describe("backend API", () => {
     carRecords.create.mockImplementation(async (car) => car);
     carRecords.reorder.mockResolvedValue([]);
     customerRequests.create.mockResolvedValue({ id: "request-1" });
+    customerRequests.all.mockResolvedValue({ items: [], total: 0, page: 1, limit: 50 });
     broadcastContactRequest.mockResolvedValue({ recipients: 1, delivered: 1 });
     sendContactRequestEmail.mockResolvedValue(undefined);
   });
@@ -74,6 +75,13 @@ describe("backend API", () => {
   it("loads deleted cars separately", async () => {
     await request(app).get("/api/admin/cars?deleted=true").set("x-api-key", "test-api-key").expect(200);
     expect(carRecords.all).toHaveBeenCalledWith(true);
+  });
+
+  it("paginates admin requests", async () => {
+    customerRequests.all.mockResolvedValue({ items: [{ id: "request-1" }], total: 51, page: 2, limit: 25 });
+    const response = await request(app).get("/api/admin/requests?page=2&limit=25").set("x-api-key", "test-api-key").expect(200);
+    expect(customerRequests.all).toHaveBeenCalledWith(2, 25);
+    expect(response.body.pagination).toEqual({ page: 2, limit: 25, total: 51 });
   });
 
   it("soft deletes and restores a car", async () => {

@@ -1,14 +1,16 @@
+import Image from "next/image";
+
 const Hero = () => {
   return (
     <section className="relative flex min-h-screen items-center overflow-hidden bg-dark">
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage:
-            "url('/images/hero-car.png')",
-        }}
-        role="img"
-        aria-label="Фон — автомобиль"
+      <Image
+        src="/images/hero-car.webp"
+        alt="Фон — автомобиль"
+        fill
+        priority
+        quality={82}
+        sizes="100vw"
+        className="object-cover object-center"
       />
       <div className="absolute inset-0 bg-gradient-to-b from-dark/80 via-dark/60 to-dark/90" />
       <div className="absolute inset-0 bg-gradient-to-r from-dark/50 to-transparent" />

@@ -22,7 +22,7 @@ function getSql() {
   return sqlClient;
 }
 
-export function ensureSchema() {
+export function migrateDatabase() {
   if (!schemaPromise) {
     const sql = getSql();
     schemaPromise = sql.begin(async (transaction) => {
@@ -62,6 +62,8 @@ export function ensureSchema() {
       await transaction`ALTER TABLE cars ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0`;
       await transaction`ALTER TABLE cars ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ`;
       await transaction`ALTER TABLE cars ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`;
+      await transaction`CREATE INDEX IF NOT EXISTS cars_catalog_order_idx ON cars (sort_order, created_at DESC) WHERE status = 'active' AND deleted_at IS NULL`;
+      await transaction`CREATE INDEX IF NOT EXISTS cars_admin_order_idx ON cars (sort_order, created_at DESC) WHERE deleted_at IS NULL`;
       await transaction`
         CREATE TABLE IF NOT EXISTS customer_requests (
           id TEXT PRIMARY KEY,
@@ -74,6 +76,7 @@ export function ensureSchema() {
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         )
       `;
+      await transaction`CREATE INDEX IF NOT EXISTS customer_requests_created_at_idx ON customer_requests (created_at DESC)`;
       await transaction`CREATE TABLE IF NOT EXISTS app_migrations (key TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`;
       const [catalogMigration] = await transaction`
         INSERT INTO app_migrations (key) VALUES ('catalog_seed_v1')
@@ -109,7 +112,6 @@ export function ensureSchema() {
 
 export const subscribers = {
   async upsert(data: { chatId: number; username?: string; firstName?: string; lastName?: string }) {
-    await ensureSchema();
     const sql = getSql();
     await sql`
       INSERT INTO telegram_subscribers (chat_id, username, first_name, last_name)
@@ -119,12 +121,10 @@ export const subscribers = {
     `;
   },
   async remove(chatId: number) {
-    await ensureSchema();
     const sql = getSql();
     await sql`DELETE FROM telegram_subscribers WHERE chat_id = ${chatId}`;
   },
   async all(): Promise<Subscriber[]> {
-    await ensureSchema();
     const sql = getSql();
     const rows = await sql`SELECT chat_id, username, first_name, last_name FROM telegram_subscribers ORDER BY created_at`;
     return rows.map((row) => ({ ...row, chat_id: Number(row.chat_id) })) as Subscriber[];
@@ -147,7 +147,6 @@ const mapCar = (row: Record<string, unknown>): CarRecord => ({
 
 export const carRecords = {
   async create(car: Omit<CarRecord, "sortOrder" | "deletedAt">) {
-    await ensureSchema();
     const sql = getSql();
     return sql.begin(async (transaction) => {
       const [row] = await transaction`
@@ -164,7 +163,6 @@ export const carRecords = {
     });
   },
   async all(deleted = false) {
-    await ensureSchema();
     const sql = getSql();
     const rows = deleted
       ? await sql`SELECT * FROM cars WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC`
@@ -172,13 +170,11 @@ export const carRecords = {
     return rows.map(mapCar);
   },
   async active() {
-    await ensureSchema();
     const sql = getSql();
     const rows = await sql`SELECT * FROM cars WHERE status = 'active' AND deleted_at IS NULL ORDER BY sort_order ASC, created_at DESC`;
     return rows.map(mapCar);
   },
   async find(id: string, includeDeleted = false) {
-    await ensureSchema();
     const sql = getSql();
     const [row] = includeDeleted
       ? await sql`SELECT * FROM cars WHERE id = ${id}`
@@ -186,7 +182,6 @@ export const carRecords = {
     return row ? mapCar(row) : null;
   },
   async update(id: string, car: Omit<CarRecord, "id" | "sortOrder">) {
-    await ensureSchema();
     const sql = getSql();
     return sql.begin(async (transaction) => {
       const [previousRow] = await transaction`SELECT * FROM cars WHERE id = ${id} AND deleted_at IS NULL`;
@@ -204,7 +199,6 @@ export const carRecords = {
     });
   },
   async remove(id: string) {
-    await ensureSchema();
     const sql = getSql();
     return sql.begin(async (transaction) => {
       const [row] = await transaction`UPDATE cars SET deleted_at = NOW(), updated_at = NOW() WHERE id = ${id} AND deleted_at IS NULL RETURNING *`;
@@ -213,7 +207,7 @@ export const carRecords = {
     });
   },
   async restore(id: string) {
-    await ensureSchema(); const sql = getSql();
+    const sql = getSql();
     return sql.begin(async (transaction) => {
       const [row] = await transaction`UPDATE cars SET deleted_at = NULL, updated_at = NOW() WHERE id = ${id} AND deleted_at IS NOT NULL RETURNING *`;
       if (!row) return null;
@@ -221,10 +215,14 @@ export const carRecords = {
     });
   },
   async reorder(ids: string[]) {
-    await ensureSchema();
     const sql = getSql();
     return sql.begin(async (transaction) => {
-      for (const [index, id] of ids.entries()) await transaction`UPDATE cars SET sort_order = ${index} WHERE id = ${id}`;
+      await transaction`
+        UPDATE cars AS car
+        SET sort_order = ordering.position - 1, updated_at = NOW()
+        FROM unnest(${transaction.array(ids)}::text[]) WITH ORDINALITY AS ordering(id, position)
+        WHERE car.id = ordering.id AND car.deleted_at IS NULL
+      `;
       const rows = await transaction`SELECT * FROM cars WHERE deleted_at IS NULL ORDER BY sort_order ASC, created_at DESC`;
       return rows.map(mapCar);
     });
@@ -239,7 +237,7 @@ const mapRequest = (row: Record<string, unknown>): AdminRequest => ({
 
 export const customerRequests = {
   async create(data: Omit<AdminRequest, "status" | "note" | "createdAt" | "updatedAt">) {
-    await ensureSchema(); const sql = getSql();
+    const sql = getSql();
     const [row] = await sql`
       INSERT INTO customer_requests (id, kind, payload, photo_count) VALUES (${data.id}, ${data.kind}, ${sql.json(data.payload as never)}, ${data.photoCount})
       RETURNING *
@@ -247,13 +245,17 @@ export const customerRequests = {
     if (!row) throw new Error("Created request was not returned");
     return mapRequest(row);
   },
-  async all() {
-    await ensureSchema(); const sql = getSql();
-    const rows = await sql`SELECT * FROM customer_requests ORDER BY created_at DESC`;
-    return rows.map(mapRequest);
+  async all(page = 1, limit = 50) {
+    const sql = getSql();
+    const offset = (page - 1) * limit;
+    const [rows, countRows] = await Promise.all([
+      sql`SELECT * FROM customer_requests ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+      sql`SELECT COUNT(*)::int AS total FROM customer_requests`,
+    ]);
+    return { items: rows.map(mapRequest), total: Number(countRows[0]?.total ?? 0), page, limit };
   },
   async update(id: string, data: { status: RequestStatus; note?: string }) {
-    await ensureSchema(); const sql = getSql();
+    const sql = getSql();
     const [row] = await sql`UPDATE customer_requests SET status = ${data.status}, note = ${data.note ?? null}, updated_at = NOW() WHERE id = ${id} RETURNING *`;
     return row ? mapRequest(row) : null;
   },
