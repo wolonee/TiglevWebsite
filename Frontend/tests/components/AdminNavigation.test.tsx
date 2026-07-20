@@ -20,6 +20,7 @@ describe("AdminNavigation", () => {
     render(<AdminNavigation />);
 
     expect(screen.getByRole("link", { name: "Автомобили" })).toHaveAttribute("aria-current", "page");
+    expect(screen.queryByRole("link", { name: /Добавить автомобиль/ })).not.toBeInTheDocument();
   });
 
   it("optimistically selects a tab before navigation completes", async () => {

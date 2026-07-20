@@ -3,16 +3,14 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { startTransition, useState, type MouseEvent } from "react";
-import { CarFront, MessageSquare, Plus } from "lucide-react";
+import { CarFront, MessageSquare } from "lucide-react";
 
 const items = [
   { href: "/admin/cars", label: "Автомобили", shortLabel: "", icon: CarFront },
-  { href: "/admin/cars/new", label: "Добавить автомобиль", shortLabel: "Добавить", icon: Plus },
   { href: "/admin/requests", label: "Заявки", shortLabel: "", icon: MessageSquare },
 ] as const;
 
 function activeSection(pathname: string) {
-  if (pathname === "/admin/cars/new") return "/admin/cars/new";
   if (pathname.startsWith("/admin/requests")) return "/admin/requests";
   return "/admin/cars";
 }
