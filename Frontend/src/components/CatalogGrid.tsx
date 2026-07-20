@@ -52,7 +52,7 @@ export default function CatalogGrid({ cars }: { cars: Car[] }) {
       <input className={field} inputMode="numeric" placeholder="Цена до, ₽" value={max} onChange={e => setMax(e.target.value.replace(/\D/g, ""))} onKeyDown={e => { if (e.key === "Enter") applyFilters(); }}/>
       <button onClick={applyFilters} className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-primary-dark"><Search className="h-4 w-4"/>Найти</button>
     </div>
-    <div className="catalog-results" data-updating={isUpdating}>{filtered.length ? <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">{filtered.slice(0, visible).map(car => <CarCard key={car.id} car={car}/>)}</div> : <div className="rounded-[20px] border border-gray-border bg-white py-20 text-center"><h3 className="text-xl font-bold text-dark">Автомобили не найдены</h3><p className="mt-2 text-gray-text">Попробуйте изменить параметры фильтра</p></div>}</div>
+    <div className="catalog-results" data-updating={isUpdating}>{filtered.length ? <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">{filtered.slice(0, visible).map((car, index) => <CarCard key={car.id} car={car} preloadCover={index < 3}/>)}</div> : <div className="rounded-[20px] border border-gray-border bg-white py-20 text-center"><h3 className="text-xl font-bold text-dark">Автомобили не найдены</h3><p className="mt-2 text-gray-text">Попробуйте изменить параметры фильтра</p></div>}</div>
     <div ref={sentinel} className="h-1" />{visible < filtered.length && <p className="mt-8 text-center text-sm text-gray-text">Загружаем ещё автомобили…</p>}
   </div></section>;
 }
