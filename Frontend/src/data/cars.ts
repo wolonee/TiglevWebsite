@@ -179,6 +179,7 @@ export const driveTypes = ["Передний", "Задний", "Полный"];
 export const wheelPositions = ["Левый", "Правый"];
 export const colors = ["Бежевый", "Белый", "Бирюзовый", "Бордовый", "Бронзовый", "Голубой", "Жёлтый", "Зелёный", "Золотой", "Коричневый", "Красный", "Оранжевый", "Розовый", "Серебристый", "Серый", "Синий", "Фиолетовый", "Чёрный"];
 export const damageOptions = ["Нет", "Есть", "Восстановлен"];
+const catalogRevalidateSeconds = 15 * 60;
 
 export const formatPrice = (price: number): string => {
   return price.toLocaleString("ru-RU") + " \u20BD";
@@ -189,7 +190,7 @@ export async function getCatalogCars(): Promise<Car[]> {
   if (!backendUrl) return cars;
   try {
     const response = await fetch(`${backendUrl}/api/cars`, {
-      next: { revalidate: 60, tags: ["catalog"] },
+      next: { revalidate: catalogRevalidateSeconds, tags: ["catalog"] },
     });
     if (!response.ok) return cars;
     const payload = await response.json() as { cars?: Array<Omit<Car, "image"> & { images: string[] }> };
@@ -206,7 +207,7 @@ export async function getCar(id: string): Promise<Car | undefined> {
   if (!backendUrl) return local;
   try {
     const response = await fetch(`${backendUrl}/api/cars/${id}`, {
-      next: { revalidate: 60, tags: ["catalog", `car:${id}`] },
+      next: { revalidate: catalogRevalidateSeconds, tags: ["catalog", `car:${id}`] },
     });
     if (!response.ok) return local;
     const { car } = await response.json() as { car: Omit<Car, "image"> & { images: string[] } };
