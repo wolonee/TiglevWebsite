@@ -2,10 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Menu, MessageCircle, Phone, X } from "lucide-react";
-import { startTransition, useEffect, useState, type MouseEvent } from "react";
-import { flushSync } from "react-dom";
+import { useEffect, useState } from "react";
 
 const links = [
   { href: "/", label: "Главная" },
@@ -16,22 +15,9 @@ const links = [
 
 export default function Header({ solid = false }: { solid?: boolean }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const [pendingNavigation, setPendingNavigation] = useState<{ from: string; target: string } | null>(null);
   const opaque = solid || scrolled || open;
-  const optimisticPath = pendingNavigation?.from === pathname ? pendingNavigation.target : pathname;
-
-  function navigate(event: MouseEvent<HTMLAnchorElement>, href: string) {
-    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    event.preventDefault();
-    const selectTab = () => setPendingNavigation({ from: pathname, target: href });
-    const documentWithTransitions = document as Document & { startViewTransition?: (callback: () => void) => void };
-    if (documentWithTransitions.startViewTransition) documentWithTransitions.startViewTransition(() => flushSync(selectTab));
-    else selectTab();
-    startTransition(() => router.push(href));
-  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -47,7 +33,7 @@ export default function Header({ solid = false }: { solid?: boolean }) {
         <span className={`text-xl font-extrabold tracking-tight ${opaque ? "text-dark" : "text-white"}`}>TIGLEV.COM</span>
       </Link>
       <nav className="hidden items-center lg:flex" aria-label="Основная навигация">
-        {links.map(link => { const active = link.href === "/" ? optimisticPath === "/" : optimisticPath.startsWith(link.href); return <Link key={link.href} href={link.href} aria-current={active ? "page" : undefined} onClick={(event) => navigate(event, link.href)} className={`relative px-4 py-2 text-sm font-medium transition-colors hover:text-primary ${active ? opaque ? "text-primary" : "text-white" : opaque ? "text-dark-light" : "text-white/80"}`}>{link.label}{active && <span aria-hidden className="absolute inset-x-4 -bottom-0.5 h-0.5 bg-primary" style={{ viewTransitionName: "public-nav-indicator" }} />}</Link>; })}
+        {links.map(link => { const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href); return <Link key={link.href} href={link.href} aria-current={active ? "page" : undefined} className={`relative px-4 py-2 text-sm font-medium transition-colors hover:text-primary ${active ? opaque ? "text-primary" : "text-white" : opaque ? "text-dark-light" : "text-white/80"}`}>{link.label}{active && <span aria-hidden className="absolute inset-x-4 -bottom-0.5 h-0.5 bg-primary" />}</Link>; })}
       </nav>
       <div className="hidden items-center gap-3 lg:flex">
         <a href="tel:+78482750750" className={`flex items-center gap-2 text-sm font-semibold hover:text-primary ${opaque ? "text-dark" : "text-white"}`}><Phone size={16}/>+7 (8482) 750-750</a>
@@ -57,7 +43,7 @@ export default function Header({ solid = false }: { solid?: boolean }) {
     </div>
     <div className={`fixed inset-0 top-16 bg-black/40 transition-opacity lg:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"}`} onClick={() => setOpen(false)} />
     <nav className={`fixed bottom-0 right-0 top-16 w-72 bg-white p-5 shadow-2xl transition-transform lg:hidden ${open ? "translate-x-0" : "translate-x-full"}`} aria-label="Мобильная навигация">
-      {links.map(link => <Link key={link.href} href={link.href} onClick={(event) => { setOpen(false); navigate(event, link.href); }} className={`block rounded-xl px-4 py-3.5 font-medium transition-colors ${optimisticPath === link.href ? "bg-primary/5 text-primary" : "text-dark-light"}`}>{link.label}</Link>)}
+      {links.map(link => <Link key={link.href} href={link.href} onClick={() => setOpen(false)} className={`block rounded-xl px-4 py-3.5 font-medium ${pathname === link.href ? "bg-primary/5 text-primary" : "text-dark-light"}`}>{link.label}</Link>)}
       <a href="tel:+78482750750" className="mt-5 flex items-center gap-3 border-t border-gray-border px-4 pt-6 font-semibold text-dark"><Phone className="text-primary" size={20}/>+7 (8482) 750-750</a>
       <Link href="/contacts" onClick={() => setOpen(false)} className="mt-5 block rounded-xl bg-primary px-5 py-3.5 text-center font-semibold text-white">Написать нам</Link>
     </nav>
