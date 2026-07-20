@@ -11,8 +11,6 @@ export type CarRecord = {
   transmission?: string; mileage?: number; drive?: string; wheel?: string; color?: string; damage?: string;
   status: CarStatus; sortOrder: number; deletedAt?: string;
 };
-export type CarChangeAction = "created" | "updated" | "deleted" | "restored";
-export type CarChange = { id: number; carId: string; action: CarChangeAction; changes: Record<string, unknown>; createdAt: string };
 export type RequestStatus = "new" | "in_progress" | "completed" | "archived";
 export type AdminRequest = { id: string; kind: "contact" | "sell"; status: RequestStatus; payload: Record<string, unknown>; photoCount: number; note?: string; createdAt: string; updatedAt: string };
 
@@ -64,16 +62,6 @@ export function ensureSchema() {
       await transaction`ALTER TABLE cars ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0`;
       await transaction`ALTER TABLE cars ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ`;
       await transaction`ALTER TABLE cars ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`;
-      await transaction`
-        CREATE TABLE IF NOT EXISTS car_change_history (
-          id BIGSERIAL PRIMARY KEY,
-          car_id TEXT NOT NULL REFERENCES cars(id) ON DELETE CASCADE,
-          action TEXT NOT NULL CHECK (action IN ('created', 'updated', 'deleted', 'restored')),
-          changes JSONB NOT NULL DEFAULT '{}'::jsonb,
-          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        )
-      `;
-      await transaction`CREATE INDEX IF NOT EXISTS car_change_history_car_id_idx ON car_change_history (car_id, created_at DESC)`;
       await transaction`
         CREATE TABLE IF NOT EXISTS customer_requests (
           id TEXT PRIMARY KEY,
@@ -157,18 +145,6 @@ const mapCar = (row: Record<string, unknown>): CarRecord => ({
   deletedAt: row.deleted_at ? new Date(String(row.deleted_at)).toISOString() : undefined,
 });
 
-const carSnapshot = (car: CarRecord) => ({
-  brand: car.brand, model: car.model, price: car.price, year: car.year, images: car.images,
-  bodyType: car.bodyType, engine: car.engine, description: car.description, engineVolume: car.engineVolume,
-  power: car.power, transmission: car.transmission, mileage: car.mileage, drive: car.drive,
-  wheel: car.wheel, color: car.color, damage: car.damage, status: car.status,
-});
-
-const mapChange = (row: Record<string, unknown>): CarChange => ({
-  id: Number(row.id), carId: String(row.car_id), action: row.action as CarChangeAction,
-  changes: row.changes as Record<string, unknown>, createdAt: new Date(String(row.created_at)).toISOString(),
-});
-
 export const carRecords = {
   async create(car: Omit<CarRecord, "sortOrder" | "deletedAt">) {
     await ensureSchema();
@@ -184,9 +160,7 @@ export const carRecords = {
           COALESCE((SELECT MAX(sort_order) + 1 FROM cars WHERE deleted_at IS NULL), 0)) RETURNING *
       `;
       if (!row) throw new Error("Created car was not returned");
-      const created = mapCar(row);
-      await transaction`INSERT INTO car_change_history (car_id, action, changes) VALUES (${car.id}, 'created', ${transaction.json({ after: carSnapshot(created) } as never)})`;
-      return created;
+      return mapCar(row);
     });
   },
   async all(deleted = false) {
@@ -226,9 +200,7 @@ export const carRecords = {
         WHERE id = ${id} AND deleted_at IS NULL RETURNING *
       `;
       if (!row) return null;
-      const before = mapCar(previousRow); const updated = mapCar(row);
-      await transaction`INSERT INTO car_change_history (car_id, action, changes) VALUES (${id}, 'updated', ${transaction.json({ before: carSnapshot(before), after: carSnapshot(updated) } as never)})`;
-      return updated;
+      return mapCar(row);
     });
   },
   async remove(id: string) {
@@ -237,7 +209,6 @@ export const carRecords = {
     return sql.begin(async (transaction) => {
       const [row] = await transaction`UPDATE cars SET deleted_at = NOW(), updated_at = NOW() WHERE id = ${id} AND deleted_at IS NULL RETURNING *`;
       if (!row) return null;
-      await transaction`INSERT INTO car_change_history (car_id, action, changes) VALUES (${id}, 'deleted', ${transaction.json({ before: carSnapshot(mapCar(row)) } as never)})`;
       return mapCar(row);
     });
   },
@@ -246,14 +217,8 @@ export const carRecords = {
     return sql.begin(async (transaction) => {
       const [row] = await transaction`UPDATE cars SET deleted_at = NULL, updated_at = NOW() WHERE id = ${id} AND deleted_at IS NOT NULL RETURNING *`;
       if (!row) return null;
-      await transaction`INSERT INTO car_change_history (car_id, action, changes) VALUES (${id}, 'restored', ${transaction.json({ after: carSnapshot(mapCar(row)) } as never)})`;
       return mapCar(row);
     });
-  },
-  async history(id: string) {
-    await ensureSchema(); const sql = getSql();
-    const rows = await sql`SELECT * FROM car_change_history WHERE car_id = ${id} ORDER BY created_at DESC, id DESC`;
-    return rows.map(mapChange);
   },
   async reorder(ids: string[]) {
     await ensureSchema();

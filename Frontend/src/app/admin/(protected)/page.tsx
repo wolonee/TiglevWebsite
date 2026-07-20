@@ -1,8 +1,5 @@
-import type { Metadata } from "next";
-import AdminCarManager from "@/components/AdminCarManager";
-
-export const metadata: Metadata = { title: "Админка — TIGLEV.COM" };
+import { redirect } from "next/navigation";
 
 export default function AdminPage() {
-  return <AdminCarManager />;
+  redirect("/admin/cars");
 }
