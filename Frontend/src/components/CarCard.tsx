@@ -31,7 +31,7 @@ const CarCard = ({ car }: CarCardProps) => {
   }, [isHovered, stepImage]);
 
   return (
-    <article onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-border bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus-within:-translate-y-1 focus-within:shadow-xl">
+    <article onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-border bg-white transition-[transform,box-shadow,border-color] duration-300 ease-out will-change-transform hover:-translate-y-1.5 hover:border-primary/20 hover:shadow-xl focus-within:-translate-y-1.5 focus-within:shadow-xl">
       <Link
         href={`/catalog/${car.id}`}
         aria-label={`Подробнее о ${car.brand} ${car.model}`}
@@ -47,7 +47,7 @@ const CarCard = ({ car }: CarCardProps) => {
         <Image
           src={images[activeImage]}
           alt={`${car.brand} ${car.model} ${car.year}`}
-          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+          className="h-full w-full object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-[1.06]"
           fill
           sizes="(max-width: 768px) 100vw, 33vw"
         />

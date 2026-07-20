@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { bodyTypes, brands, type Car } from "@/data/cars";
 import CarCard from "./CarCard";
@@ -20,10 +20,13 @@ export default function CatalogGrid({ cars }: { cars: Car[] }) {
   const [min, setMin] = useState(emptyFilters.min); const [max, setMax] = useState(emptyFilters.max);
   const [appliedBrand, setAppliedBrand] = useState(emptyFilters.brand); const [appliedBody, setAppliedBody] = useState(emptyFilters.body);
   const [appliedMin, setAppliedMin] = useState(emptyFilters.min); const [appliedMax, setAppliedMax] = useState(emptyFilters.max); const [visible, setVisible] = useState(6);
+  const [isUpdating, startCatalogTransition] = useTransition();
   const sentinel = useRef<HTMLDivElement>(null);
   const filtered = useMemo(() => cars.filter(c => (!appliedBrand || c.brand === appliedBrand) && (!appliedBody || c.bodyType === appliedBody) && (!appliedMin || c.price >= Number(appliedMin)) && (!appliedMax || c.price <= Number(appliedMax))), [cars, appliedBrand, appliedBody, appliedMin, appliedMax]);
   const applyFilters = () => {
-    setAppliedBrand(brand); setAppliedBody(body); setAppliedMin(min); setAppliedMax(max); setVisible(6);
+    startCatalogTransition(() => {
+      setAppliedBrand(brand); setAppliedBody(body); setAppliedMin(min); setAppliedMax(max); setVisible(6);
+    });
     const params = new URLSearchParams();
     if (brand) params.set("brand", brand); if (body) params.set("body", body); if (min) params.set("min", min); if (max) params.set("max", max);
     window.history.replaceState(null, "", params.size ? `/catalog?${params.toString()}` : "/catalog");
@@ -49,7 +52,7 @@ export default function CatalogGrid({ cars }: { cars: Car[] }) {
       <input className={field} inputMode="numeric" placeholder="Цена до, ₽" value={max} onChange={e => setMax(e.target.value.replace(/\D/g, ""))} onKeyDown={e => { if (e.key === "Enter") applyFilters(); }}/>
       <button onClick={applyFilters} className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-primary-dark"><Search className="h-4 w-4"/>Найти</button>
     </div>
-    {filtered.length ? <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">{filtered.slice(0, visible).map(car => <CarCard key={car.id} car={car}/>)}</div> : <div className="rounded-[20px] border border-gray-border bg-white py-20 text-center"><h3 className="text-xl font-bold text-dark">Автомобили не найдены</h3><p className="mt-2 text-gray-text">Попробуйте изменить параметры фильтра</p></div>}
+    <div className="catalog-results" data-updating={isUpdating}>{filtered.length ? <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">{filtered.slice(0, visible).map(car => <CarCard key={car.id} car={car}/>)}</div> : <div className="rounded-[20px] border border-gray-border bg-white py-20 text-center"><h3 className="text-xl font-bold text-dark">Автомобили не найдены</h3><p className="mt-2 text-gray-text">Попробуйте изменить параметры фильтра</p></div>}</div>
     <div ref={sentinel} className="h-1" />{visible < filtered.length && <p className="mt-8 text-center text-sm text-gray-text">Загружаем ещё автомобили…</p>}
   </div></section>;
 }
