@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { startTransition, useState, type MouseEvent } from "react";
+import { flushSync } from "react-dom";
 import { CarFront, MessageSquare } from "lucide-react";
 
 const items = [
@@ -25,7 +26,13 @@ export default function AdminNavigation() {
   function navigate(event: MouseEvent<HTMLAnchorElement>, href: string) {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
-    setPendingNavigation({ from: pathname, target: href });
+    const selectTab = () => setPendingNavigation({ from: pathname, target: href });
+    const documentWithTransitions = document as Document & { startViewTransition?: (callback: () => void) => void };
+    if (documentWithTransitions.startViewTransition) {
+      documentWithTransitions.startViewTransition(() => flushSync(selectTab));
+    } else {
+      selectTab();
+    }
     startTransition(() => {
       router.push(href);
     });
@@ -42,10 +49,11 @@ export default function AdminNavigation() {
             prefetch
             aria-current={active ? "page" : undefined}
             onClick={(event) => navigate(event, href)}
-            className={`inline-flex items-center gap-2 rounded-lg px-2 py-2 text-sm font-semibold transition-colors sm:px-3 ${active ? "bg-primary/10 text-primary" : "text-gray-text hover:bg-gray-bg hover:text-dark"}`}
+            className={`relative isolate inline-flex items-center gap-2 overflow-hidden rounded-lg px-2 py-2 text-sm font-semibold transition-colors sm:px-3 ${active ? "text-primary" : "text-gray-text hover:bg-gray-bg hover:text-dark"}`}
           >
-            <Icon className="h-4 w-4" />
-            {shortLabel ? <><span className="hidden lg:inline">{label}</span><span className="lg:hidden">{shortLabel}</span></> : <span className="hidden sm:inline">{label}</span>}
+            {active && <span aria-hidden className="absolute inset-0 -z-10 rounded-lg bg-primary/10" style={{ viewTransitionName: "admin-nav-indicator" }} />}
+            <Icon className="relative h-4 w-4" />
+            {shortLabel ? <><span className="relative hidden lg:inline">{label}</span><span className="relative lg:hidden">{shortLabel}</span></> : <span className="relative hidden sm:inline">{label}</span>}
           </Link>
         );
       })}
