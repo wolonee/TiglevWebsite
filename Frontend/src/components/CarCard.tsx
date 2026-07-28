@@ -14,11 +14,17 @@ type CarCardProps = {
   preloadCover?: boolean;
 };
 
+type IdleCallbackWindow = Window & {
+  requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+  cancelIdleCallback?: (handle: number) => void;
+};
+
 const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
   const images = getCarGallery(car);
   const [activeImage, setActiveImage] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [coverLoaded, setCoverLoaded] = useState(false);
+  const [shouldPreloadGallery, setShouldPreloadGallery] = useState(false);
   const stepImage = useCallback((direction: number) => setActiveImage((current) => (current + direction + images.length) % images.length), [images.length]);
 
   useEffect(() => {
@@ -32,6 +38,23 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [isHovered, stepImage]);
+
+  useEffect(() => {
+    if (!coverLoaded || images.length < 2) return;
+
+    const connection = (navigator as Navigator & { connection?: { effectiveType?: string; saveData?: boolean } }).connection;
+    if (connection?.saveData || connection?.effectiveType === "slow-2g" || connection?.effectiveType === "2g") return;
+
+    const preload = () => setShouldPreloadGallery(true);
+    const browserWindow = window as IdleCallbackWindow;
+    if (typeof browserWindow.requestIdleCallback === "function") {
+      const callbackId = browserWindow.requestIdleCallback(preload, { timeout: 1500 });
+      return () => browserWindow.cancelIdleCallback?.(callbackId);
+    }
+
+    const timeoutId = window.setTimeout(preload, 500);
+    return () => window.clearTimeout(timeoutId);
+  }, [coverLoaded, images.length]);
 
   return (
     <article onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-border bg-white">
@@ -57,7 +80,7 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
           sizes="(max-width: 768px) 100vw, 33vw"
           style={{ objectPosition: imageObjectPosition(images[activeImage]) }}
         />
-        {coverLoaded && images.slice(1).map((image) => <Image key={image.url} src={image.url} alt="" aria-hidden fill loading="eager" fetchPriority="low" sizes="(max-width: 768px) 100vw, 33vw" className="pointer-events-none opacity-0" />)}
+        {shouldPreloadGallery && images.slice(1).map((image) => <Image key={image.url} src={image.url} alt="" aria-hidden fill loading="eager" fetchPriority="low" sizes="(max-width: 768px) 100vw, 33vw" className="pointer-events-none opacity-0" />)}
         <div className="absolute inset-0 bg-gradient-to-t from-dark/30 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         <button type="button" onClick={(event) => { event.preventDefault(); event.stopPropagation(); stepImage(-1); }} aria-label={`Предыдущее фото ${car.brand} ${car.model}`} className="pointer-events-auto absolute left-3 top-1/2 z-30 -translate-y-1/2 rounded-full bg-dark/60 p-2 text-white opacity-0 backdrop-blur transition-opacity hover:bg-dark/80 group-hover:opacity-100 focus:opacity-100"><ChevronLeft className="h-4 w-4"/></button>
         <button type="button" onClick={(event) => { event.preventDefault(); event.stopPropagation(); stepImage(1); }} aria-label={`Следующее фото ${car.brand} ${car.model}`} className="pointer-events-auto absolute right-3 top-1/2 z-30 -translate-y-1/2 rounded-full bg-dark/60 p-2 text-white opacity-0 backdrop-blur transition-opacity hover:bg-dark/80 group-hover:opacity-100 focus:opacity-100"><ChevronRight className="h-4 w-4"/></button>

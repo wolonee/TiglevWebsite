@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import type { ImgHTMLAttributes } from "react";
 import { describe, expect, it, vi } from "vitest";
 import CarCard from "@/components/CarCard";
@@ -24,13 +24,17 @@ const car: Car = {
 };
 
 describe("CarCard", () => {
-  it("starts preloading gallery photos only after the cover loads", () => {
+  it("preloads gallery photos when the browser has idle time after the cover loads", () => {
+    vi.useFakeTimers();
     const { container } = render(<CarCard car={car} preloadCover />);
     expect(container.querySelectorAll("img")).toHaveLength(1);
 
     fireEvent.load(screen.getByAltText("BMW X5 2024"));
+    expect(container.querySelectorAll("img")).toHaveLength(1);
 
+    act(() => { vi.advanceTimersByTime(500); });
     expect(container.querySelectorAll("img")).toHaveLength(3);
+    vi.useRealTimers();
   });
 
   it("uses the stored focal point for the catalog cover", () => {

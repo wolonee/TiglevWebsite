@@ -3,8 +3,16 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import SitePage from "@/components/SitePage";
 import CarGallery from "@/components/CarGallery";
-import { formatPrice, getCar } from "@/data/cars";
+import { formatPrice, getCar, getCatalogCars } from "@/data/cars";
 import { getCarGallery } from "@/data/carGallery";
+
+export const revalidate = 900;
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  const cars = await getCatalogCars();
+  return cars.map((car) => ({ id: car.id }));
+}
 
 export default async function CarPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
