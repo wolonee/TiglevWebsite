@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { CONTACT_DETAILS } from "@/data/contactDetails";
 import "./globals.css";
 
 const inter = Inter({
@@ -11,7 +12,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "TIGLEV.COM — Автомобили с пробегом в Тольятти",
   description:
-    "Продажа подержанных автомобилей, срочный выкуп и заказ авто из Европы. Автосалон в Тольятти с 2009 года. +7 (8482) 750-750",
+    `Продажа подержанных автомобилей, срочный выкуп и заказ авто из Европы. Автосалон в Тольятти с 2009 года. ${CONTACT_DETAILS.phones[0].label}`,
   keywords: [
     "автосалон тольятти",
     "автомобили с пробегом",

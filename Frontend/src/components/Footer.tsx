@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Phone, MapPin, ArrowUpRight, ChevronUp } from "lucide-react";
+import { CONTACT_DETAILS } from "@/data/contactDetails";
 
 const NAV_SECTIONS = [
   {
@@ -90,31 +91,33 @@ const Footer = () => {
             </h4>
             <div className="space-y-3">
               <a
-                href="tel:+78482750750"
+                href={CONTACT_DETAILS.phones[0].href}
                 className="flex items-center gap-2.5 text-sm text-white/40 transition-colors hover:text-white"
-                aria-label="Позвонить: +7 (8482) 750-750"
+                aria-label={`Позвонить: ${CONTACT_DETAILS.phones[0].label}`}
               >
                 <Phone className="h-4 w-4 shrink-0 text-primary/60" />
-                +7 (8482) 750-750
+                {CONTACT_DETAILS.phones[0].label}
               </a>
               <a
-                href="tel:88005000015"
+                href={CONTACT_DETAILS.phones[1].href}
                 className="flex items-center gap-2.5 text-sm text-white/40 transition-colors hover:text-white"
-                aria-label="Бесплатная линия: 8-800-500-0015"
+                aria-label={`Позвонить: ${CONTACT_DETAILS.phones[1].label}`}
               >
                 <Phone className="h-4 w-4 shrink-0 text-primary/60" />
-                8-800-500-0015
+                {CONTACT_DETAILS.phones[1].label}
               </a>
               <p className="flex items-center gap-2.5 text-sm text-white/40">
                 <MapPin className="h-4 w-4 shrink-0 text-primary/60" />
-                Тольятти, Офицерская ул. 46
+                {CONTACT_DETAILS.address}
               </p>
             </div>
 
             <div className="mt-5 space-y-1.5 rounded-lg border border-white/[0.06] bg-white/[0.02] p-3.5">
-              <p className="text-xs font-medium text-white/50">Пн–Пт: 9:00 — 18:00</p>
-              <p className="text-xs font-medium text-white/50">Сб: 9:00 — 17:00</p>
-              <p className="text-xs font-medium text-white/50">Вс: 10:00 — 14:00</p>
+              {CONTACT_DETAILS.workHours.map((workHours) => (
+                <p key={workHours} className="text-xs font-medium text-white/50">
+                  {workHours}
+                </p>
+              ))}
             </div>
           </div>
         </div>
