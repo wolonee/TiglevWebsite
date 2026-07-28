@@ -67,9 +67,11 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
           <h3 className="text-lg font-bold text-dark">
             {car.brand} {car.model}
           </h3>
-          <span className="shrink-0 rounded-md bg-gray-bg px-2 py-0.5 text-xs font-medium text-gray-text">
-            {car.bodyType}
-          </span>
+          {car.bodyType ? (
+            <span className="shrink-0 rounded-md bg-gray-bg px-2 py-0.5 text-xs font-medium text-gray-text">
+              {car.bodyType}
+            </span>
+          ) : null}
         </div>
 
         <div className="mb-4 flex items-center gap-4 text-sm text-gray-text">
@@ -77,10 +79,12 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
             <Calendar className="h-3.5 w-3.5" />
             {car.year} г.
           </span>
-          <span className="flex items-center gap-1.5">
-            <Fuel className="h-3.5 w-3.5" />
-            {car.engine}
-          </span>
+          {car.engine ? (
+            <span className="flex items-center gap-1.5">
+              <Fuel className="h-3.5 w-3.5" />
+              {car.engine}
+            </span>
+          ) : null}
         </div>
 
         {car.description && (

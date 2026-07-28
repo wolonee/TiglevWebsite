@@ -1,6 +1,6 @@
 import postgres, { type Sql } from "postgres";
 import { config } from "./config.js";
-import { catalogSeed } from "./catalog-seed.js";
+import { catalogSeed, legacyCatalogIds } from "./catalog-seed.js";
 
 export type Subscriber = { chat_id: number; username: string | null; first_name: string | null; last_name: string | null };
 export const carStatuses = ["draft", "active", "reserved", "sold", "hidden"] as const;
@@ -104,6 +104,30 @@ export function migrateDatabase() {
           WITH ordered AS (SELECT id, ROW_NUMBER() OVER (ORDER BY created_at DESC, id) - 1 AS position FROM cars)
           UPDATE cars SET sort_order = ordered.position FROM ordered WHERE cars.id = ordered.id
         `;
+      }
+      const [realCatalogMigration] = await transaction`
+        INSERT INTO app_migrations (key) VALUES ('real_catalog_v1')
+        ON CONFLICT (key) DO NOTHING RETURNING key
+      `;
+      if (realCatalogMigration) {
+        await transaction`DELETE FROM cars WHERE id = ANY(${transaction.array([...legacyCatalogIds])}::text[])`;
+        for (const car of catalogSeed) {
+          await transaction`
+            INSERT INTO cars (id, brand, model, price, year, images, body_type, engine, description,
+              engine_volume, power, transmission, mileage, drive, wheel, color, damage, status, sort_order)
+            VALUES (${car.id}, ${car.brand}, ${car.model}, ${car.price}, ${car.year}, ${transaction.json(car.images)},
+              ${car.bodyType}, ${car.engine}, ${car.description ?? null}, ${car.engineVolume ?? null},
+              ${car.power ?? null}, ${car.transmission ?? null}, ${car.mileage ?? null}, ${car.drive ?? null},
+              ${car.wheel ?? null}, ${car.color ?? null}, ${car.damage ?? null}, ${car.status}, ${car.sortOrder})
+            ON CONFLICT (id) DO UPDATE SET
+              brand = EXCLUDED.brand, model = EXCLUDED.model, price = EXCLUDED.price, year = EXCLUDED.year,
+              images = EXCLUDED.images, body_type = EXCLUDED.body_type, engine = EXCLUDED.engine,
+              description = EXCLUDED.description, engine_volume = EXCLUDED.engine_volume, power = EXCLUDED.power,
+              transmission = EXCLUDED.transmission, mileage = EXCLUDED.mileage, drive = EXCLUDED.drive,
+              wheel = EXCLUDED.wheel, color = EXCLUDED.color, damage = EXCLUDED.damage,
+              status = EXCLUDED.status, sort_order = EXCLUDED.sort_order, deleted_at = NULL, updated_at = NOW()
+          `;
+        }
       }
     }).then(() => undefined);
   }

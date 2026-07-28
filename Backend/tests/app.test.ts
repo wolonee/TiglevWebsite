@@ -66,6 +66,15 @@ describe("backend API", () => {
     expect(carRecords.create).toHaveBeenCalledWith(expect.objectContaining({ status: "draft" }));
   });
 
+  it("accepts imported local catalog images and empty unknown characteristics", async () => {
+    const payload = {
+      brand: "KIA", model: "Cerato", price: 400000, year: 2006,
+      images: ["/images/catalog/kia-cerato-2006/01.webp"], bodyType: "", engine: "",
+    };
+    await request(app).post("/api/admin/cars").set("x-api-key", "test-api-key").send(payload).expect(201);
+    expect(carRecords.create).toHaveBeenCalledWith(expect.objectContaining(payload));
+  });
+
   it("changes the catalog order only with the backend key", async () => {
     await request(app).put("/api/admin/cars/order").send({ ids: ["car-2", "car-1"] }).expect(401);
     await request(app).put("/api/admin/cars/order").set("x-api-key", "test-api-key").send({ ids: ["car-2", "car-1"] }).expect(200);

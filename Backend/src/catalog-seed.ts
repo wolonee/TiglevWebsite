@@ -1,26 +1,137 @@
 import type { CarRecord } from "./database.js";
 
-const defaults = [
-  { engineVolume: "2000 см³", power: "150 л.с.", transmission: "Автомат", mileage: 18000, drive: "Полный", color: "Белый" },
-  { engineVolume: "2200 см³", power: "200 л.с.", transmission: "Автомат", mileage: 12000, drive: "Полный", color: "Серый" },
-  { engineVolume: "2500 см³", power: "180 л.с.", transmission: "Автомат", mileage: 22000, drive: "Передний", color: "Чёрный" },
-];
-
-const seedCars = [
-  ["151698", "KIA", "Sportage", 3750000, 2023, "Кроссовер", "Бензин", "https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=1200&h=900&fit=crop"],
-  ["151704", "KIA", "Sorento", 3850000, 2023, "Внедорожник", "Бензин", "https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=1200&h=900&fit=crop"],
-  ["151709", "KIA", "K5", 4195000, 2023, "Седан", "Бензин", "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=1200&h=900&fit=crop"],
-  ["151710", "KIA", "Sorento", 4190000, 2023, "Кроссовер", "Бензин", "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=1200&h=900&fit=crop"],
-  ["151716", "KIA", "Sorento", 4950000, 2023, "Кроссовер", "Бензин", "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&h=900&fit=crop"],
-  ["151723", "LADA", "Granta", 390000, 2012, "Седан", "Бензин", "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=1200&h=900&fit=crop"],
-  ["151727", "LADA", "Granta", 1010000, 2023, "Седан", "Бензин", "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=1200&h=900&fit=crop"],
-  ["151743", "LADA", "Нива Тревел", 850000, 2021, "Внедорожник", "Бензин", "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=1200&h=900&fit=crop"],
-  ["151740", "Land Rover", "Discovery", 1550000, 2011, "Внедорожник", "Дизель", "https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?w=1200&h=900&fit=crop"],
-  ["151734", "KIA", "Sorento", 5490000, 2024, "Внедорожник", "Бензин", "https://images.unsplash.com/photo-1542362567-b07e54358753?w=1200&h=900&fit=crop"],
-  ["151721", "KIA", "Ceed", 2770000, 2023, "Хэтчбэк", "Бензин", "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=1200&h=900&fit=crop"],
-  ["151800", "BMW", "3 Series", 4200000, 2022, "Седан", "Бензин", "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=1200&h=900&fit=crop"],
+export const legacyCatalogIds = [
+  "151698", "151704", "151709", "151710", "151716", "151723",
+  "151727", "151743", "151740", "151734", "151721", "151800",
 ] as const;
 
-export const catalogSeed: CarRecord[] = seedCars.map(([id, brand, model, price, year, bodyType, engine, image], index) => ({
-  id, brand, model, price, year, bodyType, engine, images: [image], wheel: "Левый", damage: "Нет", status: "active", sortOrder: index, ...defaults[index % defaults.length],
-}));
+type SeedCar = Omit<CarRecord, "images" | "status" | "sortOrder"> & {
+  slug: string;
+  photoCount: number;
+};
+
+const createSeedCar = ({ slug, photoCount, ...car }: SeedCar, sortOrder: number): CarRecord => ({
+  ...car,
+  images: Array.from(
+    { length: photoCount },
+    (_, index) => `/images/catalog/${slug}/${String(index + 1).padStart(2, "0")}.webp`,
+  ),
+  status: "active",
+  sortOrder,
+});
+
+export const catalogSeed: CarRecord[] = [
+  {
+    id: "kia-sorento-2017",
+    slug: "kia-sorento-2017",
+    brand: "KIA",
+    model: "Sorento",
+    price: 2850000,
+    year: 2017,
+    photoCount: 10,
+    bodyType: "",
+    engine: "",
+    transmission: "Автомат",
+    description: "Продается Kia Sorento, 2017 года. Автомобиль в одних руках с момента приобретения в дилерском центре. Максимальная комплектация с панорамой и акустикой «Infinity». Все ТО по регламенту на квалифицированном СТО. Дополнительно установлено механическое противоугонное устройство на АКПП. Два ключа и сервисная книжка с отметками о прохождении всех ТО. Летняя и зимняя шипованная резина в комплекте. Полное ТО с заменой масла и всех фильтров сделано 3 тыс. км назад. Полное обслуживание АКПП сделано ранее. Документы и акты о проделанных работах имеются.",
+  },
+  {
+    id: "kia-sorento-2024",
+    slug: "kia-sorento-2024",
+    brand: "KIA",
+    model: "Sorento",
+    price: 5850000,
+    year: 2024,
+    photoCount: 6,
+    bodyType: "Кроссовер",
+    engine: "",
+    engineVolume: "2.5 л",
+    description: "Представьте: вы садитесь в этот автомобиль впервые. И он полностью ваш. Не «перекупский пробег». Не «ездил кто-то до вас». А вы — первый, кто открывает дверь, чувствует запах кожи и заводит этот KIA Sorento 2024. Без пробега по РФ. Вы просто приезжаете, оформляете документы и уезжаете на своём новом кроссовере. Первым собственником. По закону. С чистой историей. Вы садитесь в мягкий кожаный салон — идеальный для утра с кофе или долгой дороги в отпуск. За спиной — простор для семьи, детей, сумок, собак и велосипедов. За городом — уверенный 2.5-литровый двигатель. Комплектация LUXE, 5 мест.",
+  },
+  {
+    id: "lada-niva-travel-2021",
+    slug: "lada-niva-travel-2021",
+    brand: "LADA",
+    model: "Niva Travel",
+    price: 815000,
+    year: 2021,
+    photoCount: 10,
+    bodyType: "",
+    engine: "",
+    description: "Один хозяин. Кондиционер. Автомобиль находится в технически исправном состоянии. Без ДТП, не крашен. Установлена магнитола.",
+  },
+  {
+    id: "kia-cerato-2006",
+    slug: "kia-cerato-2006",
+    brand: "KIA",
+    model: "Cerato",
+    price: 400000,
+    year: 2006,
+    photoCount: 8,
+    bodyType: "",
+    engine: "",
+    description: "Автомобиль полностью в рабочем состоянии. Хорошая зимняя и летняя резина. Простой, надежный и неприхотливый.",
+  },
+  {
+    id: "mazda-3-2006",
+    slug: "mazda-3-2006",
+    brand: "MAZDA",
+    model: "Mazda3",
+    price: 750000,
+    year: 2006,
+    photoCount: 10,
+    bodyType: "",
+    engine: "",
+    transmission: "Автомат",
+    description: "Автомобиль в хорошем состоянии. В салоне не курили. ДВС и АКПП в рабочем состоянии. Полный капитальный ремонт двигателя. Новая цепь, ГРМ в сборе, подушки ДВС, свечи, катушки, масляный насос и датчик коленвала. Новый комплект зимней резины.",
+  },
+  {
+    id: "datsun-on-do-2018",
+    slug: "datsun-on-do-2018",
+    brand: "Datsun",
+    model: "on-DO",
+    price: 445000,
+    year: 2018,
+    photoCount: 8,
+    bodyType: "",
+    engine: "",
+    description: "Один хозяин. Автомобиль технически исправен. АБС, стеклоподъемники, подогрев передних сидений, два ключа и сигнализация StarLine. Без кондиционера.",
+  },
+  {
+    id: "lada-vesta-cross-2024",
+    slug: "lada-vesta-cross-2024",
+    brand: "LADA",
+    model: "Vesta Cross",
+    price: 1720000,
+    year: 2024,
+    photoCount: 10,
+    bodyType: "",
+    engine: "",
+    description: "Автомобиль в идеальном состоянии. Всего один владелец. Без ДТП и скрытых проблем. Официальная гарантия 2 года передаётся новому владельцу. Сервисная книжка имеется, всё обслуживание по регламенту. Полный зимний пакет: подогрев передних сидений, зеркал, руля и лобового стекла. Электрические стеклоподъёмники всех дверей. Газовые упоры капота и багажника. Сигнализация StarLine. Комплектация «Техно 24» — максимальная на момент покупки.",
+  },
+  {
+    id: "kia-sportage-2023",
+    slug: "kia-sportage-2023",
+    brand: "KIA",
+    model: "Sportage",
+    price: 3250000,
+    year: 2023,
+    photoCount: 7,
+    bodyType: "",
+    engine: "",
+    mileage: 41300,
+    description: "Автомобиль 2023 года выпуска с актуальным дизайном и полным набором опций. Пробег 41 300 км. Состояние — как на фото, без ДТП и скрытых дефектов. Обслуживание вовремя, по регламенту.",
+  },
+  {
+    id: "lada-vesta-sport-2021",
+    slug: "lada-vesta-sport-2021",
+    brand: "LADA",
+    model: "Vesta Sport",
+    price: 1230000,
+    year: 2021,
+    photoCount: 7,
+    bodyType: "",
+    engine: "",
+    mileage: 70000,
+    description: "Одна хозяйка. Пробег 70 000 км.",
+  },
+].map(createSeedCar);

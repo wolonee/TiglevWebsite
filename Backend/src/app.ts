@@ -35,11 +35,15 @@ const contactRequestSchema = z.object({
   source: z.string().trim().max(100).optional(),
 });
 const optionalText = z.string().trim().max(200).optional();
+const carImageSchema = z.string().refine(
+  (value) => value.startsWith("/images/catalog/") || z.url().safeParse(value).success,
+  "Invalid image URL",
+);
 const carSchema = z.object({
   brand: z.string().trim().min(1).max(80), model: z.string().trim().min(1).max(100),
   price: z.coerce.number().int().positive().max(1_000_000_000), year: z.coerce.number().int().min(1900).max(new Date().getFullYear() + 1),
-  images: z.array(z.string().url()).min(1).max(20), bodyType: z.string().trim().min(1).max(80),
-  engine: z.string().trim().min(1).max(80), description: z.string().trim().max(5000).optional(),
+  images: z.array(carImageSchema).min(1).max(20), bodyType: z.string().trim().max(80),
+  engine: z.string().trim().max(80), description: z.string().trim().max(5000).optional(),
   engineVolume: optionalText, power: optionalText, transmission: optionalText,
   mileage: z.coerce.number().int().nonnegative().max(10_000_000).optional(), drive: optionalText,
   wheel: optionalText, color: optionalText, damage: optionalText,
