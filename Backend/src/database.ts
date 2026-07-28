@@ -129,6 +129,18 @@ export function migrateDatabase() {
           `;
         }
       }
+      const [highQualityCatalogMigration] = await transaction`
+        INSERT INTO app_migrations (key) VALUES ('real_catalog_hq_v1')
+        ON CONFLICT (key) DO NOTHING RETURNING key
+      `;
+      if (highQualityCatalogMigration) {
+        for (const car of catalogSeed) {
+          await transaction`
+            UPDATE cars SET images = ${transaction.json(car.images)}, updated_at = NOW()
+            WHERE id = ${car.id}
+          `;
+        }
+      }
     }).then(() => undefined);
   }
   return schemaPromise;

@@ -19,7 +19,7 @@ describe("catalog data", () => {
     expect(cars.map((car) => car.id)).toContain("kia-sorento-2017");
     expect(cars.map((car) => car.id)).not.toContain("151698");
     expect(cars.flatMap((car) => car.images ?? [])).toHaveLength(76);
-    expect(cars.flatMap((car) => car.images ?? []).every((image) => image.startsWith("/images/catalog/"))).toBe(true);
+    expect(cars.flatMap((car) => car.images ?? []).every((image) => image.startsWith("/images/catalog-hq/"))).toBe(true);
   });
 
   it("does not invent unavailable characteristics", () => {

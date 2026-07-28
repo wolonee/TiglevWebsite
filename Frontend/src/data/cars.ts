@@ -29,7 +29,7 @@ type CatalogCar = Omit<Car, "image" | "images" | "bodyType" | "engine"> & {
 const createCatalogCar = ({ slug, photoCount, bodyType = "", engine = "", ...car }: CatalogCar): Car => {
   const images = Array.from(
     { length: photoCount },
-    (_, index) => `/images/catalog/${slug}/${String(index + 1).padStart(2, "0")}.webp`,
+    (_, index) => `/images/catalog-hq/${slug}/${String(index + 1).padStart(2, "0")}.webp`,
   );
   return { ...car, bodyType, engine, image: images[0], images };
 };

@@ -12,7 +12,7 @@ describe("catalog seed", () => {
   it("uses only local catalog images", () => {
     const images = catalogSeed.flatMap((car) => car.images);
     expect(images).toHaveLength(76);
-    expect(images.every((image) => image.startsWith("/images/catalog/"))).toBe(true);
+    expect(images.every((image) => image.startsWith("/images/catalog-hq/"))).toBe(true);
   });
 
   it("keeps legacy mock identifiers separate for migration cleanup", () => {

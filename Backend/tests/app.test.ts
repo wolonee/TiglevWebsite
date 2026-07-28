@@ -69,7 +69,7 @@ describe("backend API", () => {
   it("accepts imported local catalog images and empty unknown characteristics", async () => {
     const payload = {
       brand: "KIA", model: "Cerato", price: 400000, year: 2006,
-      images: ["/images/catalog/kia-cerato-2006/01.webp"], bodyType: "", engine: "",
+      images: ["/images/catalog-hq/kia-cerato-2006/01.webp"], bodyType: "", engine: "",
     };
     await request(app).post("/api/admin/cars").set("x-api-key", "test-api-key").send(payload).expect(201);
     expect(carRecords.create).toHaveBeenCalledWith(expect.objectContaining(payload));

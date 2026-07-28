@@ -36,7 +36,7 @@ const contactRequestSchema = z.object({
 });
 const optionalText = z.string().trim().max(200).optional();
 const carImageSchema = z.string().refine(
-  (value) => value.startsWith("/images/catalog/") || z.url().safeParse(value).success,
+  (value) => /^\/images\/catalog(?:-hq)?\//.test(value) || z.url().safeParse(value).success,
   "Invalid image URL",
 );
 const carSchema = z.object({
