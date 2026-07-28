@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { getCarGallery } from "@/data/carGallery";
+import { imageObjectPosition } from "@/data/carImages";
 
 type CarCardProps = {
   car: Car;
@@ -47,15 +48,16 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
       />
       <div className="pointer-events-none relative z-20 aspect-[16/10] overflow-hidden bg-gray-bg">
         <Image
-          src={images[activeImage]}
+          src={images[activeImage].url}
           alt={`${car.brand} ${car.model} ${car.year}`}
           className="h-full w-full object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-[1.06]"
           fill
           preload={preloadCover}
           onLoad={() => { if (activeImage === 0) setCoverLoaded(true); }}
           sizes="(max-width: 768px) 100vw, 33vw"
+          style={{ objectPosition: imageObjectPosition(images[activeImage]) }}
         />
-        {coverLoaded && images.slice(1).map((src) => <Image key={src} src={src} alt="" aria-hidden fill loading="eager" fetchPriority="low" sizes="(max-width: 768px) 100vw, 33vw" className="pointer-events-none opacity-0" />)}
+        {coverLoaded && images.slice(1).map((image) => <Image key={image.url} src={image.url} alt="" aria-hidden fill loading="eager" fetchPriority="low" sizes="(max-width: 768px) 100vw, 33vw" className="pointer-events-none opacity-0" />)}
         <div className="absolute inset-0 bg-gradient-to-t from-dark/30 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         <button type="button" onClick={(event) => { event.preventDefault(); event.stopPropagation(); stepImage(-1); }} aria-label={`Предыдущее фото ${car.brand} ${car.model}`} className="pointer-events-auto absolute left-3 top-1/2 z-30 -translate-y-1/2 rounded-full bg-dark/60 p-2 text-white opacity-0 backdrop-blur transition-opacity hover:bg-dark/80 group-hover:opacity-100 focus:opacity-100"><ChevronLeft className="h-4 w-4"/></button>
         <button type="button" onClick={(event) => { event.preventDefault(); event.stopPropagation(); stepImage(1); }} aria-label={`Следующее фото ${car.brand} ${car.model}`} className="pointer-events-auto absolute right-3 top-1/2 z-30 -translate-y-1/2 rounded-full bg-dark/60 p-2 text-white opacity-0 backdrop-blur transition-opacity hover:bg-dark/80 group-hover:opacity-100 focus:opacity-100"><ChevronRight className="h-4 w-4"/></button>

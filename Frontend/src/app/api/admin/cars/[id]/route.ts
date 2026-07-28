@@ -12,10 +12,12 @@ async function authorize() {
 }
 
 function blobUrls(urls: unknown) {
-  return Array.isArray(urls) ? urls.filter((url): url is string => {
-    if (typeof url !== "string") return false;
-    try { return new URL(url).hostname.endsWith(".blob.vercel-storage.com"); } catch { return false; }
-  }) : [];
+  if (!Array.isArray(urls)) return [];
+  return urls.flatMap((item) => {
+    const url = typeof item === "string" ? item : item && typeof item === "object" && "url" in item && typeof item.url === "string" ? item.url : null;
+    if (!url) return [];
+    try { return new URL(url).hostname.endsWith(".blob.vercel-storage.com") ? [url] : []; } catch { return []; }
+  });
 }
 
 async function backendRequest(id: string, method: "PATCH" | "DELETE", body?: unknown) {

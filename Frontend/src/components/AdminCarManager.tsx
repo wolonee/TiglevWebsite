@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, Eye, LoaderCircle, Pencil, Plus, RefreshCw, RotateCcw, Search, Trash2 } from "lucide-react";
 import { brands, formatPrice } from "@/data/cars";
+import { imageObjectPosition } from "@/data/carImages";
 import type { ManagedCar } from "./AdminCarForm";
 import AppSelect from "./AppSelect";
 import ConfirmDialog from "./ConfirmDialog";
@@ -173,7 +174,7 @@ export default function AdminCarManager() {
             return (
               <article key={car.id} style={{ viewTransitionName: `admin-car-${car.id}` }} className="overflow-hidden rounded-2xl border border-gray-border bg-white transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-lg">
                 <div className="relative aspect-[16/10] bg-gray-bg">
-                  <Image src={car.images[0]} alt={`${car.brand} ${car.model}`} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
+                  <Image src={car.images[0].url} alt={`${car.brand} ${car.model}`} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" style={{ objectPosition: imageObjectPosition(car.images[0]) }} />
                   <span className={`absolute left-3 top-3 rounded-lg px-2.5 py-1 text-xs font-semibold ${trash ? "bg-red-100 text-red-700" : statusColor[car.status]}`}>{trash ? "Удалено" : statusLabel[car.status]}</span>
                 </div>
                 <div className="p-5">

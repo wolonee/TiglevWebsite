@@ -1,3 +1,5 @@
+import { normalizeCarImages, type CarImage } from "./carImages";
+
 export type Car = {
   id: string;
   brand: string;
@@ -5,7 +7,7 @@ export type Car = {
   price: number;
   year: number;
   image: string;
-  images?: string[];
+  images?: CarImage[];
   bodyType: string;
   engine: string;
   description?: string;
@@ -27,11 +29,11 @@ type CatalogCar = Omit<Car, "image" | "images" | "bodyType" | "engine"> & {
 };
 
 const createCatalogCar = ({ slug, photoCount, bodyType = "", engine = "", ...car }: CatalogCar): Car => {
-  const images = Array.from(
+  const images = normalizeCarImages(Array.from(
     { length: photoCount },
     (_, index) => `/images/catalog-hq/${slug}/${String(index + 1).padStart(2, "0")}.webp`,
-  );
-  return { ...car, bodyType, engine, image: images[0], images };
+  ));
+  return { ...car, bodyType, engine, image: images[0]?.url ?? "", images };
 };
 
 export const cars: Car[] = [
@@ -169,8 +171,11 @@ export async function getCatalogCars(): Promise<Car[]> {
       next: { revalidate: catalogRevalidateSeconds, tags: ["catalog"] },
     });
     if (!response.ok) return cars;
-    const payload = await response.json() as { cars?: Array<Omit<Car, "image"> & { images: string[] }> };
-    const stored = (payload.cars ?? []).map((car) => ({ ...car, image: car.images[0] }));
+    const payload = await response.json() as { cars?: Array<Omit<Car, "image" | "images"> & { images: Array<string | CarImage> }> };
+    const stored = (payload.cars ?? []).map((car) => {
+      const images = normalizeCarImages(car.images ?? []);
+      return { ...car, images, image: images[0]?.url ?? "" };
+    });
     return stored;
   } catch {
     return cars;
@@ -186,8 +191,9 @@ export async function getCar(id: string): Promise<Car | undefined> {
       next: { revalidate: catalogRevalidateSeconds, tags: ["catalog", `car:${id}`] },
     });
     if (!response.ok) return local;
-    const { car } = await response.json() as { car: Omit<Car, "image"> & { images: string[] } };
-    return { ...car, image: car.images[0] };
+    const { car } = await response.json() as { car: Omit<Car, "image" | "images"> & { images: Array<string | CarImage> } };
+    const images = normalizeCarImages(car.images ?? []);
+    return { ...car, images, image: images[0]?.url ?? "" };
   } catch {
     return local;
   }

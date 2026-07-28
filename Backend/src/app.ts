@@ -35,10 +35,20 @@ const contactRequestSchema = z.object({
   source: z.string().trim().max(100).optional(),
 });
 const optionalText = z.string().trim().max(200).optional();
-const carImageSchema = z.string().refine(
+const carImageUrlSchema = z.string().refine(
   (value) => /^\/images\/catalog(?:-hq)?\//.test(value) || z.url().safeParse(value).success,
   "Invalid image URL",
 );
+const imagePositionSchema = z.object({
+  x: z.number().min(0).max(100).default(50),
+  y: z.number().min(0).max(100).default(50),
+});
+const carImageSchema = z.union([
+  carImageUrlSchema,
+  z.object({ url: carImageUrlSchema, position: imagePositionSchema.optional() }),
+]).transform((image) => typeof image === "string"
+  ? { url: image, position: { x: 50, y: 50 } }
+  : { url: image.url, position: { x: image.position?.x ?? 50, y: image.position?.y ?? 50 } });
 const carSchema = z.object({
   brand: z.string().trim().min(1).max(80), model: z.string().trim().min(1).max(100),
   price: z.coerce.number().int().positive().max(1_000_000_000), year: z.coerce.number().int().min(1900).max(new Date().getFullYear() + 1),
@@ -90,7 +100,8 @@ app.patch("/api/admin/cars/:id", async (request, response) => {
   const previous = await carRecords.find(request.params.id);
   if (!previous) return response.status(404).json({ error: "Car not found" });
   const car = await carRecords.update(request.params.id, parsed.data);
-  const removedImages = previous.images.filter((image) => !parsed.data.images.includes(image));
+  const nextImageUrls = new Set(parsed.data.images.map((image) => image.url));
+  const removedImages = previous.images.map((image) => image.url).filter((url) => !nextImageUrls.has(url));
   return response.json({ car, removedImages });
 });
 app.delete("/api/admin/cars/:id", async (request, response) => {

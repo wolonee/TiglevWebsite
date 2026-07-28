@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import AdminCarForm, { type ManagedCar } from "@/components/AdminCarForm";
 
@@ -10,7 +10,7 @@ const car: ManagedCar = {
   model: "X5",
   price: 5_000_000,
   year: 2024,
-  images: ["https://example.com/car.jpg"],
+  images: [{ url: "https://example.com/car.jpg", position: { x: 20, y: 80 } }],
   bodyType: "Кроссовер",
   engine: "Бензин",
   status: "active",
@@ -31,5 +31,19 @@ describe("AdminCarForm", () => {
 
     expect(screen.getByLabelText("Статус автомобиля")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Сохранить как черновик" })).not.toBeInTheDocument();
+    expect(screen.getByText("Точка фокуса: 20% · 80%")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "По центру" })).toBeInTheDocument();
+  });
+
+  it("updates a photo focal point from the crop preview", () => {
+    render(<AdminCarForm car={car} />);
+    const cropPreview = screen.getByLabelText("Выберите точку фокуса для фотографии 1");
+    Object.defineProperty(cropPreview, "getBoundingClientRect", {
+      value: () => ({ left: 0, top: 0, width: 200, height: 100 }),
+    });
+
+    fireEvent.pointerDown(cropPreview, { clientX: 50, clientY: 75, pointerId: 1 });
+
+    expect(screen.getByText("Точка фокуса: 25% · 75%")).toBeInTheDocument();
   });
 });

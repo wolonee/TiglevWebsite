@@ -5,8 +5,10 @@ import { catalogSeed, legacyCatalogIds } from "./catalog-seed.js";
 export type Subscriber = { chat_id: number; username: string | null; first_name: string | null; last_name: string | null };
 export const carStatuses = ["draft", "active", "reserved", "sold", "hidden"] as const;
 export type CarStatus = typeof carStatuses[number];
+export type ImagePosition = { x: number; y: number };
+export type CarImage = { url: string; position: ImagePosition };
 export type CarRecord = {
-  id: string; brand: string; model: string; price: number; year: number; images: string[];
+  id: string; brand: string; model: string; price: number; year: number; images: CarImage[];
   bodyType: string; engine: string; description?: string; engineVolume?: string; power?: string;
   transmission?: string; mileage?: number; drive?: string; wheel?: string; color?: string; damage?: string;
   status: CarStatus; sortOrder: number; deletedAt?: string;
@@ -167,9 +169,19 @@ export const subscribers = {
   },
 };
 
+const normalizeCarImage = (image: unknown): CarImage | null => {
+  if (typeof image === "string") return { url: image, position: { x: 50, y: 50 } };
+  if (!image || typeof image !== "object") return null;
+  const record = image as Record<string, unknown>;
+  if (typeof record.url !== "string") return null;
+  const position = record.position && typeof record.position === "object" ? record.position as Record<string, unknown> : {};
+  const clamp = (value: unknown) => typeof value === "number" && Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 50;
+  return { url: record.url, position: { x: clamp(position.x), y: clamp(position.y) } };
+};
+
 const mapCar = (row: Record<string, unknown>): CarRecord => ({
   id: String(row.id), brand: String(row.brand), model: String(row.model), price: Number(row.price),
-  year: Number(row.year), images: row.images as string[], bodyType: String(row.body_type), engine: String(row.engine),
+  year: Number(row.year), images: Array.isArray(row.images) ? row.images.map(normalizeCarImage).filter((image): image is CarImage => image !== null) : [], bodyType: String(row.body_type), engine: String(row.engine),
   description: row.description ? String(row.description) : undefined,
   engineVolume: row.engine_volume ? String(row.engine_volume) : undefined,
   power: row.power ? String(row.power) : undefined,

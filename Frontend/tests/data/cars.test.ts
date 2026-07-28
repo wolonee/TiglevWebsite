@@ -10,8 +10,11 @@ describe("catalog data", () => {
   });
 
   it("uses the uploaded images as a gallery without adding stock photos", () => {
-    const imageUrls = ["https://example.com/cover.jpg", "https://example.com/inside.jpg"];
-    expect(getCarGallery({ ...cars[0], images: imageUrls })).toEqual(imageUrls);
+    const images = [
+      { url: "https://example.com/cover.jpg", position: { x: 15, y: 20 } },
+      { url: "https://example.com/inside.jpg", position: { x: 50, y: 50 } },
+    ];
+    expect(getCarGallery({ ...cars[0], images })).toEqual(images);
   });
 
   it("contains only the imported real catalog and its local photos", () => {
@@ -19,7 +22,7 @@ describe("catalog data", () => {
     expect(cars.map((car) => car.id)).toContain("kia-sorento-2017");
     expect(cars.map((car) => car.id)).not.toContain("151698");
     expect(cars.flatMap((car) => car.images ?? [])).toHaveLength(76);
-    expect(cars.flatMap((car) => car.images ?? []).every((image) => image.startsWith("/images/catalog-hq/"))).toBe(true);
+    expect(cars.flatMap((car) => car.images ?? []).every((image) => image.url.startsWith("/images/catalog-hq/"))).toBe(true);
   });
 
   it("does not invent unavailable characteristics", () => {

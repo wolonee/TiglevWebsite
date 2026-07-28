@@ -15,7 +15,11 @@ vi.mock("next/image", () => ({
 const car: Car = {
   id: "car-1", brand: "BMW", model: "X5", price: 5000000, year: 2024,
   image: "https://images.unsplash.com/cover.jpg",
-  images: ["https://images.unsplash.com/cover.jpg", "https://images.unsplash.com/inside.jpg", "https://images.unsplash.com/back.jpg"],
+  images: [
+    { url: "https://images.unsplash.com/cover.jpg", position: { x: 50, y: 50 } },
+    { url: "https://images.unsplash.com/inside.jpg", position: { x: 50, y: 50 } },
+    { url: "https://images.unsplash.com/back.jpg", position: { x: 50, y: 50 } },
+  ],
   bodyType: "Кроссовер", engine: "Бензин",
 };
 
@@ -27,5 +31,11 @@ describe("CarCard", () => {
     fireEvent.load(screen.getByAltText("BMW X5 2024"));
 
     expect(container.querySelectorAll("img")).toHaveLength(3);
+  });
+
+  it("uses the stored focal point for the catalog cover", () => {
+    render(<CarCard car={{ ...car, images: [{ ...car.images![0], position: { x: 20, y: 80 } }] }} />);
+
+    expect(screen.getByAltText("BMW X5 2024")).toHaveStyle({ objectPosition: "20% 80%" });
   });
 });

@@ -14,7 +14,7 @@ const createSeedCar = ({ slug, photoCount, ...car }: SeedCar, sortOrder: number)
   ...car,
   images: Array.from(
     { length: photoCount },
-    (_, index) => `/images/catalog-hq/${slug}/${String(index + 1).padStart(2, "0")}.webp`,
+    (_, index) => ({ url: `/images/catalog-hq/${slug}/${String(index + 1).padStart(2, "0")}.webp`, position: { x: 50, y: 50 } }),
   ),
   status: "active",
   sortOrder,
