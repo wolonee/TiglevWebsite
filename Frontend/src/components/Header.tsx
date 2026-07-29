@@ -30,7 +30,7 @@ export default function Header({ solid = false }: { solid?: boolean }) {
   return <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${opaque ? "border-b border-gray-border/70 bg-white/95 shadow-sm backdrop-blur-xl" : "bg-transparent"}`}>
     <div className="shell flex h-16 items-center justify-between lg:h-20">
       <Link href="/" className="flex items-center gap-2.5" aria-label="TIGLEV.COM — главная">
-        <Image src="/logo-tiglev.png" alt="" width={44} height={44} priority className="rounded-lg" />
+        <Image src="/logo-tiglev-v2.png" alt="" width={44} height={44} priority className="rounded-lg" />
         <span className={`text-xl font-extrabold tracking-tight ${opaque ? "text-dark" : "text-white"}`}>TIGLEV.COM</span>
       </Link>
       <nav className="hidden items-center lg:flex" aria-label="Основная навигация">
