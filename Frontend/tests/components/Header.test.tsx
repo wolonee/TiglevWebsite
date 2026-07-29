@@ -21,4 +21,11 @@ describe("Header", () => {
     render(<Header solid />);
     expect(screen.getByAltText("")).toHaveAttribute("src", expect.stringContaining("logo-tiglev-clean.png"));
   });
+
+  it("links the catalog navigation to the landing page section", () => {
+    render(<Header solid />);
+    screen.getAllByRole("link", { name: "Каталог" }).forEach((link) => {
+      expect(link).toHaveAttribute("href", "/#catalog");
+    });
+  });
 });

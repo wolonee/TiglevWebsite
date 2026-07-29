@@ -9,7 +9,7 @@ import { CONTACT_DETAILS } from "@/data/contactDetails";
 
 const links = [
   { href: "/", label: "Главная" },
-  { href: "/catalog", label: "Каталог" },
+  { href: "/#catalog", label: "Каталог" },
   { href: "/sell", label: "Продать авто" },
   { href: "/import", label: "Авто на заказ" },
 ];
@@ -35,7 +35,7 @@ export default function Header({ solid = false }: { solid?: boolean }) {
         <span className={`truncate text-lg font-extrabold tracking-tight sm:text-xl ${opaque ? "text-dark" : "text-white"}`}>TIGLEV.COM</span>
       </Link>
       <nav className="hidden items-center lg:flex" aria-label="Основная навигация">
-        {links.map(link => { const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href); return <Link key={link.href} href={link.href} aria-current={active ? "page" : undefined} className={`relative px-4 py-2 text-sm font-medium transition-colors hover:text-primary ${active ? opaque ? "text-primary" : "text-white" : opaque ? "text-dark-light" : "text-white/80"}`}>{link.label}{active && <span aria-hidden className="absolute inset-x-4 -bottom-0.5 h-0.5 bg-primary" />}</Link>; })}
+        {links.map(link => { const active = link.href === "/" ? pathname === "/" : !link.href.includes("#") && pathname.startsWith(link.href); return <Link key={link.href} href={link.href} aria-current={active ? "page" : undefined} className={`relative px-4 py-2 text-sm font-medium transition-colors hover:text-primary ${active ? opaque ? "text-primary" : "text-white" : opaque ? "text-dark-light" : "text-white/80"}`}>{link.label}{active && <span aria-hidden className="absolute inset-x-4 -bottom-0.5 h-0.5 bg-primary" />}</Link>; })}
       </nav>
       <div className="hidden items-center gap-3 lg:flex">
         <a href={CONTACT_DETAILS.phones[0].href} className={`flex items-center gap-2 text-sm font-semibold hover:text-primary ${opaque ? "text-dark" : "text-white"}`}><Phone size={16}/>{CONTACT_DETAILS.phones[0].label}</a>
@@ -47,7 +47,7 @@ export default function Header({ solid = false }: { solid?: boolean }) {
     <div className={`fixed inset-0 top-16 z-40 bg-dark/30 transition-opacity lg:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"}`} onClick={() => setOpen(false)} />
     <nav className={`fixed inset-x-0 bottom-0 top-16 z-50 flex flex-col overflow-y-auto border-t border-gray-border bg-white p-4 shadow-[0_18px_40px_rgb(15_23_42/0.18)] transition-transform duration-300 ease-out lg:hidden ${open ? "translate-x-0" : "translate-x-full"}`} aria-label="Мобильная навигация">
       <div className="space-y-1">
-        {links.map(link => <Link key={link.href} href={link.href} onClick={() => setOpen(false)} className={`block rounded-xl px-4 py-3.5 font-medium transition-colors ${pathname === link.href ? "bg-primary/10 text-primary" : "text-dark-light hover:bg-gray-bg"}`}>{link.label}</Link>)}
+        {links.map(link => <Link key={link.href} href={link.href} onClick={() => setOpen(false)} className={`block rounded-xl px-4 py-3.5 font-medium transition-colors ${!link.href.includes("#") && pathname === link.href ? "bg-primary/10 text-primary" : "text-dark-light hover:bg-gray-bg"}`}>{link.label}</Link>)}
       </div>
       <div className="mt-6 border-t border-gray-border pt-5">
         <a href={CONTACT_DETAILS.phones[0].href} className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold text-dark hover:bg-gray-bg"><Phone className="text-primary" size={20}/>{CONTACT_DETAILS.phones[0].label}</a>

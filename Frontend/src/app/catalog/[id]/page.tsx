@@ -39,7 +39,7 @@ export default async function CarPage({ params }: { params: Promise<{ id: string
     <SitePage>
       <section className="bg-gray-bg pb-9 pt-24 sm:pb-12 sm:pt-28">
         <div className="shell">
-          <Link href="/catalog" className="inline-flex items-center gap-2 text-sm text-gray-text hover:text-primary"><ArrowLeft size={16}/>Назад в каталог</Link>
+          <Link href="/#catalog" className="inline-flex items-center gap-2 text-sm text-gray-text hover:text-primary"><ArrowLeft size={16}/>Назад в каталог</Link>
           <div className="mt-6 flex flex-col justify-between gap-3 sm:mt-7 sm:flex-row sm:items-end">
             <div>
               <p className="text-sm text-gray-text">{summary}</p>

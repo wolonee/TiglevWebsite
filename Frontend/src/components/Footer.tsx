@@ -7,16 +7,14 @@ const NAV_SECTIONS = [
   {
     title: "Навигация",
     links: [
-      { href: "/#services", label: "Услуги" },
-      { href: "/catalog", label: "Каталог" },
-      { href: "/#about", label: "О компании" },
+      { href: "/#catalog", label: "Каталог" },
       { href: "/contacts", label: "Контакты" },
     ],
   },
   {
     title: "Услуги",
     links: [
-      { href: "/catalog", label: "Продажа авто" },
+      { href: "/#catalog", label: "Продажа авто" },
       { href: "/sell", label: "Выкуп авто" },
       { href: "/import", label: "Авто из Европы" },
       { href: "/sell", label: "Оценка авто" },

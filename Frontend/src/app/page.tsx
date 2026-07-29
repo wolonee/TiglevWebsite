@@ -1,19 +1,22 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import Services from "@/components/Services";
-import WhyUs from "@/components/WhyUs";
+import CatalogGrid from "@/components/CatalogGrid";
 import Contacts from "@/components/Contacts";
 import Footer from "@/components/Footer";
 import RevealSection from "@/components/RevealSection";
+import { getCatalogCars } from "@/data/cars";
 
-const HomePage = () => {
+export const revalidate = 900;
+
+const HomePage = async () => {
+  const catalogCars = await getCatalogCars();
+
   return (
     <>
       <Header />
       <main>
         <Hero />
-        <RevealSection><Services /></RevealSection>
-        <RevealSection><WhyUs /></RevealSection>
+        <CatalogGrid cars={catalogCars} />
         <RevealSection><Contacts /></RevealSection>
       </main>
       <Footer />

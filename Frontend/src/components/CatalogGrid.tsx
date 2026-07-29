@@ -30,7 +30,7 @@ export default function CatalogGrid({ cars }: { cars: Car[] }) {
     });
     const params = new URLSearchParams();
     if (brand) params.set("brand", brand); if (body) params.set("body", body); if (min) params.set("min", min); if (max) params.set("max", max);
-    window.history.replaceState(null, "", params.size ? `/catalog?${params.toString()}` : "/catalog");
+    window.history.replaceState(null, "", params.size ? `/?${params.toString()}#catalog` : "/#catalog");
   };
   useEffect(() => {
     const syncFromUrl = () => {

@@ -60,7 +60,7 @@ const Hero = () => {
 
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce">
         <a
-          href="#services"
+          href="#catalog"
           className="flex h-10 w-6 items-start justify-center rounded-full border-2 border-white/20 pt-1.5"
           aria-label="Прокрутить вниз"
         >
