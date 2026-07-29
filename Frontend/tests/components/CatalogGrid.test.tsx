@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import CatalogGrid from "@/components/CatalogGrid";
 import type { Car } from "@/data/cars";
@@ -18,6 +18,8 @@ const car: Car = {
   engine: "Бензин",
 };
 
+const expensiveCar: Car = { ...car, id: "car-2", model: "Carnival", price: 4_000_000 };
+
 describe("CatalogGrid", () => {
   beforeEach(() => {
     vi.stubGlobal("IntersectionObserver", class {
@@ -26,13 +28,18 @@ describe("CatalogGrid", () => {
     });
   });
 
-  it("shows only price filters without a filter toggle", () => {
-    render(<CatalogGrid cars={[car]} />);
+  it("filters cars immediately with a price slider", () => {
+    render(<CatalogGrid cars={[car, expensiveCar]} />);
 
-    expect(screen.getByPlaceholderText("Цена от, ₽")).toBeVisible();
-    expect(screen.getByPlaceholderText("Цена до, ₽")).toBeVisible();
-    expect(screen.queryByRole("button", { name: "Фильтры" })).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Марка автомобиля")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Тип кузова")).not.toBeInTheDocument();
+    const priceSlider = screen.getByRole("slider", { name: "Цена до" });
+    expect(priceSlider).toHaveAttribute("min", "0");
+    expect(priceSlider).toHaveAttribute("max", "4000000");
+    expect(screen.queryByRole("button", { name: "Найти" })).not.toBeInTheDocument();
+
+    fireEvent.change(priceSlider, { target: { value: "3000000" } });
+
+    expect(screen.getByText("KIA Sorento")).toBeInTheDocument();
+    expect(screen.queryByText("KIA Carnival")).not.toBeInTheDocument();
+    expect(window.location.search).toBe("?max=3000000");
   });
 });
