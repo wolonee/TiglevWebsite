@@ -14,15 +14,15 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <div className="min-h-screen bg-gray-bg">
       <header className="border-b border-gray-border bg-white">
-        <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/admin/cars" className="flex items-center gap-2 font-bold text-dark">
+        <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-3 sm:px-6 lg:px-8">
+          <Link href="/admin/cars" className="flex shrink-0 items-center gap-2 font-bold text-dark">
             <ShieldCheck className="h-5 w-5 text-primary" />
             <span className="hidden md:inline">TIGLEV.COM · Админка</span>
           </Link>
           <div className="flex items-center gap-2"><AdminNavigation /><UserButton /></div>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">{children}</main>
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">{children}</main>
     </div>
   );
 }

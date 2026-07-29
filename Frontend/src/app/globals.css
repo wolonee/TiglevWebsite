@@ -76,6 +76,7 @@ html {
   scroll-behavior: smooth;
   scroll-padding-top: 5rem;
   overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -107,6 +108,11 @@ button, input, select, textarea { font: inherit; }
 [role="option"]:focus-visible {
   outline: none;
   box-shadow: none;
+}
+
+@media (max-width: 639px) {
+  .section-space { padding-block: 3.5rem; }
+  .shell { width: min(100% - 1.5rem, 80rem); }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -21,6 +21,7 @@ export default function CatalogGrid({ cars }: { cars: Car[] }) {
   const [appliedBrand, setAppliedBrand] = useState(emptyFilters.brand); const [appliedBody, setAppliedBody] = useState(emptyFilters.body);
   const [appliedMin, setAppliedMin] = useState(emptyFilters.min); const [appliedMax, setAppliedMax] = useState(emptyFilters.max); const [visible, setVisible] = useState(6);
   const [isUpdating, startCatalogTransition] = useTransition();
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const sentinel = useRef<HTMLDivElement>(null);
   const filtered = useMemo(() => cars.filter(c => (!appliedBrand || c.brand === appliedBrand) && (!appliedBody || c.bodyType === appliedBody) && (!appliedMin || c.price >= Number(appliedMin)) && (!appliedMax || c.price <= Number(appliedMax))), [cars, appliedBrand, appliedBody, appliedMin, appliedMax]);
   const applyFilters = () => {
@@ -43,16 +44,17 @@ export default function CatalogGrid({ cars }: { cars: Car[] }) {
   }, []);
   useEffect(() => { const node = sentinel.current; if (!node) return; const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) setVisible(v => Math.min(v + 3, filtered.length)); }, { rootMargin: "600px" }); observer.observe(node); return () => observer.disconnect(); }, [filtered.length]);
   const field = "w-full rounded-xl border border-gray-border bg-white px-4 py-3 text-sm text-dark outline-none shadow-none transition-colors focus:border-primary focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:shadow-none";
+  const selectedFilters = [brand, body, min, max].filter(Boolean).length;
   return <section id="catalog" className="section-space bg-gray-bg"><div className="shell">
-    <div className="mb-10 flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><SectionHeading eyebrow="Каталог" title="Автомобили в наличии" description={`${filtered.length} автомобилей`} align="left"/><SlidersHorizontal className="text-primary"/></div>
-    <div className="mb-10 grid gap-3 rounded-[20px] border border-gray-border bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-5">
+    <div className="mb-7 flex flex-col justify-between gap-4 sm:mb-10 sm:flex-row sm:items-end"><SectionHeading eyebrow="Каталог" title="Автомобили в наличии" description={`${filtered.length} автомобилей`} align="left"/><button type="button" onClick={() => setFiltersOpen((open) => !open)} aria-expanded={filtersOpen} aria-controls="catalog-filters" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gray-border bg-white px-4 py-3 text-sm font-semibold text-dark sm:hidden"><SlidersHorizontal className="h-4 w-4 text-primary"/>{filtersOpen ? "Скрыть фильтры" : "Фильтры"}{selectedFilters > 0 && <span className="rounded-full bg-primary px-1.5 py-0.5 text-xs text-white">{selectedFilters}</span>}</button><SlidersHorizontal className="hidden text-primary sm:block"/></div>
+    <div id="catalog-filters" className={`${filtersOpen ? "grid" : "hidden"} mb-7 gap-3 rounded-[20px] border border-gray-border bg-white p-4 shadow-sm sm:mb-10 sm:grid sm:grid-cols-2 lg:grid-cols-5`}>
       <AppSelect searchable searchPlaceholder="Найти марку…" ariaLabel="Марка автомобиля" placeholder="Все марки" clearLabel="Все марки" options={brands} value={brand} onValueChange={value => { setBrand(value); setVisible(6); }}/>
       <AppSelect searchable ariaLabel="Тип кузова" placeholder="Все кузова" clearLabel="Все кузова" options={bodyTypes} value={body} onValueChange={value => { setBody(value); setVisible(6); }}/>
       <input className={field} inputMode="numeric" placeholder="Цена от, ₽" value={min} onChange={e => setMin(e.target.value.replace(/\D/g, ""))} onKeyDown={e => { if (e.key === "Enter") applyFilters(); }}/>
       <input className={field} inputMode="numeric" placeholder="Цена до, ₽" value={max} onChange={e => setMax(e.target.value.replace(/\D/g, ""))} onKeyDown={e => { if (e.key === "Enter") applyFilters(); }}/>
       <button onClick={applyFilters} className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-primary-dark"><Search className="h-4 w-4"/>Найти</button>
     </div>
-    <div className="catalog-results" data-updating={isUpdating}>{filtered.length ? <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">{filtered.slice(0, visible).map((car, index) => <CarCard key={car.id} car={car} preloadCover={index < 3}/>)}</div> : <div className="rounded-[20px] border border-gray-border bg-white py-20 text-center"><h3 className="text-xl font-bold text-dark">Автомобили не найдены</h3><p className="mt-2 text-gray-text">Попробуйте изменить параметры фильтра</p></div>}</div>
+    <div className="catalog-results" data-updating={isUpdating}>{filtered.length ? <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-8">{filtered.slice(0, visible).map((car, index) => <CarCard key={car.id} car={car} preloadCover={index < 3}/>)}</div> : <div className="rounded-[20px] border border-gray-border bg-white px-5 py-16 text-center"><h3 className="text-xl font-bold text-dark">Автомобили не найдены</h3><p className="mt-2 text-sm text-gray-text">Попробуйте изменить параметры фильтра</p></div>}</div>
     <div ref={sentinel} className="h-1" />{visible < filtered.length && <p className="mt-8 text-center text-sm text-gray-text">Загружаем ещё автомобили…</p>}
   </div></section>;
 }

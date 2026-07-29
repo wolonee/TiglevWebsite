@@ -137,25 +137,25 @@ export default function AdminCarManager() {
   return (
     <>
     <section>
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="eyebrow">Каталог</p>
           <h1 className="mt-3 text-3xl font-bold text-dark">{trash ? "Корзина" : "Автомобили"}</h1>
           <p className="mt-2 text-gray-text">Показано {visibleCars.length} из {cars.length}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => void loadCars()} className="rounded-xl border border-gray-border bg-white p-3 text-gray-text hover:border-primary hover:text-primary" aria-label="Обновить список">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+          <button type="button" onClick={() => void loadCars()} className="flex h-12 items-center justify-center rounded-xl border border-gray-border bg-white text-gray-text hover:border-primary hover:text-primary sm:h-auto sm:w-auto sm:p-3" aria-label="Обновить список">
             <RefreshCw className="h-5 w-5" />
           </button>
-          {orderChanged && <button type="button" disabled={savingOrder} onClick={() => void saveOrder()} className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-bold text-white disabled:opacity-60">{savingOrder && <LoaderCircle className="h-5 w-5 animate-spin" />}Сохранить порядок</button>}
-          <button type="button" onClick={() => setTrash((value) => !value)} className="inline-flex items-center gap-2 rounded-xl border border-gray-border bg-white px-5 py-3 font-semibold text-dark hover:border-primary hover:text-primary">
+          {orderChanged && <button type="button" disabled={savingOrder} onClick={() => void saveOrder()} className="col-span-2 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 font-bold text-white disabled:opacity-60 sm:col-auto">{savingOrder && <LoaderCircle className="h-5 w-5 animate-spin" />}Сохранить порядок</button>}
+          <button type="button" onClick={() => setTrash((value) => !value)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-border bg-white px-5 py-3 font-semibold text-dark hover:border-primary hover:text-primary">
             {trash ? <RotateCcw className="h-5 w-5" /> : <Trash2 className="h-5 w-5" />}{trash ? "К каталогу" : "Корзина"}
           </button>
-          {!trash && <Link href="/admin/cars/new" className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-bold text-white hover:bg-primary-dark"><Plus className="h-5 w-5" />Добавить автомобиль</Link>}
+          {!trash && <Link href="/admin/cars/new" className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 font-bold text-white hover:bg-primary-dark"><Plus className="h-5 w-5" />Добавить автомобиль</Link>}
         </div>
       </div>
 
-      <div className="mb-6 grid gap-3 rounded-2xl border border-gray-border bg-white p-4 md:grid-cols-[1fr_220px_220px_auto]">
+      <div className="mb-6 grid gap-3 rounded-2xl border border-gray-border bg-white p-3 sm:p-4 md:grid-cols-[1fr_220px_220px_auto]">
         <label className="relative"><Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-text" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Марка, модель или год" className="w-full rounded-xl border border-gray-border py-3 pl-11 pr-4 text-sm outline-none focus:border-primary" /></label>
         <AppSelect ariaLabel="Фильтр по марке" searchable searchPlaceholder="Найти марку…" placeholder="Все марки" clearLabel="Все марки" options={brands} value={brand} onValueChange={setBrand} />
         <AppSelect ariaLabel="Фильтр по статусу" placeholder="Все статусы" clearLabel="Все статусы" options={Object.values(statusLabel)} value={status ? statusLabel[status as ManagedCar["status"]] : ""} onValueChange={(value) => setStatus(Object.entries(statusLabel).find(([, label]) => label === value)?.[0] ?? "")} />
