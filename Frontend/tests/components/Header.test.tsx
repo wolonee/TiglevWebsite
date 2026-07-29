@@ -19,6 +19,6 @@ describe("Header", () => {
 
   it("uses the TIGLEV logo asset", () => {
     render(<Header solid />);
-    expect(screen.getByAltText("")).toHaveAttribute("src", expect.stringContaining("logo-tiglev-transparent.png"));
+    expect(screen.getByAltText("")).toHaveAttribute("src", expect.stringContaining("logo-tiglev-clean.png"));
   });
 });
