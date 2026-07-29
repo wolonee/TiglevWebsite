@@ -172,16 +172,18 @@ export default function AdminCarManager() {
           {visibleCars.map((car) => {
             const index = cars.findIndex((item) => item.id === car.id);
             return (
-              <article key={car.id} style={{ viewTransitionName: `admin-car-${car.id}` }} className="overflow-hidden rounded-2xl border border-gray-border bg-white transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-                <div className="relative aspect-[16/10] bg-gray-bg">
-                  <Image src={car.images[0].url} alt={`${car.brand} ${car.model}`} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" style={{ objectPosition: imageObjectPosition(car.images[0]) }} />
-                  <span className={`absolute left-3 top-3 rounded-lg px-2.5 py-1 text-xs font-semibold ${trash ? "bg-red-100 text-red-700" : statusColor[car.status]}`}>{trash ? "Удалено" : statusLabel[car.status]}</span>
-                </div>
-                <div className="p-5">
-                  <p className="text-xs text-gray-text">{car.year} · {car.bodyType}</p>
-                  <h2 className="mt-1 text-lg font-bold text-dark">{car.brand} {car.model}</h2>
-                  <p className="mt-2 text-xl font-extrabold text-primary">{formatPrice(car.price)}</p>
-                  <div className="mt-5 grid grid-cols-2 gap-2">
+              <article key={car.id} style={{ viewTransitionName: `admin-car-${car.id}` }} className={`relative overflow-hidden rounded-2xl border border-gray-border bg-white transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-lg ${trash ? "" : "cursor-pointer"}`}>
+                {!trash && <Link href={`/admin/cars/${car.id}/edit`} aria-label={`Редактировать ${car.brand} ${car.model}`} className="absolute inset-0 z-0 rounded-2xl focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" />}
+                <div className={`relative z-10 ${trash ? "" : "pointer-events-none"}`}>
+                  <div className="relative aspect-[16/10] bg-gray-bg">
+                    <Image src={car.images[0].url} alt={`${car.brand} ${car.model}`} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" style={{ objectPosition: imageObjectPosition(car.images[0]) }} />
+                    <span className={`absolute left-3 top-3 rounded-lg px-2.5 py-1 text-xs font-semibold ${trash ? "bg-red-100 text-red-700" : statusColor[car.status]}`}>{trash ? "Удалено" : statusLabel[car.status]}</span>
+                  </div>
+                  <div className="p-5">
+                    <p className="text-xs text-gray-text">{car.year} · {car.bodyType}</p>
+                    <h2 className="mt-1 text-lg font-bold text-dark">{car.brand} {car.model}</h2>
+                    <p className="mt-2 text-xl font-extrabold text-primary">{formatPrice(car.price)}</p>
+                    <div className="pointer-events-auto mt-5 grid grid-cols-2 gap-2">
                     {trash ? (
                       <button type="button" disabled={workingId === car.id} onClick={() => void restore(car)} className="col-span-2 inline-flex items-center justify-center gap-2 rounded-xl border border-green-200 px-3 py-2.5 text-sm font-semibold text-green-700 hover:bg-green-50 disabled:opacity-50"><RotateCcw className="h-4 w-4" />Восстановить</button>
                     ) : (
@@ -192,6 +194,7 @@ export default function AdminCarManager() {
                         <button type="button" disabled={workingId === car.id} onClick={() => setCarToRemove(car)} className="col-span-2 inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"><Trash2 className="h-4 w-4" />В корзину</button>
                       </>
                     )}
+                    </div>
                   </div>
                 </div>
               </article>
