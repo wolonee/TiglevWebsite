@@ -19,6 +19,16 @@ type IdleCallbackWindow = Window & {
   cancelIdleCallback?: (handle: number) => void;
 };
 
+const catalogDescriptionLimit = 110;
+
+function truncateCatalogDescription(description?: string) {
+  const text = description?.trim() ?? "";
+  if (text.length <= catalogDescriptionLimit) return text;
+
+  const truncatedAtWord = text.slice(0, catalogDescriptionLimit).replace(/\s+\S*$/, "").trimEnd();
+  return `${truncatedAtWord || text.slice(0, catalogDescriptionLimit).trimEnd()}...`;
+}
+
 const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
   const images = getCarGallery(car);
   const [activeImage, setActiveImage] = useState(0);
@@ -26,6 +36,7 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
   const [coverLoaded, setCoverLoaded] = useState(false);
   const [shouldPreloadGallery, setShouldPreloadGallery] = useState(false);
   const stepImage = useCallback((direction: number) => setActiveImage((current) => (current + direction + images.length) % images.length), [images.length]);
+  const catalogDescription = truncateCatalogDescription(car.description);
 
   useEffect(() => {
     if (!isHovered) return;
@@ -113,7 +124,7 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
         </div>
 
         <p className="mb-3 min-h-10 line-clamp-2 text-xs leading-5 text-gray-text sm:mb-4 sm:min-h-14 sm:text-sm sm:leading-relaxed">
-          {car.description}
+          {catalogDescription}
         </p>
 
         <div className="mt-auto border-t border-gray-border pt-3 sm:flex sm:items-center sm:justify-between sm:pt-4">

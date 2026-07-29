@@ -49,4 +49,13 @@ describe("CarCard", () => {
 
     expect(screen.getByText(description)).toHaveClass("line-clamp-2", "min-h-10");
   });
+
+  it("ends long catalog descriptions without rendering their continuation", () => {
+    const continuation = "Продолжение, которое не должно попасть в карточку каталога.";
+    const description = `${"Длинное описание автомобиля ".repeat(8)}${continuation}`;
+    render(<CarCard car={{ ...car, description }} />);
+
+    expect(screen.getByText(/\.\.\.$/)).toBeInTheDocument();
+    expect(screen.queryByText(continuation)).not.toBeInTheDocument();
+  });
 });
