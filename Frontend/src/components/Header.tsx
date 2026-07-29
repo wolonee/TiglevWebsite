@@ -27,7 +27,8 @@ export default function Header({ solid = false }: { solid?: boolean }) {
   }, []);
   useEffect(() => { document.body.style.overflow = open ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [open]);
 
-  return <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${opaque ? "border-b border-gray-border/70 bg-white/95 shadow-sm backdrop-blur-xl" : "bg-transparent"}`}>
+  return <>
+    <header className={`fixed inset-x-0 top-0 z-[60] transition-all duration-500 ${opaque ? "border-b border-gray-border/70 bg-white/95 shadow-sm backdrop-blur-xl" : "bg-transparent"}`}>
     <div className="shell flex h-16 items-center justify-between lg:h-20">
       <Link href="/" className="flex min-w-0 items-center gap-2.5" aria-label="TIGLEV.COM — главная">
         <Image src="/logo-tiglev-clean.png" alt="" width={44} height={44} priority unoptimized className="h-11 w-11 shrink-0 rounded-lg" />
@@ -42,8 +43,9 @@ export default function Header({ solid = false }: { solid?: boolean }) {
       </div>
       <button className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg lg:hidden ${opaque ? "text-dark" : "text-white"}`} onClick={() => setOpen(v => !v)} aria-expanded={open} aria-label={open ? "Закрыть меню" : "Открыть меню"}>{open ? <X/> : <Menu/>}</button>
     </div>
+    </header>
     <div className={`fixed inset-0 top-16 z-40 bg-dark/30 transition-opacity lg:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"}`} onClick={() => setOpen(false)} />
-    <nav className={`fixed inset-x-0 bottom-0 top-16 z-50 flex flex-col overflow-y-auto border-t border-gray-border bg-white p-4 shadow-[0_18px_40px_rgb(15_23_42/0.18)] transition-transform duration-300 ease-out lg:hidden ${open ? "translate-y-0" : "-translate-y-full"}`} aria-label="Мобильная навигация">
+    <nav className={`fixed inset-x-0 bottom-0 top-16 z-50 flex flex-col overflow-y-auto border-t border-gray-border bg-white p-4 shadow-[0_18px_40px_rgb(15_23_42/0.18)] transition-transform duration-300 ease-out lg:hidden ${open ? "translate-x-0" : "translate-x-full"}`} aria-label="Мобильная навигация">
       <div className="space-y-1">
         {links.map(link => <Link key={link.href} href={link.href} onClick={() => setOpen(false)} className={`block rounded-xl px-4 py-3.5 font-medium transition-colors ${pathname === link.href ? "bg-primary/10 text-primary" : "text-dark-light hover:bg-gray-bg"}`}>{link.label}</Link>)}
       </div>
@@ -52,5 +54,5 @@ export default function Header({ solid = false }: { solid?: boolean }) {
         <Link href="/contacts" onClick={() => setOpen(false)} className="mt-3 block rounded-xl bg-primary px-5 py-3.5 text-center font-semibold text-white transition-colors hover:bg-primary-dark">Написать нам</Link>
       </div>
     </nav>
-  </header>;
+  </>;
 }
