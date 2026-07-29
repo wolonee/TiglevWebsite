@@ -34,12 +34,8 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
   const [activeImage, setActiveImage] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [coverLoaded, setCoverLoaded] = useState(false);
-  const [shouldPreloadNextImage, setShouldPreloadNextImage] = useState(false);
-  const [shouldPreloadRemainingImages, setShouldPreloadRemainingImages] = useState(false);
-  const stepImage = useCallback((direction: number) => {
-    setShouldPreloadRemainingImages(true);
-    setActiveImage((current) => (current + direction + images.length) % images.length);
-  }, [images.length]);
+  const [shouldPreloadGallery, setShouldPreloadGallery] = useState(false);
+  const stepImage = useCallback((direction: number) => setActiveImage((current) => (current + direction + images.length) % images.length), [images.length]);
   const catalogDescription = truncateCatalogDescription(car.description);
 
   useEffect(() => {
@@ -60,7 +56,7 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
     const connection = (navigator as Navigator & { connection?: { effectiveType?: string; saveData?: boolean } }).connection;
     if (connection?.saveData || connection?.effectiveType === "slow-2g" || connection?.effectiveType === "2g") return;
 
-    const preload = () => setShouldPreloadNextImage(true);
+    const preload = () => setShouldPreloadGallery(true);
     const browserWindow = window as IdleCallbackWindow;
     if (typeof browserWindow.requestIdleCallback === "function") {
       const callbackId = browserWindow.requestIdleCallback(preload, { timeout: 1500 });
@@ -71,11 +67,8 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
     return () => window.clearTimeout(timeoutId);
   }, [coverLoaded, images.length]);
 
-  const nextImageIndex = (activeImage + 1) % images.length;
-  const nextImage = images[nextImageIndex];
-
   return (
-    <article onMouseEnter={() => { setIsHovered(true); setShouldPreloadRemainingImages(true); }} onMouseLeave={() => setIsHovered(false)} className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-border bg-white sm:rounded-2xl">
+    <article onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-border bg-white sm:rounded-2xl">
       <Link
         href={`/catalog/${car.id}`}
         aria-label={`Подробнее о ${car.brand} ${car.model}`}
@@ -99,21 +92,7 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
           sizes="(max-width: 639px) 50vw, (max-width: 1024px) 50vw, 33vw"
           style={{ objectPosition: imageObjectPosition(images[activeImage]) }}
         />
-        {shouldPreloadNextImage && images.length > 1 && (
-          <Image
-            key={nextImage.url}
-            src={nextImage.url}
-            alt=""
-            aria-hidden
-            fill
-            loading="eager"
-            fetchPriority="low"
-            quality={85}
-            sizes="(max-width: 639px) 50vw, (max-width: 1024px) 50vw, 33vw"
-            className="pointer-events-none opacity-0"
-          />
-        )}
-        {shouldPreloadRemainingImages && images.filter((_, index) => index !== activeImage && index !== nextImageIndex).map((image) => (
+        {shouldPreloadGallery && images.slice(1).map((image) => (
           <Image key={image.url} src={image.url} alt="" aria-hidden fill loading="eager" fetchPriority="low" quality={85} sizes="(max-width: 639px) 50vw, (max-width: 1024px) 50vw, 33vw" className="pointer-events-none opacity-0" />
         ))}
         <div className="absolute inset-0 bg-gradient-to-t from-dark/30 via-transparent to-transparent opacity-100 transition-opacity duration-300 md:opacity-0 md:group-hover:opacity-100" />
