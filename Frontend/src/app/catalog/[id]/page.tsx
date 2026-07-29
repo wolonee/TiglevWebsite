@@ -37,21 +37,22 @@ export default async function CarPage({ params }: { params: Promise<{ id: string
 
   return (
     <SitePage>
-      <section className="bg-gray-bg pb-12 pt-28">
+      <section className="bg-gray-bg pb-9 pt-24 sm:pb-12 sm:pt-28">
         <div className="shell">
-          <Link href="/catalog" className="inline-flex items-center gap-2 text-sm text-gray-text hover:text-primary"><ArrowLeft size={16}/>Назад в каталог</Link>
-          <div className="mt-7 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+          <Link href="/#catalog" className="inline-flex items-center gap-2 text-sm text-gray-text hover:text-primary"><ArrowLeft size={16}/>Назад в каталог</Link>
+          <div className="mt-6 flex flex-col justify-between gap-3 sm:mt-7 sm:flex-row sm:items-end">
             <div>
               <p className="text-sm text-gray-text">{summary}</p>
-              <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-dark sm:text-4xl">{car.brand} {car.model}</h1>
+              <h1 className="mt-1 text-[2rem] font-extrabold tracking-tight text-dark sm:text-4xl">{car.brand} {car.model}</h1>
             </div>
             <p className="text-3xl font-extrabold text-primary">{formatPrice(car.price)}</p>
           </div>
         </div>
       </section>
-      <section className="section-space pt-10">
-        <div className="shell grid gap-8 lg:grid-cols-[.7fr_1.3fr]">
-          <aside className="rounded-[20px] border border-gray-border bg-white p-7">
+      <section className="section-space pt-6 sm:pt-10">
+        <div className="shell grid gap-5 sm:gap-8 lg:grid-cols-[.7fr_1.3fr]">
+          <div className="order-1 lg:order-2"><CarGallery images={getCarGallery(car)} alt={`${car.brand} ${car.model}`}/></div>
+          <aside className="order-2 rounded-[20px] border border-gray-border bg-white p-5 sm:p-7 lg:order-1">
             <h2 className="mb-4 text-xl font-bold text-dark">Характеристики</h2>
             {specs.map(([label, value]) => (
               <div key={label} className="flex justify-between gap-4 border-b border-gray-border py-3 text-sm last:border-0">
@@ -60,9 +61,8 @@ export default async function CarPage({ params }: { params: Promise<{ id: string
               </div>
             ))}
           </aside>
-          <CarGallery images={getCarGallery(car)} alt={`${car.brand} ${car.model}`}/>
           {car.description ? (
-            <div className="lg:col-span-2">
+            <div className="order-3 lg:col-span-2">
               <h2 className="text-2xl font-bold text-dark">Описание</h2>
               <p className="mt-4 leading-7 text-gray-text">{car.description}</p>
             </div>

@@ -137,25 +137,25 @@ export default function AdminCarManager() {
   return (
     <>
     <section>
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="eyebrow">Каталог</p>
           <h1 className="mt-3 text-3xl font-bold text-dark">{trash ? "Корзина" : "Автомобили"}</h1>
           <p className="mt-2 text-gray-text">Показано {visibleCars.length} из {cars.length}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => void loadCars()} className="rounded-xl border border-gray-border bg-white p-3 text-gray-text hover:border-primary hover:text-primary" aria-label="Обновить список">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+          <button type="button" onClick={() => void loadCars()} className="flex h-12 items-center justify-center rounded-xl border border-gray-border bg-white text-gray-text hover:border-primary hover:text-primary sm:h-auto sm:w-auto sm:p-3" aria-label="Обновить список">
             <RefreshCw className="h-5 w-5" />
           </button>
-          {orderChanged && <button type="button" disabled={savingOrder} onClick={() => void saveOrder()} className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-bold text-white disabled:opacity-60">{savingOrder && <LoaderCircle className="h-5 w-5 animate-spin" />}Сохранить порядок</button>}
-          <button type="button" onClick={() => setTrash((value) => !value)} className="inline-flex items-center gap-2 rounded-xl border border-gray-border bg-white px-5 py-3 font-semibold text-dark hover:border-primary hover:text-primary">
+          {orderChanged && <button type="button" disabled={savingOrder} onClick={() => void saveOrder()} className="col-span-2 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 font-bold text-white disabled:opacity-60 sm:col-auto">{savingOrder && <LoaderCircle className="h-5 w-5 animate-spin" />}Сохранить порядок</button>}
+          <button type="button" onClick={() => setTrash((value) => !value)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-border bg-white px-5 py-3 font-semibold text-dark hover:border-primary hover:text-primary">
             {trash ? <RotateCcw className="h-5 w-5" /> : <Trash2 className="h-5 w-5" />}{trash ? "К каталогу" : "Корзина"}
           </button>
-          {!trash && <Link href="/admin/cars/new" className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-bold text-white hover:bg-primary-dark"><Plus className="h-5 w-5" />Добавить автомобиль</Link>}
+          {!trash && <Link href="/admin/cars/new" className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 font-bold text-white hover:bg-primary-dark"><Plus className="h-5 w-5" />Добавить автомобиль</Link>}
         </div>
       </div>
 
-      <div className="mb-6 grid gap-3 rounded-2xl border border-gray-border bg-white p-4 md:grid-cols-[1fr_220px_220px_auto]">
+      <div className="mb-6 grid gap-3 rounded-2xl border border-gray-border bg-white p-3 sm:p-4 md:grid-cols-[1fr_220px_220px_auto]">
         <label className="relative"><Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-text" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Марка, модель или год" className="w-full rounded-xl border border-gray-border py-3 pl-11 pr-4 text-sm outline-none focus:border-primary" /></label>
         <AppSelect ariaLabel="Фильтр по марке" searchable searchPlaceholder="Найти марку…" placeholder="Все марки" clearLabel="Все марки" options={brands} value={brand} onValueChange={setBrand} />
         <AppSelect ariaLabel="Фильтр по статусу" placeholder="Все статусы" clearLabel="Все статусы" options={Object.values(statusLabel)} value={status ? statusLabel[status as ManagedCar["status"]] : ""} onValueChange={(value) => setStatus(Object.entries(statusLabel).find(([, label]) => label === value)?.[0] ?? "")} />
@@ -172,16 +172,18 @@ export default function AdminCarManager() {
           {visibleCars.map((car) => {
             const index = cars.findIndex((item) => item.id === car.id);
             return (
-              <article key={car.id} style={{ viewTransitionName: `admin-car-${car.id}` }} className="overflow-hidden rounded-2xl border border-gray-border bg-white transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-                <div className="relative aspect-[16/10] bg-gray-bg">
-                  <Image src={car.images[0].url} alt={`${car.brand} ${car.model}`} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" style={{ objectPosition: imageObjectPosition(car.images[0]) }} />
-                  <span className={`absolute left-3 top-3 rounded-lg px-2.5 py-1 text-xs font-semibold ${trash ? "bg-red-100 text-red-700" : statusColor[car.status]}`}>{trash ? "Удалено" : statusLabel[car.status]}</span>
-                </div>
-                <div className="p-5">
-                  <p className="text-xs text-gray-text">{car.year} · {car.bodyType}</p>
-                  <h2 className="mt-1 text-lg font-bold text-dark">{car.brand} {car.model}</h2>
-                  <p className="mt-2 text-xl font-extrabold text-primary">{formatPrice(car.price)}</p>
-                  <div className="mt-5 grid grid-cols-2 gap-2">
+              <article key={car.id} style={{ viewTransitionName: `admin-car-${car.id}` }} className={`relative overflow-hidden rounded-2xl border border-gray-border bg-white transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-lg ${trash ? "" : "cursor-pointer"}`}>
+                {!trash && <Link href={`/admin/cars/${car.id}/edit`} aria-label={`Редактировать ${car.brand} ${car.model}`} className="absolute inset-0 z-0 rounded-2xl focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" />}
+                <div className={`relative z-10 ${trash ? "" : "pointer-events-none"}`}>
+                  <div className="relative aspect-[16/10] bg-gray-bg">
+                    <Image src={car.images[0].url} alt={`${car.brand} ${car.model}`} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" style={{ objectPosition: imageObjectPosition(car.images[0]) }} />
+                    <span className={`absolute left-3 top-3 rounded-lg px-2.5 py-1 text-xs font-semibold ${trash ? "bg-red-100 text-red-700" : statusColor[car.status]}`}>{trash ? "Удалено" : statusLabel[car.status]}</span>
+                  </div>
+                  <div className="p-5">
+                    <p className="text-xs text-gray-text">{car.year} · {car.bodyType}</p>
+                    <h2 className="mt-1 text-lg font-bold text-dark">{car.brand} {car.model}</h2>
+                    <p className="mt-2 text-xl font-extrabold text-primary">{formatPrice(car.price)}</p>
+                    <div className="pointer-events-auto mt-5 grid grid-cols-2 gap-2">
                     {trash ? (
                       <button type="button" disabled={workingId === car.id} onClick={() => void restore(car)} className="col-span-2 inline-flex items-center justify-center gap-2 rounded-xl border border-green-200 px-3 py-2.5 text-sm font-semibold text-green-700 hover:bg-green-50 disabled:opacity-50"><RotateCcw className="h-4 w-4" />Восстановить</button>
                     ) : (
@@ -192,6 +194,7 @@ export default function AdminCarManager() {
                         <button type="button" disabled={workingId === car.id} onClick={() => setCarToRemove(car)} className="col-span-2 inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"><Trash2 className="h-4 w-4" />В корзину</button>
                       </>
                     )}
+                    </div>
                   </div>
                 </div>
               </article>

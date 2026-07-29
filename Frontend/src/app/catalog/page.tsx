@@ -1,12 +1,11 @@
-import type { Metadata } from "next";
-import CatalogGrid from "@/components/CatalogGrid";
-import SitePage, { PageHero } from "@/components/SitePage";
-import { getCatalogCars } from "@/data/cars";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = { title: "Каталог автомобилей — TIGLEV.COM" };
-export const revalidate = 900;
+type CatalogPageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-export default async function CatalogPage() {
-  const catalogCars = await getCatalogCars();
-  return <SitePage><PageHero eyebrow="Каталог" title="Автомобили в наличии" text="Проверенные автомобили с прозрачной историей и готовыми документами"/><CatalogGrid cars={catalogCars}/></SitePage>;
+export default async function CatalogPage({ searchParams }: CatalogPageProps) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(await searchParams)) {
+    if (typeof value === "string") params.set(key, value);
+  }
+  redirect(params.size ? `/?${params.toString()}#catalog` : "/#catalog");
 }

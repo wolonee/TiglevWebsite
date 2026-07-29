@@ -69,6 +69,8 @@
 
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
 ::view-transition-group(*) { animation-duration: .48s; animation-timing-function: cubic-bezier(.22, 1, .36, 1); }
+/* Public pages change instantly; named transitions below are only for the admin UI. */
+::view-transition-group(root) { animation: none; }
 ::view-transition-group(admin-nav-indicator) { animation-duration: .24s; }
 ::view-transition-old(admin-nav-indicator), ::view-transition-new(admin-nav-indicator) { height: 100%; }
 
@@ -76,6 +78,7 @@ html {
   scroll-behavior: smooth;
   scroll-padding-top: 5rem;
   overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -107,6 +110,11 @@ button, input, select, textarea { font: inherit; }
 [role="option"]:focus-visible {
   outline: none;
   box-shadow: none;
+}
+
+@media (max-width: 639px) {
+  .section-space { padding-block: 3.5rem; }
+  .shell { width: min(100% - 1.5rem, 80rem); }
 }
 
 @media (prefers-reduced-motion: reduce) {

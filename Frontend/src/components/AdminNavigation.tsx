@@ -49,7 +49,7 @@ export default function AdminNavigation() {
             prefetch
             aria-current={active ? "page" : undefined}
             onClick={(event) => navigate(event, href)}
-            className={`relative isolate inline-flex items-center gap-2 overflow-hidden rounded-lg px-2 py-2 text-sm font-semibold transition-colors sm:px-3 ${active ? "text-primary" : "text-gray-text hover:bg-gray-bg hover:text-dark"}`}
+            className={`relative isolate inline-flex h-11 min-w-11 items-center justify-center gap-2 overflow-hidden rounded-lg px-2 text-sm font-semibold transition-colors sm:min-w-0 sm:px-3 ${active ? "text-primary" : "text-gray-text hover:bg-gray-bg hover:text-dark"}`}
           >
             {active && <span aria-hidden className="absolute inset-0 -z-10 rounded-lg bg-primary/10" style={{ viewTransitionName: "admin-nav-indicator" }} />}
             <Icon className="relative h-4 w-4" />

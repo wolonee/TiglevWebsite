@@ -7,16 +7,14 @@ const NAV_SECTIONS = [
   {
     title: "Навигация",
     links: [
-      { href: "/#services", label: "Услуги" },
-      { href: "/catalog", label: "Каталог" },
-      { href: "/#about", label: "О компании" },
+      { href: "/#catalog", label: "Каталог" },
       { href: "/contacts", label: "Контакты" },
     ],
   },
   {
     title: "Услуги",
     links: [
-      { href: "/catalog", label: "Продажа авто" },
+      { href: "/#catalog", label: "Продажа авто" },
       { href: "/sell", label: "Выкуп авто" },
       { href: "/import", label: "Авто из Европы" },
       { href: "/sell", label: "Оценка авто" },
@@ -26,7 +24,7 @@ const NAV_SECTIONS = [
 
 const Footer = () => {
   return (
-    <footer className="relative bg-dark pt-16 pb-8">
+    <footer className="relative bg-dark pb-8 pt-12 sm:pt-16">
       <div className="absolute inset-0 opacity-[0.02]" style={{
         backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
         backgroundSize: "32px 32px",
@@ -37,11 +35,11 @@ const Footer = () => {
           <div>
             <div className="mb-5 flex items-center gap-2.5">
               <Image
-                src="/logo.svg"
+                src="/logo-tiglev-clean.png"
                 alt="TIGLEV.COM"
                 width={36}
                 height={36}
-                className="h-9 w-9"
+                className="h-9 w-9 rounded-md"
               />
               <span className="text-lg font-extrabold text-white">
                 TIGLEV.COM
