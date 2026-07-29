@@ -47,7 +47,7 @@ describe("CarCard", () => {
     const description = "Подробное описание автомобиля, которое в каталоге ограничивается двумя строками.";
     render(<CarCard car={{ ...car, description }} />);
 
-    expect(screen.getByText(description)).toHaveClass("catalog-card-description", "h-10", "overflow-hidden");
+    expect(screen.getByText(description)).toHaveClass("catalog-card-description", "h-10", "sm:h-12", "overflow-hidden");
   });
 
   it("ends long catalog descriptions without rendering their continuation", () => {

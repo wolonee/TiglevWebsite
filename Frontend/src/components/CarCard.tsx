@@ -123,7 +123,7 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
           ) : null}
         </div>
 
-        <p className="catalog-card-description mb-3 h-10 overflow-hidden text-xs leading-5 text-gray-text sm:mb-4 sm:h-14 sm:text-sm sm:leading-relaxed">
+        <p className="catalog-card-description mb-3 h-10 overflow-hidden text-xs leading-5 text-gray-text sm:mb-4 sm:h-12 sm:text-sm sm:leading-relaxed">
           {catalogDescription}
         </p>
 
