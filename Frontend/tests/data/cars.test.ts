@@ -10,17 +10,34 @@ describe("catalog data", () => {
   });
 
   it("uses the uploaded images as a gallery without adding stock photos", () => {
-    const imageUrls = ["https://example.com/cover.jpg", "https://example.com/inside.jpg"];
-    expect(getCarGallery({ ...cars[0], images: imageUrls })).toEqual(imageUrls);
+    const images = [
+      { url: "https://example.com/cover.jpg", position: { x: 15, y: 20 } },
+      { url: "https://example.com/inside.jpg", position: { x: 50, y: 50 } },
+    ];
+    expect(getCarGallery({ ...cars[0], images })).toEqual(images);
   });
 
-  it("keeps stock cars visible when the backend is unavailable", async () => {
+  it("contains only the imported real catalog and its local photos", () => {
+    expect(cars).toHaveLength(9);
+    expect(cars.map((car) => car.id)).toContain("kia-sorento-2017");
+    expect(cars.map((car) => car.id)).not.toContain("151698");
+    expect(cars.flatMap((car) => car.images ?? [])).toHaveLength(76);
+    expect(cars.flatMap((car) => car.images ?? []).every((image) => image.url.startsWith("/images/catalog-hq/"))).toBe(true);
+  });
+
+  it("does not invent unavailable characteristics", () => {
+    const cerato = cars.find((car) => car.id === "kia-cerato-2006");
+    expect(cerato).toMatchObject({ bodyType: "", engine: "" });
+    expect(cerato?.mileage).toBeUndefined();
+  });
+
+  it("keeps real cars visible when the backend is unavailable", async () => {
     vi.stubEnv("BACKEND_URL", "https://backend.example.com");
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
     await expect(getCatalogCars()).resolves.toEqual(cars);
   });
 
-  it("uses the stored catalog without duplicating stock cars", async () => {
+  it("uses the stored catalog without duplicating fallback cars", async () => {
     vi.stubEnv("BACKEND_URL", "https://backend.example.com");
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ cars: [{
       id: "db-car", brand: "BMW", model: "X5", price: 5000000, year: 2024,

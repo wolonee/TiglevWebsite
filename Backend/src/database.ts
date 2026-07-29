@@ -1,12 +1,14 @@
 import postgres, { type Sql } from "postgres";
 import { config } from "./config.js";
-import { catalogSeed } from "./catalog-seed.js";
+import { catalogSeed, legacyCatalogIds } from "./catalog-seed.js";
 
 export type Subscriber = { chat_id: number; username: string | null; first_name: string | null; last_name: string | null };
 export const carStatuses = ["draft", "active", "reserved", "sold", "hidden"] as const;
 export type CarStatus = typeof carStatuses[number];
+export type ImagePosition = { x: number; y: number };
+export type CarImage = { url: string; position: ImagePosition };
 export type CarRecord = {
-  id: string; brand: string; model: string; price: number; year: number; images: string[];
+  id: string; brand: string; model: string; price: number; year: number; images: CarImage[];
   bodyType: string; engine: string; description?: string; engineVolume?: string; power?: string;
   transmission?: string; mileage?: number; drive?: string; wheel?: string; color?: string; damage?: string;
   status: CarStatus; sortOrder: number; deletedAt?: string;
@@ -105,6 +107,42 @@ export function migrateDatabase() {
           UPDATE cars SET sort_order = ordered.position FROM ordered WHERE cars.id = ordered.id
         `;
       }
+      const [realCatalogMigration] = await transaction`
+        INSERT INTO app_migrations (key) VALUES ('real_catalog_v1')
+        ON CONFLICT (key) DO NOTHING RETURNING key
+      `;
+      if (realCatalogMigration) {
+        await transaction`DELETE FROM cars WHERE id = ANY(${transaction.array([...legacyCatalogIds])}::text[])`;
+        for (const car of catalogSeed) {
+          await transaction`
+            INSERT INTO cars (id, brand, model, price, year, images, body_type, engine, description,
+              engine_volume, power, transmission, mileage, drive, wheel, color, damage, status, sort_order)
+            VALUES (${car.id}, ${car.brand}, ${car.model}, ${car.price}, ${car.year}, ${transaction.json(car.images)},
+              ${car.bodyType}, ${car.engine}, ${car.description ?? null}, ${car.engineVolume ?? null},
+              ${car.power ?? null}, ${car.transmission ?? null}, ${car.mileage ?? null}, ${car.drive ?? null},
+              ${car.wheel ?? null}, ${car.color ?? null}, ${car.damage ?? null}, ${car.status}, ${car.sortOrder})
+            ON CONFLICT (id) DO UPDATE SET
+              brand = EXCLUDED.brand, model = EXCLUDED.model, price = EXCLUDED.price, year = EXCLUDED.year,
+              images = EXCLUDED.images, body_type = EXCLUDED.body_type, engine = EXCLUDED.engine,
+              description = EXCLUDED.description, engine_volume = EXCLUDED.engine_volume, power = EXCLUDED.power,
+              transmission = EXCLUDED.transmission, mileage = EXCLUDED.mileage, drive = EXCLUDED.drive,
+              wheel = EXCLUDED.wheel, color = EXCLUDED.color, damage = EXCLUDED.damage,
+              status = EXCLUDED.status, sort_order = EXCLUDED.sort_order, deleted_at = NULL, updated_at = NOW()
+          `;
+        }
+      }
+      const [highQualityCatalogMigration] = await transaction`
+        INSERT INTO app_migrations (key) VALUES ('real_catalog_hq_v1')
+        ON CONFLICT (key) DO NOTHING RETURNING key
+      `;
+      if (highQualityCatalogMigration) {
+        for (const car of catalogSeed) {
+          await transaction`
+            UPDATE cars SET images = ${transaction.json(car.images)}, updated_at = NOW()
+            WHERE id = ${car.id}
+          `;
+        }
+      }
     }).then(() => undefined);
   }
   return schemaPromise;
@@ -131,9 +169,19 @@ export const subscribers = {
   },
 };
 
+const normalizeCarImage = (image: unknown): CarImage | null => {
+  if (typeof image === "string") return { url: image, position: { x: 50, y: 50 } };
+  if (!image || typeof image !== "object") return null;
+  const record = image as Record<string, unknown>;
+  if (typeof record.url !== "string") return null;
+  const position = record.position && typeof record.position === "object" ? record.position as Record<string, unknown> : {};
+  const clamp = (value: unknown) => typeof value === "number" && Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 50;
+  return { url: record.url, position: { x: clamp(position.x), y: clamp(position.y) } };
+};
+
 const mapCar = (row: Record<string, unknown>): CarRecord => ({
   id: String(row.id), brand: String(row.brand), model: String(row.model), price: Number(row.price),
-  year: Number(row.year), images: row.images as string[], bodyType: String(row.body_type), engine: String(row.engine),
+  year: Number(row.year), images: Array.isArray(row.images) ? row.images.map(normalizeCarImage).filter((image): image is CarImage => image !== null) : [], bodyType: String(row.body_type), engine: String(row.engine),
   description: row.description ? String(row.description) : undefined,
   engineVolume: row.engine_volume ? String(row.engine_volume) : undefined,
   power: row.power ? String(row.power) : undefined,

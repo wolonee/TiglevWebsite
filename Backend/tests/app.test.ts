@@ -56,14 +56,36 @@ describe("backend API", () => {
   it("saves a valid car", async () => {
     const payload = { brand: "BMW", model: "X5", price: 5000000, year: 2024, images: ["https://example.com/x5.jpg"], bodyType: "Кроссовер", engine: "Бензин" };
     const response = await request(app).post("/api/admin/cars").set("x-api-key", "test-api-key").send(payload).expect(201);
-    expect(response.body.car).toMatchObject(payload);
-    expect(carRecords.create).toHaveBeenCalledWith(expect.objectContaining(payload));
+    const expectedImages = [{ url: "https://example.com/x5.jpg", position: { x: 50, y: 50 } }];
+    expect(response.body.car).toMatchObject({ ...payload, images: expectedImages });
+    expect(carRecords.create).toHaveBeenCalledWith(expect.objectContaining({ ...payload, images: expectedImages }));
   });
 
   it("saves a draft status with the car", async () => {
     const payload = { brand: "BMW", model: "X5", price: 5000000, year: 2024, images: ["https://example.com/x5.jpg"], bodyType: "Кроссовер", engine: "Бензин", status: "draft" };
     await request(app).post("/api/admin/cars").set("x-api-key", "test-api-key").send(payload).expect(201);
     expect(carRecords.create).toHaveBeenCalledWith(expect.objectContaining({ status: "draft" }));
+  });
+
+  it("accepts imported local catalog images and empty unknown characteristics", async () => {
+    const payload = {
+      brand: "KIA", model: "Cerato", price: 400000, year: 2006,
+      images: ["/images/catalog-hq/kia-cerato-2006/01.webp"], bodyType: "", engine: "",
+    };
+    await request(app).post("/api/admin/cars").set("x-api-key", "test-api-key").send(payload).expect(201);
+    expect(carRecords.create).toHaveBeenCalledWith(expect.objectContaining({
+      ...payload,
+      images: [{ url: "/images/catalog-hq/kia-cerato-2006/01.webp", position: { x: 50, y: 50 } }],
+    }));
+  });
+
+  it("saves a focal point for each image", async () => {
+    const payload = {
+      brand: "BMW", model: "X5", price: 5000000, year: 2024,
+      images: [{ url: "https://example.com/x5.jpg", position: { x: 15, y: 80 } }], bodyType: "Кроссовер", engine: "Бензин",
+    };
+    await request(app).post("/api/admin/cars").set("x-api-key", "test-api-key").send(payload).expect(201);
+    expect(carRecords.create).toHaveBeenCalledWith(expect.objectContaining({ images: payload.images }));
   });
 
   it("changes the catalog order only with the backend key", async () => {

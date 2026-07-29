@@ -5,9 +5,10 @@ import SitePage from "@/components/SitePage";
 import CarGallery from "@/components/CarGallery";
 import { formatPrice } from "@/data/cars";
 import { getAdminAccess } from "@/lib/admin-auth";
+import type { CarImage } from "@/data/carImages";
 
 type PreviewCar = {
-  brand: string; model: string; year: number; bodyType: string; price: number; images: string[]; engine: string;
+  brand: string; model: string; year: number; bodyType: string; price: number; images: CarImage[]; engine: string;
   description?: string; engineVolume?: string; power?: string; transmission?: string; mileage?: number;
   drive?: string; wheel?: string; color?: string; damage?: string;
 };
