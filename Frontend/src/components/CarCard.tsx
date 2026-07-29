@@ -89,7 +89,7 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
 
       <div className="flex flex-1 flex-col p-3 sm:p-5">
         <div className="mb-3 flex items-start justify-between gap-2">
-          <h3 className="min-w-0 text-base font-bold text-dark sm:text-lg">
+          <h3 className="min-h-10 min-w-0 text-base font-bold text-dark sm:min-h-14 sm:text-lg">
             {car.brand} {car.model}
           </h3>
           {car.bodyType ? (
@@ -112,11 +112,9 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
           ) : null}
         </div>
 
-        {car.description && (
-          <p className="mb-4 hidden line-clamp-2 text-sm leading-relaxed text-gray-text sm:block">
-            {car.description}
-          </p>
-        )}
+        <p className="mb-3 min-h-10 line-clamp-2 text-xs leading-5 text-gray-text sm:mb-4 sm:min-h-14 sm:text-sm sm:leading-relaxed">
+          {car.description}
+        </p>
 
         <div className="mt-auto border-t border-gray-border pt-3 sm:flex sm:items-center sm:justify-between sm:pt-4">
           <p className="text-base font-extrabold text-dark sm:text-xl">

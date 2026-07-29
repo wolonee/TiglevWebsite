@@ -42,4 +42,11 @@ describe("CarCard", () => {
 
     expect(screen.getByAltText("BMW X5 2024")).toHaveStyle({ objectPosition: "20% 80%" });
   });
+
+  it("reserves space for a two-line description in every catalog card", () => {
+    const description = "Подробное описание автомобиля, которое в каталоге ограничивается двумя строками.";
+    render(<CarCard car={{ ...car, description }} />);
+
+    expect(screen.getByText(description)).toHaveClass("line-clamp-2", "min-h-10");
+  });
 });
