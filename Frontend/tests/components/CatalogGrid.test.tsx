@@ -32,7 +32,9 @@ describe("CatalogGrid", () => {
   afterEach(() => vi.useRealTimers());
 
   it("filters cars after the price slider stops moving", () => {
-    render(<CatalogGrid cars={[car, expensiveCar]} />);
+    const { container } = render(<CatalogGrid cars={[car, expensiveCar]} />);
+
+    expect(container.querySelector(".catalog-results > div")).toHaveClass("grid-cols-2");
 
     const priceSlider = screen.getByRole("slider", { name: "Цена до" });
     expect(priceSlider).toHaveAttribute("min", "0");
