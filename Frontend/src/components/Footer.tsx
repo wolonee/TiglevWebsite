@@ -24,15 +24,15 @@ const NAV_SECTIONS = [
 
 const Footer = () => {
   return (
-    <footer className="relative bg-dark pb-8 pt-12 sm:pt-16">
+    <footer className="relative bg-dark pb-8 pt-10 sm:pt-16">
       <div className="absolute inset-0 opacity-[0.02]" style={{
         backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
         backgroundSize: "32px 32px",
       }} />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-10 border-b border-white/[0.06] pb-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-          <div>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-8 border-b border-white/[0.06] pb-8 sm:grid-cols-2 sm:pb-12 lg:grid-cols-4 lg:gap-8">
+          <div className="col-span-2">
             <div className="mb-5 flex items-center gap-2.5">
               <Image
                 src="/logo-tiglev-clean.png"
@@ -83,7 +83,7 @@ const Footer = () => {
             </div>
           ))}
 
-          <div>
+          <div className="col-span-2 lg:col-span-1">
             <h4 className="mb-5 text-xs font-bold uppercase tracking-[0.15em] text-white/60">
               Контакты
             </h4>

@@ -98,9 +98,9 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
         {images.length > 1 && <span className="absolute bottom-2 right-2 rounded-md bg-dark/65 px-1.5 py-0.5 text-[10px] text-white opacity-100 transition-opacity sm:bottom-3 sm:right-3 sm:rounded-lg sm:px-2.5 sm:py-1 sm:text-xs md:opacity-0 md:group-hover:opacity-100">{activeImage + 1} / {images.length}</span>}
       </div>
 
-      <div className="flex flex-1 flex-col p-3 sm:p-5">
-        <div className="mb-3 flex items-start justify-between gap-2">
-          <h3 className="min-h-10 min-w-0 text-base font-bold text-dark sm:min-h-14 sm:text-lg">
+      <div className="flex flex-1 flex-col p-2.5 sm:p-5">
+        <div className="mb-2 flex items-start justify-between gap-2 sm:mb-3">
+          <h3 className="min-h-9 min-w-0 text-[0.95rem] font-bold text-dark sm:min-h-14 sm:text-lg">
             {car.brand} {car.model}
           </h3>
           {car.bodyType ? (
@@ -110,7 +110,7 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
           ) : null}
         </div>
 
-        <div className="mb-3 flex items-center gap-2 text-xs text-gray-text sm:mb-4 sm:gap-4 sm:text-sm">
+        <div className="mb-2 flex items-center gap-2 text-xs text-gray-text sm:mb-4 sm:gap-4 sm:text-sm">
           <span className="flex items-center gap-1.5">
             <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             {car.year} г.
@@ -123,16 +123,16 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
           ) : null}
         </div>
 
-        <p className="catalog-card-description mb-3 h-10 overflow-hidden text-xs leading-5 text-gray-text sm:mb-4 sm:h-12 sm:text-sm sm:leading-relaxed">
+        <p className="catalog-card-description mb-2 h-10 overflow-hidden text-xs leading-5 text-gray-text sm:mb-4 sm:h-12 sm:text-sm sm:leading-relaxed">
           {catalogDescription}
         </p>
 
-        <div className="mt-auto border-t border-gray-border pt-3 sm:flex sm:items-center sm:justify-between sm:pt-4">
-          <p className="text-base font-extrabold text-dark sm:text-xl">
+        <div className="mt-auto border-t border-gray-border pt-2.5 sm:flex sm:items-center sm:justify-between sm:pt-4">
+          <p className="text-[0.95rem] font-extrabold text-dark sm:text-xl">
             {formatPrice(car.price)}
           </p>
           <span
-            className="mt-2 flex justify-center rounded-lg bg-dark px-2.5 py-2 text-xs font-semibold text-white transition-all duration-300 hover:bg-primary hover:shadow-md active:scale-[0.97] sm:mt-0 sm:inline-block sm:px-4 sm:py-2.5 sm:text-sm"
+            className="mt-2 flex justify-center rounded-lg bg-dark px-2.5 py-1.5 text-xs font-semibold text-white transition-all duration-300 hover:bg-primary hover:shadow-md active:scale-[0.97] sm:mt-0 sm:inline-block sm:px-4 sm:py-2.5 sm:text-sm"
           >
             Подробнее
           </span>

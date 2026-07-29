@@ -21,10 +21,10 @@ export default function SectionHeading({
 
   return (
     <div className={`${centered ? "mx-auto max-w-2xl text-center" : ""} ${className}`}>
-      <p className={`mb-3 text-xs font-semibold uppercase tracking-[0.2em] sm:text-sm ${tone === "dark" ? "text-primary-light" : "text-primary"}`}>
+      <p className={`mb-2 text-[0.7rem] font-semibold uppercase tracking-[0.2em] sm:mb-3 sm:text-sm ${tone === "dark" ? "text-primary-light" : "text-primary"}`}>
         {eyebrow}
       </p>
-      <h2 className={`text-[1.8rem] font-extrabold leading-tight sm:text-4xl ${tone === "dark" ? "text-white" : "text-dark"}`}>
+      <h2 className={`text-[1.6rem] font-extrabold leading-tight sm:text-4xl ${tone === "dark" ? "text-white" : "text-dark"}`}>
         {title}
       </h2>
       {description && (

@@ -63,8 +63,8 @@ export default function CatalogGrid({ cars }: { cars: Car[] }) {
   const sliderBackground = `linear-gradient(to right, #C41E24 0%, #C41E24 ${sliderProgress}%, #E2E8F0 ${sliderProgress}%, #E2E8F0 100%)`;
   const formatPrice = (price: number) => new Intl.NumberFormat("ru-RU").format(price);
   return <section id="catalog" className="section-space bg-gray-bg"><div className="shell">
-    <div className="mb-7 sm:mb-10"><SectionHeading eyebrow="Каталог" title="Автомобили в наличии" description={`${filtered.length} автомобилей`} align="left"/></div>
-    <div id="catalog-filters" className="mb-7 rounded-[20px] border border-gray-border bg-white p-4 shadow-sm sm:mb-10 sm:p-5">
+    <div className="mb-5 sm:mb-10"><SectionHeading eyebrow="Каталог" title="Автомобили в наличии" description={`${filtered.length} автомобилей`} align="left"/></div>
+    <div id="catalog-filters" className="mb-5 rounded-[20px] border border-gray-border bg-white p-3 shadow-sm sm:mb-10 sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-semibold text-dark"><label htmlFor="catalog-price" className="cursor-pointer">Цена до</label><output htmlFor="catalog-price" className="rounded-lg bg-primary/10 px-3 py-1.5 text-primary">{formatPrice(selectedMax)} ₽</output></div>
       <input id="catalog-price" aria-label="Цена до" type="range" min="0" max={catalogMaxPrice} step="10000" value={selectedMax} onChange={(event) => scheduleMaxPriceUpdate(Number(event.target.value))} className="mt-4 h-2 w-full cursor-pointer appearance-none rounded-full accent-primary" style={{ background: sliderBackground }} />
       <div className="mt-2 flex justify-between text-xs text-gray-text"><span>0 ₽</span><span>{formatPrice(catalogMaxPrice)} ₽</span></div>

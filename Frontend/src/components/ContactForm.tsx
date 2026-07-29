@@ -12,7 +12,7 @@ export default function ContactForm() {
   const [formState, setFormState] = useState<FormState>("idle");
   const [submitError, setSubmitError] = useState("");
   const isFormValid = name.trim().length >= 2 && phone.trim().length >= 7;
-  const inputClassName = "w-full rounded-xl border border-gray-border bg-gray-bg px-4 py-3.5 text-sm text-dark-light outline-none transition-colors focus:border-primary focus:bg-white placeholder:text-gray-text";
+  const inputClassName = "w-full rounded-xl border border-gray-border bg-gray-bg px-4 py-3 text-sm text-dark-light outline-none transition-colors focus:border-primary focus:bg-white placeholder:text-gray-text";
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -50,13 +50,13 @@ export default function ContactForm() {
   return (
     <>
       <h3 className="mb-2 text-xl font-bold text-dark">Написать нам</h3>
-      <p className="mb-8 text-sm text-gray-text">Оставьте заявку, и мы перезвоним в течение 15 минут в рабочее время</p>
-      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+      <p className="mb-6 text-sm text-gray-text">Оставьте заявку, и мы перезвоним в течение 15 минут в рабочее время</p>
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         {submitError && <div role="alert" className="flex items-start gap-2 rounded-xl border border-primary/20 bg-red-50 p-4 text-sm text-primary"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />{submitError}</div>}
         <label className="block text-sm font-medium text-dark" htmlFor="contact-name">Ваше имя <span className="text-primary">*</span><input id="contact-name" type="text" value={name} onChange={(event) => setName(event.target.value)} placeholder="Иван Иванов" required minLength={2} className={`${inputClassName} mt-1.5`} /></label>
         <label className="block text-sm font-medium text-dark" htmlFor="contact-phone">Телефон <span className="text-primary">*</span><input id="contact-phone" type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="+7 (___) ___-__-__" required className={`${inputClassName} mt-1.5`} /></label>
-        <label className="block text-sm font-medium text-dark" htmlFor="contact-message">Сообщение<textarea id="contact-message" value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Интересует автомобиль..." rows={4} className={`${inputClassName} mt-1.5 resize-none`} /></label>
-        <button type="submit" disabled={formState === "submitting" || !isFormValid} className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-4 text-sm font-bold text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60">
+        <label className="block text-sm font-medium text-dark" htmlFor="contact-message">Сообщение<textarea id="contact-message" value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Интересует автомобиль..." rows={3} className={`${inputClassName} mt-1.5 resize-none`} /></label>
+        <button type="submit" disabled={formState === "submitting" || !isFormValid} className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60">
           {formState === "submitting" ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />Отправка...</> : <><Send className="h-4 w-4" />Отправить заявку</>}
         </button>
         <p className="text-center text-xs text-gray-text">Нажимая кнопку, вы соглашаетесь на обработку персональных данных</p>
