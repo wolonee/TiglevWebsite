@@ -59,12 +59,14 @@ export default function CatalogGrid({ cars }: { cars: Car[] }) {
   }, []);
   useEffect(() => { const node = sentinel.current; if (!node) return; const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) setVisible(v => Math.min(v + 3, filtered.length)); }, { rootMargin: "600px" }); observer.observe(node); return () => observer.disconnect(); }, [filtered.length]);
   const selectedMax = Number(max || catalogMaxPrice);
+  const sliderProgress = catalogMaxPrice ? Math.round((selectedMax / catalogMaxPrice) * 100) : 0;
+  const sliderBackground = `linear-gradient(to right, #C41E24 0%, #C41E24 ${sliderProgress}%, #E2E8F0 ${sliderProgress}%, #E2E8F0 100%)`;
   const formatPrice = (price: number) => new Intl.NumberFormat("ru-RU").format(price);
   return <section id="catalog" className="section-space bg-gray-bg"><div className="shell">
     <div className="mb-7 sm:mb-10"><SectionHeading eyebrow="Каталог" title="Автомобили в наличии" description={`${filtered.length} автомобилей`} align="left"/></div>
     <div id="catalog-filters" className="mb-7 rounded-[20px] border border-gray-border bg-white p-4 shadow-sm sm:mb-10 sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-semibold text-dark"><label htmlFor="catalog-price" className="cursor-pointer">Цена до</label><output htmlFor="catalog-price" className="rounded-lg bg-primary/10 px-3 py-1.5 text-primary">{formatPrice(selectedMax)} ₽</output></div>
-      <input id="catalog-price" aria-label="Цена до" type="range" min="0" max={catalogMaxPrice} step="10000" value={selectedMax} onChange={(event) => scheduleMaxPriceUpdate(Number(event.target.value))} className="mt-4 h-2 w-full cursor-pointer appearance-none rounded-full bg-gray-border accent-primary" />
+      <input id="catalog-price" aria-label="Цена до" type="range" min="0" max={catalogMaxPrice} step="10000" value={selectedMax} onChange={(event) => scheduleMaxPriceUpdate(Number(event.target.value))} className="mt-4 h-2 w-full cursor-pointer appearance-none rounded-full accent-primary" style={{ background: sliderBackground }} />
       <div className="mt-2 flex justify-between text-xs text-gray-text"><span>0 ₽</span><span>{formatPrice(catalogMaxPrice)} ₽</span></div>
     </div>
     <div className="catalog-results" data-updating={isUpdating}>{filtered.length ? <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 lg:gap-8">{filtered.slice(0, visible).map((car, index) => <CarCard key={car.id} car={car} preloadCover={index < 3}/>)}</div> : <div className="rounded-[20px] border border-gray-border bg-white px-5 py-16 text-center"><h3 className="text-xl font-bold text-dark">Автомобили не найдены</h3><p className="mt-2 text-sm text-gray-text">Попробуйте изменить параметры фильтра</p></div>}</div>
