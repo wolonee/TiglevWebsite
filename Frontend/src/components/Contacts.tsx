@@ -7,7 +7,7 @@ const Contacts = ({ hideHeading = false }: { hideHeading?: boolean }) => {
   return (
     <section id="contacts" className="bg-white py-10 sm:py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {!hideHeading && <><div aria-hidden className="mb-9 h-px bg-gray-border sm:mb-14" /><SectionHeading eyebrow="Контакты" title="Свяжитесь с нами" description="Ответим на любые вопросы и поможем подобрать автомобиль" className="mb-7 sm:mb-14" /></>}
+        {!hideHeading && <SectionHeading eyebrow="Контакты" title="Свяжитесь с нами" description="Ответим на любые вопросы и поможем подобрать автомобиль" className="mb-7 sm:mb-14" />}
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           <div className="h-full">
