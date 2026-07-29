@@ -108,8 +108,9 @@ button, input, select, textarea { font: inherit; }
 }
 
 :focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px rgb(196 30 36 / 35%);
+  outline: 2px solid rgb(196 30 36 / 75%);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 2px rgb(196 30 36 / 20%);
 }
 
 /* Radix Select already exposes keyboard focus through its highlighted item. */

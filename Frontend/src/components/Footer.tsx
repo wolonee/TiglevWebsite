@@ -47,7 +47,7 @@ const Footer = () => {
                 TIGLEV.COM
               </span>
             </div>
-            <p className="mb-6 text-sm leading-relaxed text-white/40">
+            <p className="mb-6 text-sm leading-relaxed text-white/55">
               Автосалон в Тольятти. Продажа, выкуп и заказ автомобилей с 2009
               года. Честные цены и прозрачные сделки.
             </p>
@@ -76,7 +76,7 @@ const Footer = () => {
                   <Link
                     key={`${section.title}-${link.label}`}
                     href={link.href}
-                    className="text-sm text-white/40 transition-colors hover:text-white"
+                    className="text-sm text-white/55 transition-colors hover:text-white"
                   >
                     {link.label}
                   </Link>
@@ -92,7 +92,7 @@ const Footer = () => {
             <div className="space-y-3">
               <a
                 href={CONTACT_DETAILS.phones[0].href}
-                className="flex items-center gap-2.5 text-sm text-white/40 transition-colors hover:text-white"
+                className="flex items-center gap-2.5 text-sm text-white/55 transition-colors hover:text-white"
                 aria-label={`Позвонить: ${CONTACT_DETAILS.phones[0].label}`}
               >
                 <Phone className="h-4 w-4 shrink-0 text-primary/60" />
@@ -100,13 +100,13 @@ const Footer = () => {
               </a>
               <a
                 href={CONTACT_DETAILS.phones[1].href}
-                className="flex items-center gap-2.5 text-sm text-white/40 transition-colors hover:text-white"
+                className="flex items-center gap-2.5 text-sm text-white/55 transition-colors hover:text-white"
                 aria-label={`Позвонить: ${CONTACT_DETAILS.phones[1].label}`}
               >
                 <Phone className="h-4 w-4 shrink-0 text-primary/60" />
                 {CONTACT_DETAILS.phones[1].label}
               </a>
-              <p className="flex items-center gap-2.5 text-sm text-white/40">
+              <p className="flex items-center gap-2.5 text-sm text-white/55">
                 <MapPin className="h-4 w-4 shrink-0 text-primary/60" />
                 {CONTACT_DETAILS.address}
               </p>
