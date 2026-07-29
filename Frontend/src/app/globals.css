@@ -69,6 +69,8 @@
 
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
 ::view-transition-group(*) { animation-duration: .48s; animation-timing-function: cubic-bezier(.22, 1, .36, 1); }
+/* Public pages change instantly; named transitions below are only for the admin UI. */
+::view-transition-group(root) { animation: none; }
 ::view-transition-group(admin-nav-indicator) { animation-duration: .24s; }
 ::view-transition-old(admin-nav-indicator), ::view-transition-new(admin-nav-indicator) { height: 100%; }
 
