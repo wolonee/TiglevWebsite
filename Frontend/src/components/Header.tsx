@@ -42,11 +42,15 @@ export default function Header({ solid = false }: { solid?: boolean }) {
       </div>
       <button className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg lg:hidden ${opaque ? "text-dark" : "text-white"}`} onClick={() => setOpen(v => !v)} aria-expanded={open} aria-label={open ? "Закрыть меню" : "Открыть меню"}>{open ? <X/> : <Menu/>}</button>
     </div>
-    <div className={`fixed inset-0 top-16 bg-dark/45 backdrop-blur-[2px] transition-opacity lg:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"}`} onClick={() => setOpen(false)} />
-    <nav className={`fixed bottom-0 right-0 top-16 w-[min(20rem,calc(100%-0.75rem))] rounded-tl-2xl bg-white p-4 shadow-2xl transition-transform lg:hidden ${open ? "translate-x-0" : "translate-x-full"}`} aria-label="Мобильная навигация">
-      {links.map(link => <Link key={link.href} href={link.href} onClick={() => setOpen(false)} className={`block rounded-xl px-4 py-3.5 font-medium ${pathname === link.href ? "bg-primary/5 text-primary" : "text-dark-light"}`}>{link.label}</Link>)}
-      <a href={CONTACT_DETAILS.phones[0].href} className="mt-5 flex items-center gap-3 border-t border-gray-border px-4 pt-6 font-semibold text-dark"><Phone className="text-primary" size={20}/>{CONTACT_DETAILS.phones[0].label}</a>
-      <Link href="/contacts" onClick={() => setOpen(false)} className="mt-5 block rounded-xl bg-primary px-5 py-3.5 text-center font-semibold text-white">Написать нам</Link>
+    <div className={`fixed inset-0 top-16 z-40 bg-dark/30 transition-opacity lg:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"}`} onClick={() => setOpen(false)} />
+    <nav className={`fixed inset-x-0 bottom-0 top-16 z-50 flex flex-col overflow-y-auto border-t border-gray-border bg-white p-4 shadow-[0_18px_40px_rgb(15_23_42/0.18)] transition-transform duration-300 ease-out lg:hidden ${open ? "translate-y-0" : "-translate-y-full"}`} aria-label="Мобильная навигация">
+      <div className="space-y-1">
+        {links.map(link => <Link key={link.href} href={link.href} onClick={() => setOpen(false)} className={`block rounded-xl px-4 py-3.5 font-medium transition-colors ${pathname === link.href ? "bg-primary/10 text-primary" : "text-dark-light hover:bg-gray-bg"}`}>{link.label}</Link>)}
+      </div>
+      <div className="mt-6 border-t border-gray-border pt-5">
+        <a href={CONTACT_DETAILS.phones[0].href} className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold text-dark hover:bg-gray-bg"><Phone className="text-primary" size={20}/>{CONTACT_DETAILS.phones[0].label}</a>
+        <Link href="/contacts" onClick={() => setOpen(false)} className="mt-3 block rounded-xl bg-primary px-5 py-3.5 text-center font-semibold text-white transition-colors hover:bg-primary-dark">Написать нам</Link>
+      </div>
     </nav>
   </header>;
 }
