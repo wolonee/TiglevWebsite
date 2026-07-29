@@ -1,14 +1,10 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import CatalogGrid from "@/components/CatalogGrid";
 import type { Car } from "@/data/cars";
 
 vi.mock("@/components/CarCard", () => ({
   default: ({ car }: { car: Car }) => <article>{car.brand} {car.model}</article>,
-}));
-
-vi.mock("@/components/AppSelect", () => ({
-  default: ({ ariaLabel }: { ariaLabel: string }) => <button type="button" aria-label={ariaLabel}>Выбрать</button>,
 }));
 
 const car: Car = {
@@ -30,13 +26,13 @@ describe("CatalogGrid", () => {
     });
   });
 
-  it("keeps filters collapsed until the mobile filter control is pressed", () => {
-    const { container } = render(<CatalogGrid cars={[car]} />);
-    const filters = container.querySelector("#catalog-filters");
+  it("shows only price filters without a filter toggle", () => {
+    render(<CatalogGrid cars={[car]} />);
 
-    expect(filters).toHaveClass("hidden");
-    fireEvent.click(screen.getByRole("button", { name: "Фильтры" }));
-    expect(filters).toHaveClass("grid");
-    expect(screen.getByRole("button", { name: "Скрыть фильтры" })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByPlaceholderText("Цена от, ₽")).toBeVisible();
+    expect(screen.getByPlaceholderText("Цена до, ₽")).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Фильтры" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Марка автомобиля")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Тип кузова")).not.toBeInTheDocument();
   });
 });

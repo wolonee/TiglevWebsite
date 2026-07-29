@@ -1,42 +1,38 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
-import { bodyTypes, brands, type Car } from "@/data/cars";
+import { Search } from "lucide-react";
+import { type Car } from "@/data/cars";
 import CarCard from "./CarCard";
 import SectionHeading from "./SectionHeading";
-import AppSelect from "./AppSelect";
 
-type CatalogFilters = { brand: string; body: string; min: string; max: string };
-const emptyFilters: CatalogFilters = { brand: "", body: "", min: "", max: "" };
+type CatalogFilters = { min: string; max: string };
+const emptyFilters: CatalogFilters = { min: "", max: "" };
 
 function filtersFromUrl(): CatalogFilters {
   const params = new URLSearchParams(window.location.search);
-  return { brand: params.get("brand") ?? "", body: params.get("body") ?? "", min: params.get("min") ?? "", max: params.get("max") ?? "" };
+  return { min: params.get("min") ?? "", max: params.get("max") ?? "" };
 }
 
 export default function CatalogGrid({ cars }: { cars: Car[] }) {
-  const [brand, setBrand] = useState(emptyFilters.brand); const [body, setBody] = useState(emptyFilters.body);
   const [min, setMin] = useState(emptyFilters.min); const [max, setMax] = useState(emptyFilters.max);
-  const [appliedBrand, setAppliedBrand] = useState(emptyFilters.brand); const [appliedBody, setAppliedBody] = useState(emptyFilters.body);
   const [appliedMin, setAppliedMin] = useState(emptyFilters.min); const [appliedMax, setAppliedMax] = useState(emptyFilters.max); const [visible, setVisible] = useState(6);
   const [isUpdating, startCatalogTransition] = useTransition();
-  const [filtersOpen, setFiltersOpen] = useState(false);
   const sentinel = useRef<HTMLDivElement>(null);
-  const filtered = useMemo(() => cars.filter(c => (!appliedBrand || c.brand === appliedBrand) && (!appliedBody || c.bodyType === appliedBody) && (!appliedMin || c.price >= Number(appliedMin)) && (!appliedMax || c.price <= Number(appliedMax))), [cars, appliedBrand, appliedBody, appliedMin, appliedMax]);
+  const filtered = useMemo(() => cars.filter(c => (!appliedMin || c.price >= Number(appliedMin)) && (!appliedMax || c.price <= Number(appliedMax))), [cars, appliedMin, appliedMax]);
   const applyFilters = () => {
     startCatalogTransition(() => {
-      setAppliedBrand(brand); setAppliedBody(body); setAppliedMin(min); setAppliedMax(max); setVisible(6);
+      setAppliedMin(min); setAppliedMax(max); setVisible(6);
     });
     const params = new URLSearchParams();
-    if (brand) params.set("brand", brand); if (body) params.set("body", body); if (min) params.set("min", min); if (max) params.set("max", max);
+    if (min) params.set("min", min); if (max) params.set("max", max);
     window.history.replaceState(null, "", params.size ? `/?${params.toString()}#catalog` : "/#catalog");
   };
   useEffect(() => {
     const syncFromUrl = () => {
       const filters = filtersFromUrl();
-      setBrand(filters.brand); setBody(filters.body); setMin(filters.min); setMax(filters.max);
-      setAppliedBrand(filters.brand); setAppliedBody(filters.body); setAppliedMin(filters.min); setAppliedMax(filters.max); setVisible(6);
+      setMin(filters.min); setMax(filters.max);
+      setAppliedMin(filters.min); setAppliedMax(filters.max); setVisible(6);
     };
     syncFromUrl();
     window.addEventListener("popstate", syncFromUrl);
@@ -44,12 +40,9 @@ export default function CatalogGrid({ cars }: { cars: Car[] }) {
   }, []);
   useEffect(() => { const node = sentinel.current; if (!node) return; const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) setVisible(v => Math.min(v + 3, filtered.length)); }, { rootMargin: "600px" }); observer.observe(node); return () => observer.disconnect(); }, [filtered.length]);
   const field = "w-full rounded-xl border border-gray-border bg-white px-4 py-3 text-sm text-dark outline-none shadow-none transition-colors focus:border-primary focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:shadow-none";
-  const selectedFilters = [brand, body, min, max].filter(Boolean).length;
   return <section id="catalog" className="section-space bg-gray-bg"><div className="shell">
-    <div className="mb-7 flex flex-col justify-between gap-4 sm:mb-10 sm:flex-row sm:items-end"><SectionHeading eyebrow="Каталог" title="Автомобили в наличии" description={`${filtered.length} автомобилей`} align="left"/><button type="button" onClick={() => setFiltersOpen((open) => !open)} aria-expanded={filtersOpen} aria-controls="catalog-filters" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gray-border bg-white px-4 py-3 text-sm font-semibold text-dark sm:hidden"><SlidersHorizontal className="h-4 w-4 text-primary"/>{filtersOpen ? "Скрыть фильтры" : "Фильтры"}{selectedFilters > 0 && <span className="rounded-full bg-primary px-1.5 py-0.5 text-xs text-white">{selectedFilters}</span>}</button><SlidersHorizontal className="hidden text-primary sm:block"/></div>
-    <div id="catalog-filters" className={`${filtersOpen ? "grid" : "hidden"} mb-7 gap-3 rounded-[20px] border border-gray-border bg-white p-4 shadow-sm sm:mb-10 sm:grid sm:grid-cols-2 lg:grid-cols-5`}>
-      <AppSelect searchable searchPlaceholder="Найти марку…" ariaLabel="Марка автомобиля" placeholder="Все марки" clearLabel="Все марки" options={brands} value={brand} onValueChange={value => { setBrand(value); setVisible(6); }}/>
-      <AppSelect searchable ariaLabel="Тип кузова" placeholder="Все кузова" clearLabel="Все кузова" options={bodyTypes} value={body} onValueChange={value => { setBody(value); setVisible(6); }}/>
+    <div className="mb-7 sm:mb-10"><SectionHeading eyebrow="Каталог" title="Автомобили в наличии" description={`${filtered.length} автомобилей`} align="left"/></div>
+    <div id="catalog-filters" className="mb-7 grid gap-3 rounded-[20px] border border-gray-border bg-white p-4 shadow-sm sm:mb-10 sm:grid-cols-3">
       <input className={field} inputMode="numeric" placeholder="Цена от, ₽" value={min} onChange={e => setMin(e.target.value.replace(/\D/g, ""))} onKeyDown={e => { if (e.key === "Enter") applyFilters(); }}/>
       <input className={field} inputMode="numeric" placeholder="Цена до, ₽" value={max} onChange={e => setMax(e.target.value.replace(/\D/g, ""))} onKeyDown={e => { if (e.key === "Enter") applyFilters(); }}/>
       <button onClick={applyFilters} className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-primary-dark"><Search className="h-4 w-4"/>Найти</button>
