@@ -39,6 +39,8 @@ const Footer = () => {
                 alt="TIGLEV.COM"
                 width={36}
                 height={36}
+                quality={90}
+                sizes="36px"
                 className="h-9 w-9 rounded-md"
               />
               <span className="text-lg font-extrabold text-white">

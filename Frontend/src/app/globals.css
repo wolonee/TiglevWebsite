@@ -123,6 +123,11 @@ button, input, select, textarea { font: inherit; }
   .shell { width: min(100% - 1.5rem, 80rem); }
 }
 
+/* Keep two catalog cards comfortably fluid on compact devices such as iPhone SE. */
+@media (max-width: 374px) {
+  .shell { width: min(100% - 1rem, 80rem); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }

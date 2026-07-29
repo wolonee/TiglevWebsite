@@ -24,7 +24,7 @@ const car: Car = {
 };
 
 describe("CarCard", () => {
-  it("preloads gallery photos when the browser has idle time after the cover loads", () => {
+  it("preloads the next gallery photo when the browser has idle time after the cover loads", () => {
     vi.useFakeTimers();
     const { container } = render(<CarCard car={car} preloadCover />);
     expect(container.querySelectorAll("img")).toHaveLength(1);
@@ -33,7 +33,7 @@ describe("CarCard", () => {
     expect(container.querySelectorAll("img")).toHaveLength(1);
 
     act(() => { vi.advanceTimersByTime(500); });
-    expect(container.querySelectorAll("img")).toHaveLength(3);
+    expect(container.querySelectorAll("img")).toHaveLength(2);
     vi.useRealTimers();
   });
 

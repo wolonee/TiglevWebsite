@@ -34,8 +34,12 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
   const [activeImage, setActiveImage] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [coverLoaded, setCoverLoaded] = useState(false);
-  const [shouldPreloadGallery, setShouldPreloadGallery] = useState(false);
-  const stepImage = useCallback((direction: number) => setActiveImage((current) => (current + direction + images.length) % images.length), [images.length]);
+  const [shouldPreloadNextImage, setShouldPreloadNextImage] = useState(false);
+  const [shouldPreloadRemainingImages, setShouldPreloadRemainingImages] = useState(false);
+  const stepImage = useCallback((direction: number) => {
+    setShouldPreloadRemainingImages(true);
+    setActiveImage((current) => (current + direction + images.length) % images.length);
+  }, [images.length]);
   const catalogDescription = truncateCatalogDescription(car.description);
 
   useEffect(() => {
@@ -56,7 +60,7 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
     const connection = (navigator as Navigator & { connection?: { effectiveType?: string; saveData?: boolean } }).connection;
     if (connection?.saveData || connection?.effectiveType === "slow-2g" || connection?.effectiveType === "2g") return;
 
-    const preload = () => setShouldPreloadGallery(true);
+    const preload = () => setShouldPreloadNextImage(true);
     const browserWindow = window as IdleCallbackWindow;
     if (typeof browserWindow.requestIdleCallback === "function") {
       const callbackId = browserWindow.requestIdleCallback(preload, { timeout: 1500 });
@@ -67,8 +71,11 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
     return () => window.clearTimeout(timeoutId);
   }, [coverLoaded, images.length]);
 
+  const nextImageIndex = (activeImage + 1) % images.length;
+  const nextImage = images[nextImageIndex];
+
   return (
-    <article onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-border bg-white sm:rounded-2xl">
+    <article onMouseEnter={() => { setIsHovered(true); setShouldPreloadRemainingImages(true); }} onMouseLeave={() => setIsHovered(false)} className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-border bg-white sm:rounded-2xl">
       <Link
         href={`/catalog/${car.id}`}
         aria-label={`Подробнее о ${car.brand} ${car.model}`}
@@ -87,14 +94,31 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
           className="h-full w-full object-cover transition-transform duration-700 ease-out will-change-transform md:group-hover:scale-[1.06]"
           fill
           preload={preloadCover}
+          quality={85}
           onLoad={() => { if (activeImage === 0) setCoverLoaded(true); }}
           sizes="(max-width: 639px) 50vw, (max-width: 1024px) 50vw, 33vw"
           style={{ objectPosition: imageObjectPosition(images[activeImage]) }}
         />
-        {shouldPreloadGallery && images.slice(1).map((image) => <Image key={image.url} src={image.url} alt="" aria-hidden fill loading="eager" fetchPriority="low" sizes="(max-width: 639px) 50vw, (max-width: 1024px) 50vw, 33vw" className="pointer-events-none opacity-0" />)}
+        {shouldPreloadNextImage && images.length > 1 && (
+          <Image
+            key={nextImage.url}
+            src={nextImage.url}
+            alt=""
+            aria-hidden
+            fill
+            loading="eager"
+            fetchPriority="low"
+            quality={85}
+            sizes="(max-width: 639px) 50vw, (max-width: 1024px) 50vw, 33vw"
+            className="pointer-events-none opacity-0"
+          />
+        )}
+        {shouldPreloadRemainingImages && images.filter((_, index) => index !== activeImage && index !== nextImageIndex).map((image) => (
+          <Image key={image.url} src={image.url} alt="" aria-hidden fill loading="eager" fetchPriority="low" quality={85} sizes="(max-width: 639px) 50vw, (max-width: 1024px) 50vw, 33vw" className="pointer-events-none opacity-0" />
+        ))}
         <div className="absolute inset-0 bg-gradient-to-t from-dark/30 via-transparent to-transparent opacity-100 transition-opacity duration-300 md:opacity-0 md:group-hover:opacity-100" />
-        {images.length > 1 && <><button type="button" onClick={(event) => { event.preventDefault(); event.stopPropagation(); stepImage(-1); }} aria-label={`Предыдущее фото ${car.brand} ${car.model}`} className="pointer-events-auto absolute left-2 top-1/2 z-30 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-dark/60 text-white opacity-100 backdrop-blur transition-colors hover:bg-dark/80 sm:left-3 sm:h-11 sm:w-11 md:h-9 md:w-9 md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"><ChevronLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4"/></button>
-        <button type="button" onClick={(event) => { event.preventDefault(); event.stopPropagation(); stepImage(1); }} aria-label={`Следующее фото ${car.brand} ${car.model}`} className="pointer-events-auto absolute right-2 top-1/2 z-30 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-dark/60 text-white opacity-100 backdrop-blur transition-colors hover:bg-dark/80 sm:right-3 sm:h-11 sm:w-11 md:h-9 md:w-9 md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"><ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4"/></button></>}
+        {images.length > 1 && <><button type="button" onClick={(event) => { event.preventDefault(); event.stopPropagation(); stepImage(-1); }} aria-label={`Предыдущее фото ${car.brand} ${car.model}`} className="pointer-events-auto absolute left-2 top-1/2 z-30 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-dark/35 text-white/95 opacity-100 backdrop-blur-sm transition-[background-color,opacity,transform] hover:bg-dark/65 focus-visible:bg-dark/65 active:scale-95 sm:left-3 sm:h-9 sm:w-9 md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"><ChevronLeft className="h-3.5 w-3.5"/></button>
+        <button type="button" onClick={(event) => { event.preventDefault(); event.stopPropagation(); stepImage(1); }} aria-label={`Следующее фото ${car.brand} ${car.model}`} className="pointer-events-auto absolute right-2 top-1/2 z-30 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-dark/35 text-white/95 opacity-100 backdrop-blur-sm transition-[background-color,opacity,transform] hover:bg-dark/65 focus-visible:bg-dark/65 active:scale-95 sm:right-3 sm:h-9 sm:w-9 md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"><ChevronRight className="h-3.5 w-3.5"/></button></>}
         {images.length > 1 && <span className="absolute bottom-2 right-2 rounded-md bg-dark/65 px-1.5 py-0.5 text-[10px] text-white opacity-100 transition-opacity sm:bottom-3 sm:right-3 sm:rounded-lg sm:px-2.5 sm:py-1 sm:text-xs md:opacity-0 md:group-hover:opacity-100">{activeImage + 1} / {images.length}</span>}
       </div>
 
