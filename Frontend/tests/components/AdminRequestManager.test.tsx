@@ -9,6 +9,7 @@ const customerRequest = {
   payload: { firstName: "Иван", phone: "+79990000000" },
   photoCount: 0,
   photoUrls: [],
+  note: "Перезвонить после обеда",
   createdAt: "2026-07-30T12:00:00.000Z",
 };
 
@@ -26,5 +27,6 @@ describe("AdminRequestManager", () => {
       "href",
       "/admin/requests/request-1",
     );
+    expect(screen.getByText("Перезвонить после обеда")).toBeInTheDocument();
   });
 });

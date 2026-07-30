@@ -66,10 +66,15 @@ export default function AdminRequestManager() {
                 </div>
                 <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-gray-text">
                   <span>{requestStatusLabels[request.status]}</span>
-                  {request.note && <span className="font-medium text-primary">Есть заметка</span>}
                   {request.photoCount > 0 && <span className="inline-flex items-center gap-1"><ImageIcon className="h-3.5 w-3.5" />{request.photoCount}</span>}
                   <span className="ml-auto">{new Date(request.createdAt).toLocaleString("ru-RU")}</span>
                 </div>
+                {request.note && (
+                  <div className="mt-4 rounded-xl bg-gray-bg px-3 py-2.5">
+                    <p className="text-xs font-semibold text-gray-text">Заметка администратора</p>
+                    <p className="mt-1 line-clamp-2 text-sm text-dark">{request.note}</p>
+                  </div>
+                )}
               </Link>
             ))}
             {requests.length < total && <button type="button" disabled={loading} onClick={() => void load(page + 1, true)} className="rounded-xl border border-gray-border bg-white px-4 py-3 text-sm font-semibold text-dark disabled:opacity-50 lg:col-span-2">{loading ? "Загружаем…" : "Показать ещё"}</button>}
