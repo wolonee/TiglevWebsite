@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, Eye, LoaderCircle, Pencil, Plus, RefreshCw, RotateCcw, Search, Trash2 } from "lucide-react";
 import { brands, formatPrice } from "@/data/cars";
 import { imageObjectPosition } from "@/data/carImages";
+import { imageVariants } from "@/data/imageVariants";
 import type { ManagedCar } from "./AdminCarForm";
 import AppSelect from "./AppSelect";
 import ConfirmDialog from "./ConfirmDialog";
@@ -177,7 +178,7 @@ export default function AdminCarManager() {
                 {!trash && <Link href={`/admin/cars/${car.id}/edit`} aria-label={`Редактировать ${car.brand} ${car.model}`} className="absolute inset-0 z-0 rounded-2xl focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" />}
                 <div className={`relative z-10 ${trash ? "" : "pointer-events-none"}`}>
                   <div className="relative aspect-[16/10] bg-gray-bg">
-                    <Image src={car.images[0].url} alt={`${car.brand} ${car.model}`} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" style={{ objectPosition: imageObjectPosition(car.images[0]) }} />
+                    <Image src={car.images[0].url} alt={`${car.brand} ${car.model}`} fill quality={imageVariants.thumbnail.quality} sizes={imageVariants.thumbnail.adminSizes} className="object-cover" style={{ objectPosition: imageObjectPosition(car.images[0]) }} />
                     <span className={`absolute left-3 top-3 rounded-lg px-2.5 py-1 text-xs font-semibold ${trash ? "bg-red-100 text-red-700" : statusColor[car.status]}`}>{trash ? "Удалено" : statusLabel[car.status]}</span>
                   </div>
                   <div className="p-5">

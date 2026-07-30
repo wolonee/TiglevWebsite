@@ -9,7 +9,7 @@ const Hero = () => {
         alt="Автомобиль в салоне TIGLEV.COM"
         fill
         preload
-        unoptimized
+        quality={85}
         sizes="100vw"
         className="object-cover object-center"
       />

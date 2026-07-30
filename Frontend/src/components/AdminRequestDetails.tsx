@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { imageVariants } from "@/data/imageVariants";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, LoaderCircle } from "lucide-react";
 import { useState } from "react";
@@ -95,6 +96,7 @@ export default function AdminRequestDetails({ initialRequest }: { initialRequest
                           src={url}
                           alt={`Фотография автомобиля ${index + 1}`}
                           fill
+                          quality={imageVariants.thumbnail.quality}
                           sizes="(max-width: 640px) 45vw, 240px"
                           className="object-cover transition-transform duration-200 group-hover:scale-[1.03]"
                         />
