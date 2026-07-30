@@ -18,9 +18,9 @@ describe("Header", () => {
     expect(screen.getAllByRole("link", { name: "Главная" })[0]).toHaveAttribute("aria-current", "page");
   });
 
-  it("uses the TIGLEV logo asset", () => {
+  it("uses the TIGLEV wordmark asset", () => {
     render(<Header solid />);
-    expect(screen.getByAltText("")).toHaveAttribute("src", expect.stringContaining("logo-tiglev-clean.png"));
+    expect(screen.getByAltText("TIGLEV")).toHaveAttribute("src", expect.stringContaining("tiglev-wordmark-white.svg"));
   });
 
   it("links the catalog navigation to the landing page section", () => {

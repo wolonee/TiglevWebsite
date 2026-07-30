@@ -41,8 +41,14 @@ export default function Header({ solid = false }: { solid?: boolean }) {
     <header className={`fixed inset-x-0 top-0 z-[60] transition-all duration-500 ${opaque ? "border-b border-gray-border/70 bg-white/95 shadow-sm backdrop-blur-xl" : "bg-transparent"}`}>
     <div className="shell flex h-16 items-center justify-between lg:h-20">
       <Link href="/" className="flex min-w-0 items-center gap-2.5" aria-label="TIGLEV.COM, главная">
-        <Image src="/logo-tiglev-clean.png" alt="" width={44} height={44} priority quality={90} sizes="44px" className="h-11 w-11 shrink-0 rounded-lg" />
-        <span className={`truncate text-lg font-extrabold tracking-tight sm:text-xl ${opaque ? "text-dark" : "text-white"}`}>TIGLEV.COM</span>
+        <Image
+          src="/assets/tiglev-wordmark-white.svg"
+          alt="TIGLEV"
+          width={980}
+          height={517}
+          priority
+          className={`h-11 w-auto shrink-0 transition-[filter] duration-300 lg:h-14 ${opaque ? "brightness-0" : ""}`}
+        />
       </Link>
       <nav className="hidden items-center lg:flex" aria-label="Основная навигация">
         {links.map(link => { const active = link.href === "/" ? pathname === "/" : !link.href.includes("#") && pathname.startsWith(link.href); return <Link key={link.href} href={link.href} onClick={(event) => handleNavigation(event, link.href)} aria-current={active ? "page" : undefined} className={`relative px-4 py-2 text-sm font-medium transition-colors hover:text-primary ${active ? opaque ? "text-primary" : "text-white" : opaque ? "text-dark-light" : "text-white/80"}`}>{link.label}{active && <span aria-hidden className="absolute inset-x-4 -bottom-0.5 h-0.5 bg-primary" />}</Link>; })}
