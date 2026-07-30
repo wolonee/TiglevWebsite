@@ -65,6 +65,7 @@ export default function AdminCarManager() {
       && (!status || car.status === status)
     ));
   }, [brand, cars, search, status]);
+  const carIndexes = useMemo(() => new Map(cars.map((car, index) => [car.id, index])), [cars]);
 
   const filtersActive = Boolean(search || brand || status);
   const orderingEnabled = !trash && !filtersActive;
@@ -170,7 +171,7 @@ export default function AdminCarManager() {
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {visibleCars.map((car) => {
-            const index = cars.findIndex((item) => item.id === car.id);
+            const index = carIndexes.get(car.id) ?? -1;
             return (
               <article key={car.id} style={{ viewTransitionName: `admin-car-${car.id}` }} className={`relative overflow-hidden rounded-2xl border border-gray-border bg-white transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-lg ${trash ? "" : "cursor-pointer"}`}>
                 {!trash && <Link href={`/admin/cars/${car.id}/edit`} aria-label={`Редактировать ${car.brand} ${car.model}`} className="absolute inset-0 z-0 rounded-2xl focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" />}

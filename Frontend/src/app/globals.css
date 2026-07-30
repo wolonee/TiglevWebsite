@@ -61,6 +61,12 @@
 .select-motion[data-state="open"] { animation: scale-in .18s cubic-bezier(.22, 1, .36, 1) both; transform-origin: var(--radix-select-content-transform-origin); }
 .catalog-results { transition: opacity .2s ease, transform .2s ease; }
 .catalog-results[data-updating="true"] { opacity: .55; transform: translateY(4px); }
+.catalog-card-description {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
 .success-icon { animation: success-pop .55s cubic-bezier(.2, .9, .25, 1.2) both; }
 .admin-page-enter { animation: reveal-up .3s cubic-bezier(.22, 1, .36, 1) both; }
 .admin-form-section { animation: reveal-up .4s cubic-bezier(.22, 1, .36, 1) both; }
@@ -102,8 +108,9 @@ button, input, select, textarea { font: inherit; }
 }
 
 :focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px rgb(196 30 36 / 35%);
+  outline: 2px solid rgb(196 30 36 / 75%);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 2px rgb(196 30 36 / 20%);
 }
 
 /* Radix Select already exposes keyboard focus through its highlighted item. */
@@ -113,8 +120,13 @@ button, input, select, textarea { font: inherit; }
 }
 
 @media (max-width: 639px) {
-  .section-space { padding-block: 3.5rem; }
+  .section-space { padding-block: 2.5rem; }
   .shell { width: min(100% - 1.5rem, 80rem); }
+}
+
+/* Keep two catalog cards comfortably fluid on compact devices such as iPhone SE. */
+@media (max-width: 374px) {
+  .shell { width: min(100% - 1rem, 80rem); }
 }
 
 @media (prefers-reduced-motion: reduce) {

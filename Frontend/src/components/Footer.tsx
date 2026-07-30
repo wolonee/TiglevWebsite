@@ -24,28 +24,30 @@ const NAV_SECTIONS = [
 
 const Footer = () => {
   return (
-    <footer className="relative bg-dark pb-8 pt-12 sm:pt-16">
+    <footer className="relative bg-dark pb-8 pt-10 sm:pt-16">
       <div className="absolute inset-0 opacity-[0.02]" style={{
         backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
         backgroundSize: "32px 32px",
       }} />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-10 border-b border-white/[0.06] pb-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-          <div>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-8 border-b border-white/[0.06] pb-8 sm:grid-cols-2 sm:pb-12 lg:grid-cols-4 lg:gap-8">
+          <div className="col-span-2">
             <div className="mb-5 flex items-center gap-2.5">
               <Image
                 src="/logo-tiglev-clean.png"
                 alt="TIGLEV.COM"
                 width={36}
                 height={36}
+                quality={90}
+                sizes="36px"
                 className="h-9 w-9 rounded-md"
               />
               <span className="text-lg font-extrabold text-white">
                 TIGLEV.COM
               </span>
             </div>
-            <p className="mb-6 text-sm leading-relaxed text-white/40">
+            <p className="mb-6 text-sm leading-relaxed text-white/55">
               Автосалон в Тольятти. Продажа, выкуп и заказ автомобилей с 2009
               года. Честные цены и прозрачные сделки.
             </p>
@@ -74,7 +76,7 @@ const Footer = () => {
                   <Link
                     key={`${section.title}-${link.label}`}
                     href={link.href}
-                    className="text-sm text-white/40 transition-colors hover:text-white"
+                    className="text-sm text-white/55 transition-colors hover:text-white"
                   >
                     {link.label}
                   </Link>
@@ -83,14 +85,14 @@ const Footer = () => {
             </div>
           ))}
 
-          <div>
+          <div className="col-span-2 lg:col-span-1">
             <h4 className="mb-5 text-xs font-bold uppercase tracking-[0.15em] text-white/60">
               Контакты
             </h4>
             <div className="space-y-3">
               <a
                 href={CONTACT_DETAILS.phones[0].href}
-                className="flex items-center gap-2.5 text-sm text-white/40 transition-colors hover:text-white"
+                className="flex items-center gap-2.5 text-sm text-white/55 transition-colors hover:text-white"
                 aria-label={`Позвонить: ${CONTACT_DETAILS.phones[0].label}`}
               >
                 <Phone className="h-4 w-4 shrink-0 text-primary/60" />
@@ -98,13 +100,13 @@ const Footer = () => {
               </a>
               <a
                 href={CONTACT_DETAILS.phones[1].href}
-                className="flex items-center gap-2.5 text-sm text-white/40 transition-colors hover:text-white"
+                className="flex items-center gap-2.5 text-sm text-white/55 transition-colors hover:text-white"
                 aria-label={`Позвонить: ${CONTACT_DETAILS.phones[1].label}`}
               >
                 <Phone className="h-4 w-4 shrink-0 text-primary/60" />
                 {CONTACT_DETAILS.phones[1].label}
               </a>
-              <p className="flex items-center gap-2.5 text-sm text-white/40">
+              <p className="flex items-center gap-2.5 text-sm text-white/55">
                 <MapPin className="h-4 w-4 shrink-0 text-primary/60" />
                 {CONTACT_DETAILS.address}
               </p>

@@ -43,6 +43,7 @@ describe("CatalogGrid", () => {
 
     fireEvent.change(priceSlider, { target: { value: "3000000" } });
 
+    expect(priceSlider.getAttribute("style")).toContain("75%");
     expect(screen.getByText("KIA Carnival")).toBeInTheDocument();
     act(() => vi.advanceTimersByTime(400));
 

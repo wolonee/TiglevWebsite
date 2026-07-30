@@ -32,7 +32,7 @@ describe("CarCard", () => {
     fireEvent.load(screen.getByAltText("BMW X5 2024"));
     expect(container.querySelectorAll("img")).toHaveLength(1);
 
-    act(() => { vi.advanceTimersByTime(500); });
+    act(() => { vi.advanceTimersByTime(1300); });
     expect(container.querySelectorAll("img")).toHaveLength(3);
     vi.useRealTimers();
   });
@@ -41,5 +41,21 @@ describe("CarCard", () => {
     render(<CarCard car={{ ...car, images: [{ ...car.images![0], position: { x: 20, y: 80 } }] }} />);
 
     expect(screen.getByAltText("BMW X5 2024")).toHaveStyle({ objectPosition: "20% 80%" });
+  });
+
+  it("clips descriptions to a fixed two-line area in every catalog card", () => {
+    const description = "Подробное описание автомобиля, которое в каталоге ограничивается двумя строками.";
+    render(<CarCard car={{ ...car, description }} />);
+
+    expect(screen.getByText(description)).toHaveClass("catalog-card-description", "h-10", "sm:h-12", "overflow-hidden");
+  });
+
+  it("ends long catalog descriptions without rendering their continuation", () => {
+    const continuation = "Продолжение, которое не должно попасть в карточку каталога.";
+    const description = `${"Длинное описание автомобиля ".repeat(8)}${continuation}`;
+    render(<CarCard car={{ ...car, description }} />);
+
+    expect(screen.getByText(/\.\.\.$/)).toBeInTheDocument();
+    expect(screen.queryByText(continuation)).not.toBeInTheDocument();
   });
 });
