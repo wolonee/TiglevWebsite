@@ -42,12 +42,22 @@ export default function Header({ solid = false }: { solid?: boolean }) {
     <div className="shell flex h-16 items-center justify-between lg:h-20">
       <Link href="/" className="flex min-w-0 items-center gap-2.5" aria-label="TIGLEV.COM, главная">
         <Image
+          src="/logo-tiglev-clean.png"
+          alt=""
+          width={44}
+          height={44}
+          priority
+          quality={90}
+          sizes="44px"
+          className="h-11 w-11 shrink-0 rounded-lg"
+        />
+        <Image
           src="/assets/tiglev-wordmark-white.svg"
           alt="TIGLEV"
           width={980}
           height={517}
           priority
-          className={`h-11 w-auto shrink-0 transition-[filter] duration-300 lg:h-14 ${opaque ? "brightness-0" : ""}`}
+          className={`h-7 w-auto shrink-0 transition-[filter] duration-300 lg:h-8 ${opaque ? "brightness-0" : ""}`}
         />
       </Link>
       <nav className="hidden items-center lg:flex" aria-label="Основная навигация">

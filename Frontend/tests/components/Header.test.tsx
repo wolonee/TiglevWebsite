@@ -20,6 +20,7 @@ describe("Header", () => {
 
   it("uses the TIGLEV wordmark asset", () => {
     render(<Header solid />);
+    expect(screen.getByAltText("")).toHaveAttribute("src", expect.stringContaining("logo-tiglev-clean.png"));
     expect(screen.getByAltText("TIGLEV")).toHaveAttribute("src", expect.stringContaining("tiglev-wordmark-white.svg"));
   });
 
