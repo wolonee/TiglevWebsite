@@ -4,7 +4,7 @@ const getAdminAccess = vi.fn();
 
 vi.mock("@/lib/admin-auth", () => ({ getAdminAccess }));
 
-const { PATCH } = await import("@/app/api/admin/requests/[id]/route");
+const { GET, PATCH } = await import("@/app/api/admin/requests/[id]/route");
 const context = { params: Promise.resolve({ id: "request 1" }) };
 
 describe("admin request actions", () => {
@@ -33,6 +33,21 @@ describe("admin request actions", () => {
         headers: { "content-type": "application/json", "x-api-key": "private-key" },
         body: JSON.stringify({ status: "in_progress", note: "Перезвонить" }),
       }),
+    );
+  });
+
+  it("loads a request from the private backend", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      request: { id: "request 1", note: "Перезвонить", photoUrls: ["https://example.com/car.jpg"] },
+    }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await GET(new Request("http://localhost/api/admin/requests/request%201"), context);
+
+    expect(response.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://backend.example.com/api/admin/requests/request%201",
+      expect.objectContaining({ headers: { "x-api-key": "private-key" }, cache: "no-store" }),
     );
   });
 });

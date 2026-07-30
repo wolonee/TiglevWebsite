@@ -2,7 +2,7 @@ import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const carRecords = { all: vi.fn(), active: vi.fn(), find: vi.fn(), create: vi.fn(), update: vi.fn(), remove: vi.fn(), restore: vi.fn(), reorder: vi.fn() };
-const customerRequests = { create: vi.fn(), all: vi.fn(), update: vi.fn() };
+const customerRequests = { create: vi.fn(), all: vi.fn(), find: vi.fn(), update: vi.fn() };
 const broadcastSellRequest = vi.fn();
 const broadcastContactRequest = vi.fn();
 const sendSellRequestEmail = vi.fn();
@@ -28,6 +28,7 @@ describe("backend API", () => {
     carRecords.reorder.mockResolvedValue([]);
     customerRequests.create.mockResolvedValue({ id: "request-1" });
     customerRequests.all.mockResolvedValue({ items: [], total: 0, page: 1, limit: 50 });
+    customerRequests.find.mockResolvedValue(null);
     broadcastSellRequest.mockResolvedValue({ recipients: 1, delivered: 1 });
     broadcastContactRequest.mockResolvedValue({ recipients: 1, delivered: 1 });
     sendSellRequestEmail.mockResolvedValue(undefined);
@@ -106,6 +107,23 @@ describe("backend API", () => {
     const response = await request(app).get("/api/admin/requests?page=2&limit=25").set("x-api-key", "test-api-key").expect(200);
     expect(customerRequests.all).toHaveBeenCalledWith(2, 25);
     expect(response.body.pagination).toEqual({ page: 2, limit: 25, total: 51 });
+  });
+
+  it("loads one admin request with its saved note and photos", async () => {
+    const savedRequest = {
+      id: "request-1",
+      note: "Перезвонить завтра",
+      photoUrls: ["https://example.com/car.jpg"],
+    };
+    customerRequests.find.mockResolvedValue(savedRequest);
+
+    const response = await request(app)
+      .get("/api/admin/requests/request-1")
+      .set("x-api-key", "test-api-key")
+      .expect(200);
+
+    expect(customerRequests.find).toHaveBeenCalledWith("request-1");
+    expect(response.body.request).toEqual(savedRequest);
   });
 
   it("saves an admin note for a request", async () => {

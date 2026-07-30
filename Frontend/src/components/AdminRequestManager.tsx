@@ -1,65 +1,14 @@
 "use client";
 
-import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CheckCircle2, LoaderCircle, MessageSquare, RefreshCw } from "lucide-react";
-
-type RequestStatus = "new" | "in_progress" | "completed" | "archived";
-type CustomerRequest = {
-  id: string;
-  kind: "contact" | "sell";
-  status: RequestStatus;
-  payload: Record<string, unknown>;
-  photoCount: number;
-  photoUrls: string[];
-  note?: string;
-  createdAt: string;
-};
-
-const statusLabels: Record<RequestStatus, string> = {
-  new: "Новая",
-  in_progress: "В работе",
-  completed: "Завершена",
-  archived: "Архив",
-};
-
-function RequestPhotos({ request }: { request: CustomerRequest }) {
-  if (!request.photoCount) return null;
-
-  if (!request.photoUrls.length) {
-    return <p className="mt-5 text-sm text-gray-text">Прикреплено фотографий: {request.photoCount}. Файлы не были сохранены для старых заявок.</p>;
-  }
-
-  return (
-    <section className="mt-6">
-      <h2 className="text-sm font-semibold text-dark">Фотографии автомобиля ({request.photoUrls.length})</h2>
-      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {request.photoUrls.map((url, index) => (
-          <a key={url} href={url} target="_blank" rel="noreferrer" className="group relative aspect-square overflow-hidden rounded-xl border border-gray-border bg-gray-bg focus-visible:outline-primary">
-            <Image
-              src={url}
-              alt={`Фотография автомобиля ${index + 1}`}
-              fill
-              sizes="(max-width: 640px) 40vw, 180px"
-              className="object-cover transition-transform duration-200 group-hover:scale-[1.03]"
-            />
-          </a>
-        ))}
-      </div>
-      <p className="mt-2 text-xs text-gray-text">Нажмите на фотографию, чтобы открыть её в полном размере.</p>
-    </section>
-  );
-}
+import { ChevronRight, ImageIcon, LoaderCircle, RefreshCw } from "lucide-react";
+import { requestStatusLabels, type CustomerRequest } from "@/data/adminRequests";
 
 export default function AdminRequestManager() {
   const [requests, setRequests] = useState<CustomerRequest[]>([]);
-  const [selected, setSelected] = useState<CustomerRequest | null>(null);
-  const [status, setStatus] = useState<RequestStatus>("new");
-  const [note, setNote] = useState("");
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [saveMessage, setSaveMessage] = useState("");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
 
@@ -82,39 +31,8 @@ export default function AdminRequestManager() {
 
   useEffect(() => { void load(); }, []);
 
-  function choose(request: CustomerRequest) {
-    setSelected(request);
-    setStatus(request.status);
-    setNote(request.note ?? "");
-    setSaveMessage("");
-  }
-
-  async function save() {
-    if (!selected) return;
-    setSaving(true);
-    setError("");
-    setSaveMessage("");
-    try {
-      const response = await fetch(`/api/admin/requests/${selected.id}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ status, note }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error ?? "Не удалось сохранить заявку");
-      setRequests((current) => current.map((item) => item.id === selected.id ? result.request : item));
-      setSelected(result.request);
-      setSaveMessage("Заметка и статус сохранены");
-    } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Не удалось сохранить заявку");
-    } finally {
-      setSaving(false);
-    }
-  }
-
   return (
-    <div className="grid gap-8 lg:items-stretch lg:grid-cols-[.9fr_1.1fr]">
-      <section>
+    <section>
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Обращения клиентов</p>
@@ -130,37 +48,33 @@ export default function AdminRequestManager() {
         ) : requests.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gray-border bg-white py-16 text-center text-gray-text">Заявок пока нет</div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid gap-3 lg:grid-cols-2">
             {requests.map((request) => (
-              <button key={request.id} onClick={() => choose(request)} className={`w-full rounded-2xl border p-4 text-left transition-colors ${selected?.id === request.id ? "border-primary bg-red-50" : "border-gray-border bg-white hover:border-primary"}`}>
-                <div className="flex items-center justify-between gap-3">
-                  <strong className="text-dark">{request.kind === "sell" ? "Продать авто" : "Написать нам"}</strong>
-                  <span className="text-xs text-gray-text">{statusLabels[request.status]}</span>
+              <Link
+                key={request.id}
+                href={`/admin/requests/${request.id}`}
+                className="group rounded-2xl border border-gray-border bg-white p-4 transition-colors hover:border-primary sm:p-5"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <strong className="text-dark">{request.kind === "sell" ? "Продать авто" : "Написать нам"}</strong>
+                    <p className="mt-2 text-sm text-gray-text">
+                      {String(request.payload.firstName ?? request.payload.name ?? "Без имени")} · {String(request.payload.phone ?? "")}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 shrink-0 text-gray-text transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
                 </div>
-                <p className="mt-2 truncate text-sm text-gray-text">{String(request.payload.firstName ?? request.payload.name ?? "Без имени")} · {String(request.payload.phone ?? "")}</p>
-                <p className="mt-1 text-xs text-gray-text">{new Date(request.createdAt).toLocaleString("ru-RU")}</p>
-              </button>
+                <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-gray-text">
+                  <span>{requestStatusLabels[request.status]}</span>
+                  {request.note && <span className="font-medium text-primary">Есть заметка</span>}
+                  {request.photoCount > 0 && <span className="inline-flex items-center gap-1"><ImageIcon className="h-3.5 w-3.5" />{request.photoCount}</span>}
+                  <span className="ml-auto">{new Date(request.createdAt).toLocaleString("ru-RU")}</span>
+                </div>
+              </Link>
             ))}
-            {requests.length < total && <button type="button" disabled={loading} onClick={() => void load(page + 1, true)} className="w-full rounded-xl border border-gray-border bg-white px-4 py-3 text-sm font-semibold text-dark disabled:opacity-50">{loading ? "Загружаем…" : "Показать ещё"}</button>}
+            {requests.length < total && <button type="button" disabled={loading} onClick={() => void load(page + 1, true)} className="rounded-xl border border-gray-border bg-white px-4 py-3 text-sm font-semibold text-dark disabled:opacity-50 lg:col-span-2">{loading ? "Загружаем…" : "Показать ещё"}</button>}
           </div>
         )}
-      </section>
-
-      <section className="h-full rounded-2xl border border-gray-border bg-white p-6 sm:p-8">
-        {selected ? <>
-          <div className="flex items-center gap-2 text-primary"><MessageSquare className="h-5 w-5" /><span className="font-semibold">{selected.kind === "sell" ? "Заявка на продажу автомобиля" : "Сообщение клиента"}</span></div>
-          <dl className="mt-6 space-y-3">
-            {Object.entries(selected.payload).map(([key, value]) => <div key={key} className="flex gap-4 border-b border-gray-border pb-3 text-sm"><dt className="w-36 shrink-0 text-gray-text">{key}</dt><dd className="whitespace-pre-wrap font-medium text-dark">{String(value || "—")}</dd></div>)}
-          </dl>
-          <RequestPhotos request={selected} />
-          <div className="mt-6 grid gap-4">
-            <label className="text-sm font-medium text-dark">Статус<select value={status} onChange={(event) => setStatus(event.target.value as RequestStatus)} className="mt-2 w-full rounded-xl border border-gray-border px-4 py-3 outline-none focus:border-primary"><option value="new">Новая</option><option value="in_progress">В работе</option><option value="completed">Завершена</option><option value="archived">Архив</option></select></label>
-            <label className="text-sm font-medium text-dark">Заметка администратора<textarea value={note} onChange={(event) => { setNote(event.target.value); setSaveMessage(""); }} rows={5} className="mt-2 w-full rounded-xl border border-gray-border px-4 py-3 outline-none focus:border-primary" /></label>
-            <button disabled={saving} onClick={() => void save()} className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 font-bold text-white disabled:opacity-60">{saving ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <CheckCircle2 className="h-5 w-5" />}Сохранить</button>
-            {saveMessage && <p role="status" className="text-sm font-medium text-emerald-700">{saveMessage}</p>}
-          </div>
-        </> : <div className="flex h-full min-h-80 flex-col items-center justify-center text-center text-gray-text"><MessageSquare className="mb-3 h-8 w-8" />Выберите заявку слева, чтобы посмотреть детали</div>}
-      </section>
-    </div>
+    </section>
   );
 }

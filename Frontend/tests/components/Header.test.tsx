@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Header from "@/components/Header";
 
@@ -27,5 +28,20 @@ describe("Header", () => {
     screen.getAllByRole("link", { name: "Каталог" }).forEach((link) => {
       expect(link).toHaveAttribute("href", "/#catalog");
     });
+  });
+
+  it("smoothly scrolls only to the catalog section on the landing page", async () => {
+    const user = userEvent.setup();
+    const catalog = document.createElement("section");
+    catalog.id = "catalog";
+    const scrollIntoView = vi.mocked(catalog.scrollIntoView);
+    scrollIntoView.mockClear();
+    document.body.append(catalog);
+    render(<Header solid />);
+
+    await user.click(screen.getAllByRole("link", { name: "Каталог" })[0]);
+
+    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "start" });
+    catalog.remove();
   });
 });

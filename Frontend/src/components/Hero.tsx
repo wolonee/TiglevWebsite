@@ -6,11 +6,10 @@ const Hero = () => {
     <section className="relative flex min-h-[88svh] items-center overflow-hidden bg-dark sm:min-h-[100svh]">
       <Image
         src={heroCar}
-        alt="Фон — автомобиль"
+        alt="Автомобиль в салоне TIGLEV.COM"
         fill
         preload
-        placeholder="blur"
-        quality={85}
+        unoptimized
         sizes="100vw"
         className="object-cover object-center"
       />

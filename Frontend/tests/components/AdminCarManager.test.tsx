@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type { ImgHTMLAttributes } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import AdminCarManager from "@/components/AdminCarManager";
@@ -40,5 +41,39 @@ describe("AdminCarManager", () => {
     const cardEditLink = await screen.findByRole("link", { name: "Редактировать BMW X5" });
 
     expect(cardEditLink).toHaveAttribute("href", "/admin/cars/car-1/edit");
+  });
+
+  it("removes a car from the active admin catalog after soft deletion", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ cars: [car] }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ car: { ...car, deletedAt: "2026-07-30T12:00:00.000Z" } }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<AdminCarManager />);
+
+    await user.click(await screen.findByRole("button", { name: "В корзину" }));
+    const deleteButtons = await screen.findAllByRole("button", { name: "В корзину" });
+    await user.click(deleteButtons[deleteButtons.length - 1]);
+
+    await waitFor(() => expect(screen.queryByText("BMW X5")).not.toBeInTheDocument());
+    expect(fetchMock).toHaveBeenLastCalledWith("/api/admin/cars/car-1", { method: "DELETE" });
+  });
+
+  it("shows deleted cars in the trash and restores them", async () => {
+    const user = userEvent.setup();
+    const deletedCar = { ...car, deletedAt: "2026-07-30T12:00:00.000Z" };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ cars: [car] }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ cars: [deletedCar] }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ car }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<AdminCarManager />);
+
+    await user.click(await screen.findByRole("button", { name: "Корзина" }));
+    expect(await screen.findByText("Удалено")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Восстановить" }));
+
+    await waitFor(() => expect(screen.queryByText("BMW X5")).not.toBeInTheDocument());
+    expect(fetchMock).toHaveBeenLastCalledWith("/api/admin/cars/car-1/restore", { method: "POST" });
   });
 });

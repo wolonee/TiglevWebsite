@@ -1,5 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import AdminRequestManager from "@/components/AdminRequestManager";
 
@@ -15,24 +14,17 @@ const customerRequest = {
 
 describe("AdminRequestManager", () => {
   beforeEach(() => {
-    vi.stubGlobal("fetch", vi.fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify({ requests: [customerRequest], pagination: { total: 1 } }), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ request: { ...customerRequest, note: "Перезвонить после обеда" } }), { status: 200 })));
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ requests: [customerRequest], pagination: { total: 1 } }), { status: 200 }),
+    ));
   });
 
-  it("saves an administrator note and confirms the result", async () => {
-    const user = userEvent.setup();
+  it("opens every request on its own details page", async () => {
     render(<AdminRequestManager />);
 
-    await user.click(await screen.findByRole("button", { name: /продать авто/i }));
-    await user.type(screen.getByLabelText("Заметка администратора"), "Перезвонить после обеда");
-    await user.click(screen.getByRole("button", { name: "Сохранить" }));
-
-    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Заметка и статус сохранены"));
-    const fetchMock = vi.mocked(fetch);
-    expect(fetchMock).toHaveBeenLastCalledWith("/api/admin/requests/request-1", expect.objectContaining({
-      method: "PATCH",
-      body: JSON.stringify({ status: "new", note: "Перезвонить после обеда" }),
-    }));
+    expect(await screen.findByRole("link", { name: /продать авто/i })).toHaveAttribute(
+      "href",
+      "/admin/requests/request-1",
+    );
   });
 });

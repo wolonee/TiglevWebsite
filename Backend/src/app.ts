@@ -128,6 +128,11 @@ app.get("/api/admin/requests", async (request, response) => {
   const result = await customerRequests.all(parsed.data.page, parsed.data.limit);
   return response.json({ requests: result.items, pagination: { page: result.page, limit: result.limit, total: result.total } });
 });
+app.get("/api/admin/requests/:id", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  const customerRequest = await customerRequests.find(request.params.id);
+  return customerRequest ? response.json({ request: customerRequest }) : response.status(404).json({ error: "Request not found" });
+});
 app.patch("/api/admin/requests/:id", async (request, response) => {
   if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
   const parsed = requestUpdateSchema.safeParse(request.body);

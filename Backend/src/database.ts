@@ -307,6 +307,11 @@ export const customerRequests = {
     ]);
     return { items: rows.map(mapRequest), total: Number(countRows[0]?.total ?? 0), page, limit };
   },
+  async find(id: string) {
+    const sql = getSql();
+    const [row] = await sql`SELECT * FROM customer_requests WHERE id = ${id}`;
+    return row ? mapRequest(row) : null;
+  },
   async update(id: string, data: { status: RequestStatus; note?: string }) {
     const sql = getSql();
     const [row] = await sql`UPDATE customer_requests SET status = ${data.status}, note = ${data.note ?? null}, updated_at = NOW() WHERE id = ${id} RETURNING *`;

@@ -79,7 +79,6 @@
 ::view-transition-old(admin-nav-indicator), ::view-transition-new(admin-nav-indicator) { height: 100%; }
 
 html {
-  scroll-behavior: smooth;
   scroll-padding-top: 5rem;
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
