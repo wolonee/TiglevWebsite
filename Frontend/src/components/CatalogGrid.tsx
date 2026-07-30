@@ -69,7 +69,7 @@ export default function CatalogGrid({ cars }: { cars: Car[] }) {
       <input id="catalog-price" aria-label="Цена до" type="range" min="0" max={catalogMaxPrice} step="10000" value={selectedMax} onChange={(event) => scheduleMaxPriceUpdate(Number(event.target.value))} className="mt-4 h-2 w-full cursor-pointer appearance-none rounded-full accent-primary" style={{ background: sliderBackground }} />
       <div className="mt-2 flex justify-between text-xs text-gray-text"><span>0 ₽</span><span>{formatPrice(catalogMaxPrice)} ₽</span></div>
     </div>
-    <div className="catalog-results" data-updating={isUpdating}>{filtered.length ? <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 lg:gap-8">{filtered.slice(0, visible).map((car, index) => <CarCard key={car.id} car={car} preloadCover={index < 3}/>)}</div> : <div className="rounded-[20px] border border-gray-border bg-white px-5 py-16 text-center"><h3 className="text-xl font-bold text-dark">Автомобили не найдены</h3><p className="mt-2 text-sm text-gray-text">Попробуйте изменить параметры фильтра</p></div>}</div>
+    <div className="catalog-results" data-updating={isUpdating}>{filtered.length ? <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 lg:gap-8">{filtered.slice(0, visible).map((car) => <CarCard key={car.id} car={car} />)}</div> : <div className="rounded-[20px] border border-gray-border bg-white px-5 py-16 text-center"><h3 className="text-xl font-bold text-dark">Автомобили не найдены</h3><p className="mt-2 text-sm text-gray-text">Попробуйте изменить параметры фильтра</p></div>}</div>
     <div ref={sentinel} className="h-1" />{visible < filtered.length && <p className="mt-8 text-center text-sm text-gray-text">Загружаем ещё автомобили…</p>}
   </div></section>;
 }

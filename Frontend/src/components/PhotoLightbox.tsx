@@ -5,6 +5,7 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useEffect } from "react";
 import type { CarImage } from "@/data/carImages";
+import { imageVariants } from "@/data/imageVariants";
 
 type PhotoLightboxProps = {
   activeIndex: number;
@@ -39,7 +40,7 @@ export default function PhotoLightbox({ activeIndex, alt, images, onOpenChange, 
         <DialogPrimitive.Content className="fixed inset-3 z-[121] flex items-center justify-center outline-none sm:inset-6">
           <DialogPrimitive.Title className="sr-only">{alt}</DialogPrimitive.Title>
           <div className="relative h-full w-full">
-            <Image src={image.url} alt={alt} fill priority quality={90} sizes="100vw" className="object-contain" />
+            <Image src={image.url} alt={alt} fill priority quality={imageVariants.full.quality} sizes={imageVariants.full.lightboxSizes} className="object-contain" />
 
             <DialogPrimitive.Close asChild>
               <button type="button" aria-label="Закрыть просмотр фотографии" className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-dark/35 text-white/95 backdrop-blur-sm transition-[background-color,transform] hover:bg-dark/65 focus-visible:bg-dark/65 active:scale-95 sm:right-3 sm:top-3">
