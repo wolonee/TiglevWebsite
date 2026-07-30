@@ -58,13 +58,26 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
 
     const preload = () => setShouldPreloadGallery(true);
     const browserWindow = window as IdleCallbackWindow;
-    if (typeof browserWindow.requestIdleCallback === "function") {
-      const callbackId = browserWindow.requestIdleCallback(preload, { timeout: 1500 });
-      return () => browserWindow.cancelIdleCallback?.(callbackId);
-    }
+    let callbackId: number | undefined;
+    let timeoutId: number | undefined;
 
-    const timeoutId = window.setTimeout(preload, 500);
-    return () => window.clearTimeout(timeoutId);
+    const schedulePreload = () => {
+      if (typeof browserWindow.requestIdleCallback === "function") {
+        callbackId = browserWindow.requestIdleCallback(preload, { timeout: 1500 });
+      } else {
+        timeoutId = window.setTimeout(preload, 500);
+      }
+    };
+    const startWhenHeroHasPriority = () => { timeoutId = window.setTimeout(schedulePreload, 800); };
+
+    if (document.readyState === "complete") startWhenHeroHasPriority();
+    else window.addEventListener("load", startWhenHeroHasPriority, { once: true });
+
+    return () => {
+      window.removeEventListener("load", startWhenHeroHasPriority);
+      if (callbackId !== undefined) browserWindow.cancelIdleCallback?.(callbackId);
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+    };
   }, [coverLoaded, images.length]);
 
   return (

@@ -1,14 +1,16 @@
 import Image from "next/image";
+import heroCar from "../../public/images/hero-car.webp";
 
 const Hero = () => {
   return (
     <section className="relative flex min-h-[88svh] items-center overflow-hidden bg-dark sm:min-h-[100svh]">
       <Image
-        src="/images/hero-car.webp"
+        src={heroCar}
         alt="Фон — автомобиль"
         fill
-        priority
-        quality={82}
+        preload
+        placeholder="blur"
+        quality={85}
         sizes="100vw"
         className="object-cover object-center"
       />

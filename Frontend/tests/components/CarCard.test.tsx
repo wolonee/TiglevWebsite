@@ -32,7 +32,7 @@ describe("CarCard", () => {
     fireEvent.load(screen.getByAltText("BMW X5 2024"));
     expect(container.querySelectorAll("img")).toHaveLength(1);
 
-    act(() => { vi.advanceTimersByTime(500); });
+    act(() => { vi.advanceTimersByTime(1300); });
     expect(container.querySelectorAll("img")).toHaveLength(3);
     vi.useRealTimers();
   });
