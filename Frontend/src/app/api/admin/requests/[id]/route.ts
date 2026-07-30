@@ -10,8 +10,17 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const apiKey = process.env.BACKEND_API_KEY;
   if (!backendUrl || !apiKey) return Response.json({ error: "Backend не настроен" }, { status: 503 });
   const { id } = await context.params;
-  const response = await fetch(`${backendUrl}/api/admin/requests/${encodeURIComponent(id)}`, {
-    method: "PATCH", headers: { "content-type": "application/json", "x-api-key": apiKey }, body: JSON.stringify(await request.json()), cache: "no-store",
-  });
-  return Response.json(await response.json(), { status: response.status });
+  try {
+    const response = await fetch(`${backendUrl}/api/admin/requests/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json", "x-api-key": apiKey },
+      body: JSON.stringify(await request.json()),
+      cache: "no-store",
+    });
+    const payload = await response.json().catch(() => ({ error: "Некорректный ответ backend" }));
+    return Response.json(payload, { status: response.status });
+  } catch (error) {
+    console.error("Admin request update failed:", error);
+    return Response.json({ error: "Не удалось сохранить заявку" }, { status: 502 });
+  }
 }

@@ -108,6 +108,20 @@ describe("backend API", () => {
     expect(response.body.pagination).toEqual({ page: 2, limit: 25, total: 51 });
   });
 
+  it("saves an admin note for a request", async () => {
+    const updatedRequest = { id: "request-1", status: "in_progress", note: "Позвонить завтра" };
+    customerRequests.update.mockResolvedValue(updatedRequest);
+
+    const response = await request(app)
+      .patch("/api/admin/requests/request-1")
+      .set("x-api-key", "test-api-key")
+      .send({ status: "in_progress", note: "Позвонить завтра" })
+      .expect(200);
+
+    expect(customerRequests.update).toHaveBeenCalledWith("request-1", { status: "in_progress", note: "Позвонить завтра" });
+    expect(response.body.request).toEqual(updatedRequest);
+  });
+
   it("soft deletes and restores a car", async () => {
     carRecords.remove.mockResolvedValue({ id: "car-1", deletedAt: new Date().toISOString() });
     carRecords.restore.mockResolvedValue({ id: "car-1" });
