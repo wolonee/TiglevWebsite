@@ -28,7 +28,9 @@ describe("backend API", () => {
     carRecords.reorder.mockResolvedValue([]);
     customerRequests.create.mockResolvedValue({ id: "request-1" });
     customerRequests.all.mockResolvedValue({ items: [], total: 0, page: 1, limit: 50 });
+    broadcastSellRequest.mockResolvedValue({ recipients: 1, delivered: 1 });
     broadcastContactRequest.mockResolvedValue({ recipients: 1, delivered: 1 });
+    sendSellRequestEmail.mockResolvedValue(undefined);
     sendContactRequestEmail.mockResolvedValue(undefined);
   });
 
@@ -122,7 +124,21 @@ describe("backend API", () => {
 
   it("stores a valid contact request before notifying recipients", async () => {
     await request(app).post("/api/contact-requests").set("x-api-key", "test-api-key").send({ name: "Иван", phone: "+79990000000", message: "Нужна консультация" }).expect(201);
-    expect(customerRequests.create).toHaveBeenCalledWith(expect.objectContaining({ kind: "contact", photoCount: 0 }));
+    expect(customerRequests.create).toHaveBeenCalledWith(expect.objectContaining({ kind: "contact", photoCount: 0, photoUrls: [] }));
     expect(broadcastContactRequest).toHaveBeenCalled();
+  });
+
+  it("stores sell request photo URLs for the admin panel", async () => {
+    const photoUrl = "https://store.public.blob.vercel-storage.com/requests/car.jpg";
+    await request(app)
+      .post("/api/sell-requests")
+      .set("x-api-key", "test-api-key")
+      .field({ model: "KIA Sportage", year: "2020", firstName: "Иван", lastName: "Иванов", phone: "+79990000000", photoUrls: JSON.stringify([photoUrl]) })
+      .attach("photos", Buffer.from("image"), { filename: "car.jpg", contentType: "image/jpeg" })
+      .expect(201);
+
+    expect(customerRequests.create).toHaveBeenCalledWith(expect.objectContaining({
+      kind: "sell", photoCount: 1, photoUrls: [photoUrl],
+    }));
   });
 });

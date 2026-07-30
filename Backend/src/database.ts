@@ -14,7 +14,7 @@ export type CarRecord = {
   status: CarStatus; sortOrder: number; deletedAt?: string;
 };
 export type RequestStatus = "new" | "in_progress" | "completed" | "archived";
-export type AdminRequest = { id: string; kind: "contact" | "sell"; status: RequestStatus; payload: Record<string, unknown>; photoCount: number; note?: string; createdAt: string; updatedAt: string };
+export type AdminRequest = { id: string; kind: "contact" | "sell"; status: RequestStatus; payload: Record<string, unknown>; photoCount: number; photoUrls: string[]; note?: string; createdAt: string; updatedAt: string };
 
 let sqlClient: Sql | null = null;
 let schemaPromise: Promise<void> | null = null;
@@ -73,11 +73,13 @@ export function migrateDatabase() {
           status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'in_progress', 'completed', 'archived')),
           payload JSONB NOT NULL,
           photo_count INTEGER NOT NULL DEFAULT 0,
+          photo_urls JSONB NOT NULL DEFAULT '[]'::jsonb,
           note TEXT,
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         )
       `;
+      await transaction`ALTER TABLE customer_requests ADD COLUMN IF NOT EXISTS photo_urls JSONB NOT NULL DEFAULT '[]'::jsonb`;
       await transaction`CREATE INDEX IF NOT EXISTS customer_requests_created_at_idx ON customer_requests (created_at DESC)`;
       await transaction`CREATE TABLE IF NOT EXISTS app_migrations (key TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`;
       const [catalogMigration] = await transaction`
@@ -279,7 +281,9 @@ export const carRecords = {
 
 const mapRequest = (row: Record<string, unknown>): AdminRequest => ({
   id: String(row.id), kind: row.kind as AdminRequest["kind"], status: row.status as RequestStatus,
-  payload: row.payload as Record<string, unknown>, photoCount: Number(row.photo_count), note: row.note ? String(row.note) : undefined,
+  payload: row.payload as Record<string, unknown>, photoCount: Number(row.photo_count),
+  photoUrls: Array.isArray(row.photo_urls) ? row.photo_urls.filter((url): url is string => typeof url === "string") : [],
+  note: row.note ? String(row.note) : undefined,
   createdAt: new Date(String(row.created_at)).toISOString(), updatedAt: new Date(String(row.updated_at)).toISOString(),
 });
 
@@ -287,7 +291,8 @@ export const customerRequests = {
   async create(data: Omit<AdminRequest, "status" | "note" | "createdAt" | "updatedAt">) {
     const sql = getSql();
     const [row] = await sql`
-      INSERT INTO customer_requests (id, kind, payload, photo_count) VALUES (${data.id}, ${data.kind}, ${sql.json(data.payload as never)}, ${data.photoCount})
+      INSERT INTO customer_requests (id, kind, payload, photo_count, photo_urls)
+      VALUES (${data.id}, ${data.kind}, ${sql.json(data.payload as never)}, ${data.photoCount}, ${sql.json(data.photoUrls)})
       RETURNING *
     `;
     if (!row) throw new Error("Created request was not returned");
