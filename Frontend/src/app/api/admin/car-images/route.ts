@@ -22,7 +22,7 @@ export async function POST(request: Request) {
         if (denied) throw new Error(denied.error);
         if (!pathname.startsWith("cars/")) throw new Error("Недопустимый путь файла");
         return {
-          allowedContentTypes: ["image/jpeg", "image/png", "image/webp"],
+          allowedContentTypes: ["image/webp"],
           maximumSizeInBytes: 8 * 1024 * 1024,
           addRandomSuffix: true,
           tokenPayload: JSON.stringify({ type: "car-image" }),
