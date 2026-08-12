@@ -669,9 +669,16 @@ class Store:
         return {row[0] for row in self.db.execute("SELECT id FROM lots")}
 
     def pending_detail_ids(self, limit: int = 0) -> list[int]:
-        """Живые лоты, у которых ещё не забрана карточка. Свежие — первыми."""
+        """
+        Живые лоты, у которых нет галереи. Свежие — первыми.
+
+        Проверяем не только метку `detail_fetched`, но и наличие фото: `prune`
+        вычищает галерею у давно проданных, метку не трогая. Вернувшийся
+        в продажу лот иначе остался бы навсегда без фотографий.
+        """
         sql = (
-            "SELECT id FROM lots WHERE detail_fetched = 0 AND gone_at IS NULL "
+            "SELECT id FROM lots l WHERE gone_at IS NULL AND (detail_fetched = 0 "
+            "OR NOT EXISTS (SELECT 1 FROM images WHERE lot_id = l.id)) "
             "ORDER BY id DESC"
         )
         if limit:

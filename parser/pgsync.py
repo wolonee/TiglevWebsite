@@ -358,9 +358,17 @@ class PgStore:
             return {row[0] for row in cur}
 
     def pending_detail_ids(self, limit: int = 0) -> list[int]:
+        """
+        Лоты в продаже, у которых нет галереи.
+
+        Второе условие важно: `prune` вычищает фото у давно проданных лотов,
+        но метку `detail_fetched` не снимает. Если такой лот вернётся в продажу
+        (sweep снимет `gone_at`), он останется живым без единого фото и по одной
+        только метке в очередь не попадёт. Поэтому смотрим и на саму галерею.
+        """
         sql = (
-            f"SELECT id FROM {self.schema}.lots "
-            f"WHERE detail_fetched = false AND gone_at IS NULL ORDER BY id DESC"
+            f"SELECT id FROM {self.schema}.lots WHERE gone_at IS NULL "
+            f"AND (detail_fetched = false OR image_paths IS NULL) ORDER BY id DESC"
         )
         if limit:
             sql += f" LIMIT {int(limit)}"
