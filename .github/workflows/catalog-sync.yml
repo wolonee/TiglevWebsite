@@ -1,0 +1,145 @@
+name: Синхронизация каталога CarClick
+
+# Каталог обновляется прямо в Neon, без промежуточного SQLite: состояние
+# (известные лоты, очередь на карточки, номер последнего обхода) живёт в самой
+# базе, поэтому задача не привязана к чьему-то компьютеру.
+#
+# Витрина читает из той же схемы в этот же момент, поэтому синхронизация
+# обновляет строки на месте и ничего не удаляет (см. parser/pgsync.py).
+
+on:
+  schedule:
+    # Время UTC. Тольятти — UTC+4.
+    - cron: "0 1 * * *"      # 05:00 МСК — полный обход: цены и снятые с продажи
+    - cron: "0 */6 * * *"    # каждые 6 часов — новинки
+    - cron: "30 2 * * 0"     # воскресенье 06:30 МСК — карточки для новых лотов
+    - cron: "0 3 1 * *"      # 1-го числа 07:00 МСК — чистка проданных
+  workflow_dispatch:
+    inputs:
+      job:
+        description: "Что запустить вручную"
+        required: true
+        default: fresh
+        type: choice
+        options: [fresh, sweep, detail, prune, facets]
+
+# Обходы пишут в одни и те же строки: если `sweep` и `fresh` пересекутся,
+# они могут наступить друг на друга при снятии лотов с продажи.
+concurrency:
+  group: catalog-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Обновление каталога
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: parser
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Установка psycopg
+        run: pip install --quiet "psycopg[binary]"
+
+      - name: Какую задачу запускаем
+        id: pick
+        working-directory: .
+        env:
+          EVENT: ${{ github.event_name }}
+          CRON: ${{ github.event.schedule }}
+          MANUAL: ${{ inputs.job }}
+        run: |
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            JOB="$MANUAL"
+          else
+            case "$CRON" in
+              "0 1 * * *")   JOB=sweep  ;;
+              "0 */6 * * *") JOB=fresh  ;;
+              "30 2 * * 0")  JOB=detail ;;
+              "0 3 1 * *")   JOB=prune  ;;
+              *)             JOB=fresh  ;;
+            esac
+          fi
+          echo "job=$JOB" >> "$GITHUB_OUTPUT"
+          echo "Запускаем: $JOB"
+
+      - name: Новинки
+        if: steps.pick.outputs.job == 'fresh'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python carclick.py --target pg --delay 0.15 fresh
+
+      # Полный обход: обновляет цены у всех лотов и снимает проданные.
+      # Внутри есть защита — если обход соберёт меньше 80% известных живых лотов,
+      # снятие пропускается, чтобы сетевой сбой не «продал» весь каталог.
+      - name: Полный обход
+        if: steps.pick.outputs.job == 'sweep'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python carclick.py --target pg --delay 0.1 sweep
+
+      # Карточки нужны только для страницы товара, поэтому добираются раз в неделю
+      # и порциями: полный обход всех 83 тысяч занял бы около двух часов.
+      - name: Карточки новых лотов
+        if: steps.pick.outputs.job == 'detail'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python carclick.py --target pg --delay 0.05 detail --concurrency 8 --limit-lots 20000
+
+      # Проданные лоты копятся вечно. Строка остаётся (история цен, ссылки
+      # в поисковом индексе), но галерея и опции — 3.4 КБ из 4.8 — убираются.
+      - name: Чистка проданных
+        if: steps.pick.outputs.job == 'prune'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python carclick.py --target pg prune --older-than 30
+
+      # Панель фильтров рисуется по этому файлу. Пересобирается после обхода,
+      # потому что счётчики меняются вместе с каталогом.
+      - name: Пересборка фильтров
+        if: steps.pick.outputs.job == 'sweep' || steps.pick.outputs.job == 'facets'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python carclick.py --target pg facets --out ../facets.json
+
+      - name: Выложить facets.json
+        if: steps.pick.outputs.job == 'sweep' || steps.pick.outputs.job == 'facets'
+        uses: actions/upload-artifact@v4
+        with:
+          name: facets
+          path: facets.json
+          retention-days: 14
+
+      # Neon на тарифе Free даёт 512 МБ на проект, и в этой же базе живут заявки
+      # с сайта. Если упереться в квоту, база переходит в read-only и приём
+      # заявок ломается — поэтому следим и предупреждаем заранее.
+      - name: Проверка размера базы
+        if: always() && steps.pick.outputs.job != 'facets'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          python - <<'PY'
+          import os, psycopg
+          with psycopg.connect(os.environ["DATABASE_URL"], connect_timeout=30) as conn:
+              cur = conn.cursor()
+              cur.execute("SELECT pg_database_size(current_database())/1024.0/1024")
+              size = cur.fetchone()[0]
+              cur.execute("SELECT COUNT(*) FROM catalog.lots WHERE gone_at IS NULL")
+              live = cur.fetchone()[0]
+          print(f"::notice::База {size:.0f} МБ из 512 ({size/512*100:.0f}%), в продаже {live} лотов")
+          if size > 460:
+              print("::error::Меньше 50 МБ до лимита Neon. Запустите prune или поднимите тариф.")
+              raise SystemExit(1)
+          if size > 400:
+              print("::warning::Больше 400 МБ — пора запустить prune.")
+          PY
