@@ -551,6 +551,25 @@ def cmd_prune(args: argparse.Namespace) -> None:
             print("для возврата места запустите VACUUM", file=sys.stderr)
 
 
+def cmd_seo(args: argparse.Namespace) -> None:
+    """Данные для посадочных страниц каталога."""
+    from seo import build_seo
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out_path = Path(args.out) if args.out else OUT_DIR / "seo.json"
+    with open_store(args) as store:
+        spec = build_seo(store)
+    out_path.write_text(json.dumps(spec, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    counts = spec["pageCounts"]
+    print(f"страниц «страна+модель»: {counts['country-model']}", file=sys.stderr)
+    print(f"страниц «страна+марка»:  {counts['country-brand']}", file=sys.stderr)
+    print(f"страниц-сегментов:       {counts['segment']}", file=sys.stderr)
+    print(f"всего:                   {counts['total']}", file=sys.stderr)
+    print(f"сравнений цен по странам: {len(spec['comparisons'])}", file=sys.stderr)
+    print(f"\n{out_path}", file=sys.stderr)
+
+
 def cmd_stats(args: argparse.Namespace) -> None:
     with Store(args.db) as store:
         if not store.count_all():
@@ -672,6 +691,10 @@ def main() -> None:
     p_prune = subparsers.add_parser("prune", help="убрать фото/опции у проданных лотов")
     p_prune.add_argument("--older-than", type=int, default=30, help="снятых с продажи более N дней назад")
     p_prune.set_defaults(func=cmd_prune)
+
+    p_seo = subparsers.add_parser("seo", help="данные для посадочных страниц")
+    p_seo.add_argument("--out", default=None, help="путь к файлу")
+    p_seo.set_defaults(func=cmd_seo)
 
     p_stats = subparsers.add_parser("stats", help="сводка по базе")
     p_stats.set_defaults(func=cmd_stats)
