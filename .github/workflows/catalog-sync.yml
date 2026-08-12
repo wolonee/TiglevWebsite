@@ -82,7 +82,12 @@ jobs:
         if: steps.pick.outputs.job == 'fresh'
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PROXY_URL: ${{ secrets.PROXY_URL }}
         run: |
+          # CarClick отбивает запросы с адресов GitHub (403). Если задан секрет
+          # PROXY_URL, ходим через него: urllib читает HTTPS_PROXY сам, менять
+          # код парсера не нужно. Пустой секрет = прямое соединение.
+          [ -n "$PROXY_URL" ] && export HTTPS_PROXY="$PROXY_URL" HTTP_PROXY="$PROXY_URL"
           python carclick.py --target pg --delay 0.15 fresh
           python carclick.py --target pg --delay 0.05 detail --concurrency 8 --limit-lots 3000
 
@@ -93,7 +98,10 @@ jobs:
         if: steps.pick.outputs.job == 'sweep'
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python carclick.py --target pg --delay 0.1 sweep
+          PROXY_URL: ${{ secrets.PROXY_URL }}
+        run: |
+          [ -n "$PROXY_URL" ] && export HTTPS_PROXY="$PROXY_URL" HTTP_PROXY="$PROXY_URL"
+          python carclick.py --target pg --delay 0.1 sweep
 
       # Отдельный прогон карточек — на случай большого отставания, когда порции
       # в `fresh` не хватает. По расписанию не нужен, запускается кнопкой.
@@ -101,7 +109,10 @@ jobs:
         if: steps.pick.outputs.job == 'detail'
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python carclick.py --target pg --delay 0.05 detail --concurrency 8 --limit-lots 20000
+          PROXY_URL: ${{ secrets.PROXY_URL }}
+        run: |
+          [ -n "$PROXY_URL" ] && export HTTPS_PROXY="$PROXY_URL" HTTP_PROXY="$PROXY_URL"
+          python carclick.py --target pg --delay 0.05 detail --concurrency 8 --limit-lots 20000
 
       # Проданные лоты копятся вечно. Строка остаётся (история цен, ссылки
       # в поисковом индексе), но галерея и опции — 3.4 КБ из 4.8 — убираются.
