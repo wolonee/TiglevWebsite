@@ -1,0 +1,20 @@
+name: Диагностика доступа к CarClick
+on: { workflow_dispatch: }
+permissions: { contents: read }
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Кто мы снаружи
+        run: curl -s https://api.ipify.org && echo
+      - name: Запрос к API как из парсера
+        run: |
+          curl -sS -o body.txt -D headers.txt -w "HTTP %{http_code}\n" \
+            -H "Accept: application/json" \
+            -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" \
+            -H "Referer: https://carclick.ru/marketplace" \
+            "https://carclick.ru/api/v1/market/lots?status=active&page=1&limit=1" || true
+          echo "--- заголовки ответа ---"; head -20 headers.txt || true
+          echo "--- начало тела ---"; head -c 400 body.txt || true; echo
+      - name: Главная страница сайта
+        run: curl -s -o /dev/null -w "главная: HTTP %{http_code}\n" https://carclick.ru/ || true
