@@ -190,6 +190,7 @@ export async function getCar(id: string): Promise<Car | undefined> {
     const response = await fetch(`${backendUrl}/api/cars/${id}`, {
       next: { revalidate: catalogRevalidateSeconds, tags: ["catalog", `car:${id}`] },
     });
+    if (response.status === 404) return undefined;
     if (!response.ok) return local;
     const { car } = await response.json() as { car: Omit<Car, "image" | "images"> & { images: Array<string | CarImage> } };
     const images = normalizeCarImages(car.images ?? []);

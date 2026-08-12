@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cars, formatPrice, getCatalogCars } from "@/data/cars";
+import { cars, formatPrice, getCar, getCatalogCars } from "@/data/cars";
 import { getCarGallery } from "@/data/carGallery";
 
 describe("catalog data", () => {
@@ -47,5 +47,15 @@ describe("catalog data", () => {
     const result = await getCatalogCars();
     expect(result[0]).toMatchObject({ id: "db-car", image: "https://example.com/x5.jpg" });
     expect(result).toHaveLength(1);
+  });
+
+  it("does not show a deleted backend car from the local fallback by direct URL", async () => {
+    vi.stubEnv("BACKEND_URL", "https://backend.example.com");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(
+      JSON.stringify({ error: "Car not found" }),
+      { status: 404 },
+    )));
+
+    await expect(getCar(cars[0].id)).resolves.toBeUndefined();
   });
 });

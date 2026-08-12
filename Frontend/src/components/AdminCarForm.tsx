@@ -6,6 +6,7 @@ import { upload } from "@vercel/blob/client";
 import { ArrowDown, ArrowUp, CheckCircle2, ImagePlus, LoaderCircle, X } from "lucide-react";
 import { bodyTypes, brands, colors, damageOptions, driveTypes, engineTypes, transmissions, wheelPositions } from "@/data/cars";
 import { defaultImagePosition, imageObjectPosition, normalizeCarImages, type CarImage, type ImagePosition } from "@/data/carImages";
+import { optimizeCarImage } from "@/lib/optimizeCarImage";
 import AppSelect from "./AppSelect";
 
 const initialState = {
@@ -36,7 +37,7 @@ const imagesFromCar = (car?: ManagedCar | null): SelectedImage[] => normalizeCar
 export default function AdminCarForm({ car, onSaved, onCancel }: AdminCarFormProps) {
   const [form, setForm] = useState(() => formFromCar(car));
   const [images, setImages] = useState<SelectedImage[]>(() => imagesFromCar(car));
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "processing" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
   const imagesRef = useRef(images);
@@ -50,14 +51,27 @@ export default function AdminCarForm({ car, onSaved, onCancel }: AdminCarFormPro
     setForm(formFromCar(car)); setImages(imagesFromCar(car)); setStatus("idle"); setMessage(""); setUploadProgress(0);
   }, [car]);
 
-  function selectImages(event: ChangeEvent<HTMLInputElement>) {
+  async function selectImages(event: ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(event.target.files ?? []);
     event.target.value = "";
+    if (!selected.length) return;
     if (images.length + selected.length > 20) { setStatus("error"); setMessage("Можно добавить не более 20 фотографий"); return; }
     const invalid = selected.find((file) => !allowedTypes.has(file.type) || file.size > maxFileSize);
     if (invalid) { setStatus("error"); setMessage("Разрешены JPEG, PNG и WebP размером до 8 МБ"); return; }
-    setStatus("idle"); setMessage("");
-    setImages((current) => [...current, ...selected.map((file) => ({ id: crypto.randomUUID(), file, preview: URL.createObjectURL(file), url: "", position: { ...defaultImagePosition } }))]);
+    setStatus("processing"); setMessage(""); setUploadProgress(0);
+    try {
+      const optimized: File[] = [];
+      for (let index = 0; index < selected.length; index += 1) {
+        optimized.push(await optimizeCarImage(selected[index]));
+        setUploadProgress(Math.round(((index + 1) / selected.length) * 100));
+      }
+      setImages((current) => [...current, ...optimized.map((file) => ({ id: crypto.randomUUID(), file, preview: URL.createObjectURL(file), url: "", position: { ...defaultImagePosition } }))]);
+      setStatus("idle"); setUploadProgress(0);
+    } catch (error) {
+      setStatus("error");
+      setMessage(error instanceof Error ? error.message : "Не удалось обработать фотографии");
+      setUploadProgress(0);
+    }
   }
 
   function removeImage(id: string) {
@@ -147,13 +161,13 @@ export default function AdminCarForm({ car, onSaved, onCancel }: AdminCarFormPro
       </section>
 
       <section className="admin-form-section rounded-2xl border border-gray-border bg-white p-4 sm:p-8" style={{ animationDelay: "120ms" }}>
-        <h2 className="text-xl font-bold text-dark">Фотографии</h2><p className="mt-1 text-sm text-gray-text">JPEG, PNG или WebP, до 8 МБ каждый. Первая фотография станет обложкой.</p>
+        <h2 className="text-xl font-bold text-dark">Фотографии</h2><p className="mt-1 text-sm text-gray-text">JPEG, PNG или WebP, до 8 МБ каждый. Фотографии автоматически оптимизируются в WebP; первая станет обложкой.</p>
         {images.length > 0 && <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{images.map((image, index) => <div key={image.id} className="overflow-hidden rounded-xl border border-gray-border bg-gray-bg"><div className="relative aspect-[16/10] touch-none cursor-crosshair overflow-hidden" onPointerDown={(event) => { event.currentTarget.setPointerCapture?.(event.pointerId); setPositionFromPointer(image.id, event); }} onPointerMove={(event) => { if (!event.currentTarget.hasPointerCapture || event.currentTarget.hasPointerCapture(event.pointerId)) setPositionFromPointer(image.id, event); }} aria-label={`Выберите точку фокуса для фотографии ${index + 1}`}><Image src={image.preview} alt={`Фотография ${index + 1}`} fill unoptimized className="object-cover" style={{ objectPosition: imageObjectPosition(image) }} /><span aria-hidden className="pointer-events-none absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-primary/80 shadow" style={{ left: `${image.position.x}%`, top: `${image.position.y}%` }} />{index === 0 && <span className="absolute left-2 top-2 rounded-lg bg-primary px-2 py-1 text-xs font-semibold text-white">Обложка</span>}</div><div className="border-t border-gray-border p-3"><div className="flex items-center justify-between gap-2"><span className="min-w-0 truncate text-xs text-gray-text">{image.file?.name ?? `Фото ${index + 1}`}</span><div className="flex shrink-0"><button type="button" disabled={index === 0} onClick={() => moveImage(index, -1)} aria-label="Переместить выше" className="p-1.5 text-gray-text hover:text-primary disabled:opacity-25"><ArrowUp className="h-4 w-4" /></button><button type="button" disabled={index === images.length - 1} onClick={() => moveImage(index, 1)} aria-label="Переместить ниже" className="p-1.5 text-gray-text hover:text-primary disabled:opacity-25"><ArrowDown className="h-4 w-4" /></button><button type="button" onClick={() => removeImage(image.id)} aria-label="Удалить фотографию" className="p-1.5 text-gray-text hover:text-primary"><X className="h-4 w-4" /></button></div></div><div className="mt-3 flex items-center justify-between gap-2"><span className="text-xs text-gray-text">Точка фокуса: {image.position.x}% · {image.position.y}%</span><button type="button" onClick={() => updateImagePosition(image.id, { ...defaultImagePosition })} className="text-xs font-semibold text-primary hover:text-primary-dark">По центру</button></div></div></div>)}</div>}
-        {images.length < 20 && <label className="mt-5 flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-gray-border px-5 py-8 text-sm font-semibold text-gray-text transition-colors hover:border-primary hover:text-primary"><ImagePlus className="h-5 w-5" />Выбрать фотографии<input type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" onChange={selectImages} /></label>}
+        {images.length < 20 && <label className={`mt-5 flex items-center justify-center gap-2 rounded-xl border border-dashed border-gray-border px-5 py-8 text-sm font-semibold text-gray-text transition-colors ${status === "processing" ? "cursor-wait opacity-60" : "cursor-pointer hover:border-primary hover:text-primary"}`}><ImagePlus className="h-5 w-5" />{status === "processing" ? `Оптимизация ${uploadProgress}%` : "Выбрать фотографии"}<input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={status === "processing" || status === "loading"} className="sr-only" onChange={(event) => void selectImages(event)} /></label>}
       </section>
 
       {message && <p className={`animate-fade-in flex items-center gap-2 rounded-xl px-4 py-3 text-sm ${status === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>{status === "success" && <CheckCircle2 className="success-icon h-5 w-5" />}{message}</p>}
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap"><button disabled={status === "loading"} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 font-bold text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-56 sm:w-auto">{status === "loading" && <LoaderCircle className="h-5 w-5 animate-spin" />}{status === "loading" ? `Загрузка ${uploadProgress}%` : car ? "Сохранить изменения" : "Опубликовать в каталоге"}</button>{!car && <button type="button" disabled={status === "loading"} onClick={(event) => void submit(event, "draft")} className="w-full rounded-xl border border-gray-border bg-white px-6 py-3.5 font-semibold text-dark hover:border-primary hover:text-primary disabled:opacity-60 sm:w-auto">Сохранить как черновик</button>}{onCancel && <button type="button" onClick={onCancel} className="w-full rounded-xl border border-gray-border bg-white px-6 py-3.5 font-semibold text-dark hover:border-primary hover:text-primary sm:w-auto">Отмена</button>}</div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap"><button disabled={status === "loading" || status === "processing"} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 font-bold text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-56 sm:w-auto">{(status === "loading" || status === "processing") && <LoaderCircle className="h-5 w-5 animate-spin" />}{status === "processing" ? `Оптимизация ${uploadProgress}%` : status === "loading" ? `Загрузка ${uploadProgress}%` : car ? "Сохранить изменения" : "Опубликовать в каталоге"}</button>{!car && <button type="button" disabled={status === "loading" || status === "processing"} onClick={(event) => void submit(event, "draft")} className="w-full rounded-xl border border-gray-border bg-white px-6 py-3.5 font-semibold text-dark hover:border-primary hover:text-primary disabled:opacity-60 sm:w-auto">Сохранить как черновик</button>}{onCancel && <button type="button" onClick={onCancel} className="w-full rounded-xl border border-gray-border bg-white px-6 py-3.5 font-semibold text-dark hover:border-primary hover:text-primary sm:w-auto">Отмена</button>}</div>
     </form>
   );
 }

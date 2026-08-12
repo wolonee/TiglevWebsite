@@ -27,6 +27,12 @@ const requestSchema = z.object({
   transmission: z.string().max(50).optional(), mileage: z.string().max(20).optional(),
   firstName: z.string().trim().min(2).max(50), lastName: z.string().trim().min(2).max(50),
   email: z.union([z.literal(""), z.string().email()]).optional(), phone: z.string().min(7).max(30),
+  photoUrls: z.preprocess((value) => {
+    if (typeof value !== "string") return value;
+    try { return JSON.parse(value); } catch { return value; }
+  }, z.array(z.string().url().refine((url) => {
+    try { return new URL(url).hostname.endsWith(".blob.vercel-storage.com"); } catch { return false; }
+  }, "Invalid photo URL")).max(10)).default([]),
 });
 const contactRequestSchema = z.object({
   name: z.string().trim().min(2).max(100),
@@ -122,6 +128,11 @@ app.get("/api/admin/requests", async (request, response) => {
   const result = await customerRequests.all(parsed.data.page, parsed.data.limit);
   return response.json({ requests: result.items, pagination: { page: result.page, limit: result.limit, total: result.total } });
 });
+app.get("/api/admin/requests/:id", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  const customerRequest = await customerRequests.find(request.params.id);
+  return customerRequest ? response.json({ request: customerRequest }) : response.status(404).json({ error: "Request not found" });
+});
 app.patch("/api/admin/requests/:id", async (request, response) => {
   if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
   const parsed = requestUpdateSchema.safeParse(request.body);
@@ -139,10 +150,11 @@ app.post("/api/sell-requests", limiter, upload.array("photos", 10), async (reque
   if (!parsed.success) return response.status(400).json({ error: "Validation failed", details: parsed.error.flatten().fieldErrors });
   try {
     const photos = (request.files ?? []) as Express.Multer.File[];
+    const { photoUrls, ...requestData } = parsed.data;
     const [storageResult, telegramResult, emailResult] = await Promise.allSettled([
-      customerRequests.create({ id: randomUUID(), kind: "sell", payload: parsed.data, photoCount: photos.length }),
-      broadcastSellRequest(parsed.data, photos),
-      sendSellRequestEmail(parsed.data, photos),
+      customerRequests.create({ id: randomUUID(), kind: "sell", payload: requestData, photoCount: photoUrls.length, photoUrls }),
+      broadcastSellRequest(requestData, photos),
+      sendSellRequestEmail(requestData, photos),
     ]);
     if (storageResult.status === "rejected") throw storageResult.reason;
     if (telegramResult.status === "rejected") console.error("Telegram delivery failed:", telegramResult.reason);
@@ -150,10 +162,7 @@ app.post("/api/sell-requests", limiter, upload.array("photos", 10), async (reque
 
     const telegram = telegramResult.status === "fulfilled" ? telegramResult.value : { recipients: 0, delivered: 0 };
     const emailDelivered = emailResult.status === "fulfilled";
-    if (telegram.delivered === 0 && !emailDelivered) {
-      return response.status(502).json({ error: "Failed to deliver request" });
-    }
-    return response.status(201).json({ ok: true, telegram, emailDelivered });
+    return response.status(201).json({ ok: true, telegram, emailDelivered, notificationsDelivered: telegram.delivered > 0 || emailDelivered });
   } catch (error) {
     console.error("Sell request broadcast failed:", error);
     return response.status(500).json({ error: "Failed to deliver request" });
@@ -165,7 +174,7 @@ app.post("/api/contact-requests", limiter, async (request, response) => {
   if (!parsed.success) return response.status(400).json({ error: "Validation failed", details: parsed.error.flatten().fieldErrors });
 
   const [storageResult, telegramResult, emailResult] = await Promise.allSettled([
-    customerRequests.create({ id: randomUUID(), kind: "contact", payload: parsed.data, photoCount: 0 }),
+    customerRequests.create({ id: randomUUID(), kind: "contact", payload: parsed.data, photoCount: 0, photoUrls: [] }),
     broadcastContactRequest(parsed.data),
     sendContactRequestEmail(parsed.data),
   ]);

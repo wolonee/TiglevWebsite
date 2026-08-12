@@ -2,7 +2,7 @@ import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const carRecords = { all: vi.fn(), active: vi.fn(), find: vi.fn(), create: vi.fn(), update: vi.fn(), remove: vi.fn(), restore: vi.fn(), reorder: vi.fn() };
-const customerRequests = { create: vi.fn(), all: vi.fn(), update: vi.fn() };
+const customerRequests = { create: vi.fn(), all: vi.fn(), find: vi.fn(), update: vi.fn() };
 const broadcastSellRequest = vi.fn();
 const broadcastContactRequest = vi.fn();
 const sendSellRequestEmail = vi.fn();
@@ -28,7 +28,10 @@ describe("backend API", () => {
     carRecords.reorder.mockResolvedValue([]);
     customerRequests.create.mockResolvedValue({ id: "request-1" });
     customerRequests.all.mockResolvedValue({ items: [], total: 0, page: 1, limit: 50 });
+    customerRequests.find.mockResolvedValue(null);
+    broadcastSellRequest.mockResolvedValue({ recipients: 1, delivered: 1 });
     broadcastContactRequest.mockResolvedValue({ recipients: 1, delivered: 1 });
+    sendSellRequestEmail.mockResolvedValue(undefined);
     sendContactRequestEmail.mockResolvedValue(undefined);
   });
 
@@ -106,6 +109,37 @@ describe("backend API", () => {
     expect(response.body.pagination).toEqual({ page: 2, limit: 25, total: 51 });
   });
 
+  it("loads one admin request with its saved note and photos", async () => {
+    const savedRequest = {
+      id: "request-1",
+      note: "Перезвонить завтра",
+      photoUrls: ["https://example.com/car.jpg"],
+    };
+    customerRequests.find.mockResolvedValue(savedRequest);
+
+    const response = await request(app)
+      .get("/api/admin/requests/request-1")
+      .set("x-api-key", "test-api-key")
+      .expect(200);
+
+    expect(customerRequests.find).toHaveBeenCalledWith("request-1");
+    expect(response.body.request).toEqual(savedRequest);
+  });
+
+  it("saves an admin note for a request", async () => {
+    const updatedRequest = { id: "request-1", status: "in_progress", note: "Позвонить завтра" };
+    customerRequests.update.mockResolvedValue(updatedRequest);
+
+    const response = await request(app)
+      .patch("/api/admin/requests/request-1")
+      .set("x-api-key", "test-api-key")
+      .send({ status: "in_progress", note: "Позвонить завтра" })
+      .expect(200);
+
+    expect(customerRequests.update).toHaveBeenCalledWith("request-1", { status: "in_progress", note: "Позвонить завтра" });
+    expect(response.body.request).toEqual(updatedRequest);
+  });
+
   it("soft deletes and restores a car", async () => {
     carRecords.remove.mockResolvedValue({ id: "car-1", deletedAt: new Date().toISOString() });
     carRecords.restore.mockResolvedValue({ id: "car-1" });
@@ -122,7 +156,21 @@ describe("backend API", () => {
 
   it("stores a valid contact request before notifying recipients", async () => {
     await request(app).post("/api/contact-requests").set("x-api-key", "test-api-key").send({ name: "Иван", phone: "+79990000000", message: "Нужна консультация" }).expect(201);
-    expect(customerRequests.create).toHaveBeenCalledWith(expect.objectContaining({ kind: "contact", photoCount: 0 }));
+    expect(customerRequests.create).toHaveBeenCalledWith(expect.objectContaining({ kind: "contact", photoCount: 0, photoUrls: [] }));
     expect(broadcastContactRequest).toHaveBeenCalled();
+  });
+
+  it("stores sell request photo URLs for the admin panel", async () => {
+    const photoUrl = "https://store.public.blob.vercel-storage.com/requests/car.jpg";
+    await request(app)
+      .post("/api/sell-requests")
+      .set("x-api-key", "test-api-key")
+      .field({ model: "KIA Sportage", year: "2020", firstName: "Иван", lastName: "Иванов", phone: "+79990000000", photoUrls: JSON.stringify([photoUrl]) })
+      .attach("photos", Buffer.from("image"), { filename: "car.jpg", contentType: "image/jpeg" })
+      .expect(201);
+
+    expect(customerRequests.create).toHaveBeenCalledWith(expect.objectContaining({
+      kind: "sell", photoCount: 1, photoUrls: [photoUrl],
+    }));
   });
 });

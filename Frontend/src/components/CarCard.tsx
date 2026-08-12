@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { getCarGallery } from "@/data/carGallery";
 import { imageObjectPosition } from "@/data/carImages";
+import { imageVariants } from "@/data/imageVariants";
 
 type CarCardProps = {
   car: Car;
@@ -100,13 +101,13 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
           className="h-full w-full object-cover transition-transform duration-700 ease-out will-change-transform md:group-hover:scale-[1.06]"
           fill
           preload={preloadCover}
-          quality={85}
+          quality={imageVariants.catalog.quality}
           onLoad={() => { if (activeImage === 0) setCoverLoaded(true); }}
-          sizes="(max-width: 639px) 50vw, (max-width: 1024px) 50vw, 33vw"
+          sizes={imageVariants.catalog.sizes}
           style={{ objectPosition: imageObjectPosition(images[activeImage]) }}
         />
         {shouldPreloadGallery && images.slice(1).map((image) => (
-          <Image key={image.url} src={image.url} alt="" aria-hidden fill loading="eager" fetchPriority="low" quality={85} sizes="(max-width: 639px) 50vw, (max-width: 1024px) 50vw, 33vw" className="pointer-events-none opacity-0" />
+          <Image key={image.url} src={image.url} alt="" aria-hidden fill loading="eager" fetchPriority="low" quality={imageVariants.catalog.quality} sizes={imageVariants.catalog.sizes} className="pointer-events-none opacity-0" />
         ))}
         <div className="absolute inset-0 bg-gradient-to-t from-dark/30 via-transparent to-transparent opacity-100 transition-opacity duration-300 md:opacity-0 md:group-hover:opacity-100" />
         {images.length > 1 && <><button type="button" onClick={(event) => { event.preventDefault(); event.stopPropagation(); stepImage(-1); }} aria-label={`Предыдущее фото ${car.brand} ${car.model}`} className="pointer-events-auto absolute left-0 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-transparent opacity-100 transition-opacity hover:[&>span]:bg-dark/65 focus-visible:[&>span]:bg-dark/65 active:[&>span]:scale-95 sm:left-1 md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"><span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-dark/35 text-white/95 backdrop-blur-sm transition-[background-color,transform]"><ChevronLeft className="h-3.5 w-3.5"/></span></button>
