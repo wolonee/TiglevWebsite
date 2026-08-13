@@ -82,12 +82,7 @@ jobs:
         if: steps.pick.outputs.job == 'fresh'
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          PROXY_URL: ${{ secrets.PROXY_URL }}
         run: |
-          # CarClick отбивает запросы с адресов GitHub (403). Если задан секрет
-          # PROXY_URL, ходим через него: urllib читает HTTPS_PROXY сам, менять
-          # код парсера не нужно. Пустой секрет = прямое соединение.
-          [ -n "$PROXY_URL" ] && export HTTPS_PROXY="$PROXY_URL" HTTP_PROXY="$PROXY_URL"
           python carclick.py --target pg --delay 0.15 fresh
           python carclick.py --target pg --delay 0.05 detail --concurrency 8 --limit-lots 3000
 
@@ -98,10 +93,7 @@ jobs:
         if: steps.pick.outputs.job == 'sweep'
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          PROXY_URL: ${{ secrets.PROXY_URL }}
-        run: |
-          [ -n "$PROXY_URL" ] && export HTTPS_PROXY="$PROXY_URL" HTTP_PROXY="$PROXY_URL"
-          python carclick.py --target pg --delay 0.1 sweep
+        run: python carclick.py --target pg --delay 0.1 sweep
 
       # Отдельный прогон карточек — на случай большого отставания, когда порции
       # в `fresh` не хватает. По расписанию не нужен, запускается кнопкой.
@@ -109,10 +101,7 @@ jobs:
         if: steps.pick.outputs.job == 'detail'
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          PROXY_URL: ${{ secrets.PROXY_URL }}
-        run: |
-          [ -n "$PROXY_URL" ] && export HTTPS_PROXY="$PROXY_URL" HTTP_PROXY="$PROXY_URL"
-          python carclick.py --target pg --delay 0.05 detail --concurrency 8 --limit-lots 20000
+        run: python carclick.py --target pg --delay 0.05 detail --concurrency 8 --limit-lots 20000
 
       # Проданные лоты копятся вечно. Строка остаётся (история цен, ссылки
       # в поисковом индексе), но галерея и опции — 3.4 КБ из 4.8 — убираются.
@@ -139,6 +128,45 @@ jobs:
           name: facets
           path: facets.json
           retention-days: 14
+
+      # 144 посадочные страницы и сравнение цен по странам считаются по базе.
+      # Пересобирать вместе с фильтрами: цены и остатки уезжают одинаково,
+      # а числа стоят прямо в заголовках страниц.
+      - name: Пересборка посадочных страниц
+        if: steps.pick.outputs.job == 'sweep' || steps.pick.outputs.job == 'facets'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python carclick.py --target pg seo --out ../seo.json
+
+      - name: Выложить seo.json
+        if: steps.pick.outputs.job == 'sweep' || steps.pick.outputs.job == 'facets'
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo
+          path: seo.json
+          retention-days: 14
+
+      # Молчание системы неотличимо от её смерти: если прокси кончится, сайт
+      # продолжит показывать вчерашние цены, и узнаем мы об этом от клиента.
+      # Поэтому о падении пишем в тот же телеграм-бот, что и о заявках.
+      - name: Сообщить о падении
+        if: failure()
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          python notify.py --failed "${{ steps.pick.outputs.job }}" \
+            --details "Прогон ${{ github.run_id }}, см. Actions в репозитории." || true
+
+      # Плановая проверка того, что ломается тихо: устаревшие данные, кончающийся
+      # пакет прокси, подросшая база. Молчит, если всё в порядке.
+      - name: Проверка состояния
+        if: success() && steps.pick.outputs.job == 'sweep'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          PROXY_EXPIRES: ${{ secrets.PROXY_EXPIRES }}
+        run: python notify.py --check || true
 
       # Neon на тарифе Free даёт 512 МБ на проект, и в этой же базе живут заявки
       # с сайта. Если упереться в квоту, база переходит в read-only и приём

@@ -172,20 +172,31 @@ class PgStore:
     # ------------------------------------------------------------------ схема
 
     def ensure_schema(self) -> None:
-        """Создаёт таблицы, если их нет. НИЧЕГО не удаляет — витрина может читать."""
-        create = (
-            f"CREATE SCHEMA IF NOT EXISTS {self.schema};\n"
-            f"SET search_path TO {self.schema};\n"
-            + TABLES_DDL.replace("CREATE TABLE ", "CREATE TABLE IF NOT EXISTS ")
+        """
+        Создаёт таблицы, если их нет. НИЧЕГО не удаляет — витрина может читать.
+
+        Имена схемы проставляются явно, `SET search_path` НЕ используется.
+        Причина дорого обошлась: Neon работает через пулер, и `SET` протекает
+        между клиентами — соединение backend'а получало чужой `search_path`
+        и создавало свои таблицы (`cars`, `customer_requests`) в схеме каталога.
+        Данные не потерялись только потому, что это заметили в тот же день.
+        Полные имена от такой протечки невосприимчивы.
+        """
+        qualified = re.sub(
+            r"CREATE TABLE (\w+)", rf"CREATE TABLE IF NOT EXISTS {self.schema}.\1", TABLES_DDL
+        )
+        # Ссылки внешних ключей тоже должны указывать на нужную схему.
+        qualified = re.sub(r"REFERENCES (\w+)\(", rf"REFERENCES {self.schema}.\1(", qualified)
+        indexes = re.sub(
+            r"CREATE INDEX (\w+)\s+ON (\w+)",
+            rf"CREATE INDEX IF NOT EXISTS \1 ON {self.schema}.\2",
+            INDEXES_SQL.replace("ANALYZE;", ""),
         )
         with self.conn.cursor() as cur:
-            cur.execute(create)
-            cur.execute(RUNS_TABLE.replace(SCHEMA, self.schema))
-            cur.execute(
-                INDEXES_SQL.replace("CREATE INDEX ", "CREATE INDEX IF NOT EXISTS ").replace(
-                    "ANALYZE;", ""
-                )
-            )
+            cur.execute(f"CREATE SCHEMA IF NOT EXISTS {self.schema}")
+            cur.execute(qualified)
+            cur.execute(RUNS_TABLE.replace(f"{SCHEMA}.", f"{self.schema}."))
+            cur.execute(indexes)
         self.conn.commit()
 
     def prefix_id(self, prefix: str) -> int:

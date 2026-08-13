@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import gzip
+import re
 from pathlib import Path
 from typing import Any, Iterator, TextIO
 
@@ -93,15 +94,22 @@ CREATE TABLE options (
 # Полная пересборка — только для pgdump/pgload, когда витрина ещё не запущена
 # или простой допустим. Для суточной синхронизации это НЕЛЬЗЯ: несколько десятков
 # секунд каталог не существует.
-SCHEMA_SQL = """
+# Имена таблиц проставляются с указанием схемы, `SET search_path` не используется:
+# Neon работает через пулер, и `SET` протекает между клиентами — однажды соединение
+# backend'а получило чужой search_path и создало свои таблицы в схеме каталога.
+SCHEMA_SQL = (
+    """
 DROP SCHEMA IF EXISTS catalog CASCADE;
 CREATE SCHEMA catalog;
-SET search_path TO catalog;
-""" + TABLES_DDL
+"""
+    + re.sub(r"CREATE TABLE (\w+)", r"CREATE TABLE catalog.\1", TABLES_DDL)
+    .replace("REFERENCES image_prefixes(", "REFERENCES catalog.image_prefixes(")
+)
 
 # Индексы создаются ПОСЛЕ загрузки данных: строить их на пустой таблице
 # и потом наполнять — заметно медленнее.
 INDEXES_SQL = """
+SET LOCAL search_path TO catalog;
 CREATE INDEX idx_lots_live    ON lots (gone_at) WHERE gone_at IS NULL;
 CREATE INDEX idx_lots_brand   ON lots (brand_code, model_code);
 CREATE INDEX idx_lots_price   ON lots (price_individual);
@@ -152,7 +160,7 @@ def copy_block(
     booleans: set[str] | None = None,
 ) -> int:
     booleans = booleans or set()
-    out.write(f"COPY {table} ({', '.join(columns)}) FROM stdin;\n")
+    out.write(f"COPY catalog.{table} ({', '.join(columns)}) FROM stdin;\n")
     count = 0
     for row in rows:
         out.write(
@@ -228,7 +236,7 @@ def dump(store: Store, out_path: Path, compress: bool = True) -> dict[str, int]:
             store.db.execute("SELECT id, name, group_title FROM options"),
         )
 
-        out.write(f"COPY lots ({', '.join(LOT_COLUMNS)}) FROM stdin;\n")
+        out.write(f"COPY catalog.lots ({', '.join(LOT_COLUMNS)}) FROM stdin;\n")
         written = 0
         for record in lot_rows(store):
             fields = []

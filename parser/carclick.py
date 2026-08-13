@@ -35,6 +35,7 @@ import gzip
 import json
 import os
 import random
+import re
 import sys
 import threading
 import time
@@ -89,6 +90,81 @@ def lot_url(lot_id: int, ref_code: str | None = None) -> str:
     return url
 
 
+class ProxyPool:
+    """
+    Пул выходных узлов прокси.
+
+    CarClick отбивает адреса GitHub, поэтому запросы идут через прокси. Пакет даёт
+    150 портов — это 150 разных выходных узлов, и они не равноценны: часть выдаёт
+    зарубежные адреса, которые CarClick блокирует (проверено — порт 10000 из списка
+    «MoscowTest (RU)» выходил в Швецию и получал 403), часть временно без узла (503).
+
+    Поэтому: порт выбирается случайно на каждый прогон, а при отказе помечается
+    плохим до конца прогона и берётся другой. Один мёртвый узел перестаёт
+    что-либо значить.
+
+    Формат `PROXY_URL` — одна строка, записи через запятую или перевод строки.
+    В записи допустим диапазон портов:
+
+        http://user:pass@proxy.example:10000-10149
+        http://user:pass@a.example:8080, http://user:pass@b.example:8080
+    """
+
+    def __init__(self, spec: str) -> None:
+        self.urls = self._expand(spec)
+        self.bad: set[str] = set()
+        self._openers: dict[str, Any] = {}
+        self._lock = threading.Lock()
+
+    @staticmethod
+    def _expand(spec: str) -> list[str]:
+        urls: list[str] = []
+        for chunk in re.split(r"[,\n]", spec or ""):
+            chunk = chunk.strip()
+            if not chunk:
+                continue
+            if "://" not in chunk:
+                chunk = "http://" + chunk
+            match = re.match(r"^(.*:)(\d+)-(\d+)$", chunk)
+            if match:
+                head, first, last = match.group(1), int(match.group(2)), int(match.group(3))
+                urls.extend(f"{head}{port}" for port in range(first, last + 1))
+            else:
+                urls.append(chunk)
+        return urls
+
+    def __bool__(self) -> bool:
+        return bool(self.urls)
+
+    def pick(self) -> tuple[str, Any]:
+        """Случайный живой узел и готовый opener под него."""
+        with self._lock:
+            alive = [u for u in self.urls if u not in self.bad] or self.urls
+            url = random.choice(alive)
+            opener = self._openers.get(url)
+            if opener is None:
+                opener = urllib.request.build_opener(
+                    urllib.request.ProxyHandler({"http": url, "https": url})
+                )
+                self._openers[url] = opener
+            return url, opener
+
+    def penalize(self, url: str) -> None:
+        """Узел отказал — до конца прогона его не берём."""
+        with self._lock:
+            # Если испортились все, забываем метки: лучше пробовать, чем стоять.
+            if len(self.bad) + 1 >= len(self.urls):
+                self.bad.clear()
+            else:
+                self.bad.add(url)
+
+    def report(self) -> str:
+        return f"узлов {len(self.urls)}, отбраковано {len(self.bad)}"
+
+
+PROXIES = ProxyPool(os.environ.get("PROXY_URL", ""))
+
+
 class RateLimiter:
     """Минимальный интервал между запросами на весь пул потоков."""
 
@@ -108,7 +184,7 @@ class RateLimiter:
             time.sleep(sleep_for)
 
 
-def get_json(url: str, limiter: RateLimiter, retries: int = 4) -> dict[str, Any]:
+def get_json(url: str, limiter: RateLimiter, retries: int = 6) -> dict[str, Any]:
     """GET с ретраями и экспоненциальным backoff."""
     last_error: Exception | None = None
 
@@ -123,8 +199,12 @@ def get_json(url: str, limiter: RateLimiter, retries: int = 4) -> dict[str, Any]
                 "Referer": f"{SITE}/marketplace",
             },
         )
+        # Каждая попытка идёт через свой случайный узел: если предыдущий отказал,
+        # повтор через тот же был бы бессмысленным.
+        proxy_url, opener = PROXIES.pick() if PROXIES else (None, None)
         try:
-            with urllib.request.urlopen(request, timeout=30) as response:
+            opened = opener.open(request, timeout=30) if opener else urllib.request.urlopen(request, timeout=30)
+            with opened as response:
                 raw = response.read()
                 if response.headers.get("Content-Encoding") == "gzip":
                     raw = gzip.decompress(raw)
@@ -133,9 +213,18 @@ def get_json(url: str, limiter: RateLimiter, retries: int = 4) -> dict[str, Any]
             last_error = error
             if error.code == 404:  # лот снят с публикации, ретраить нечего
                 raise
-            backoff = 2.0 ** attempt * (3.0 if error.code in (429, 503) else 1.0)
+            # 403 через прокси = узел в чёрном списке CarClick (чаще всего
+            # зарубежный), 503 = у прокси нет свободного узла. И то и другое
+            # лечится сменой узла, а не ожиданием.
+            if proxy_url and error.code in (403, 407, 503):
+                PROXIES.penalize(proxy_url)
+                backoff = 0.0
+            else:
+                backoff = 2.0 ** attempt * (3.0 if error.code in (429, 503) else 1.0)
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as error:
             last_error = error
+            if proxy_url:
+                PROXIES.penalize(proxy_url)
             backoff = 2.0 ** attempt
 
         if attempt < retries - 1:
