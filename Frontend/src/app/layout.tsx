@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { CONTACT_DETAILS } from "@/data/contactDetails";
 import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
+import Analytics from "@/components/Analytics";
 
 const inter = Inter({
   subsets: ["latin", "cyrillic"],
@@ -42,6 +43,7 @@ const RootLayout = ({
     <html lang="ru" className={inter.variable}>
       <body className="font-sans antialiased">
         {children}
+        <Analytics />
       </body>
     </html>
   );

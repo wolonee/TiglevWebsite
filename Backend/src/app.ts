@@ -10,6 +10,7 @@ import { sendContactRequestEmail, sendSellRequestEmail } from "./email.js";
 import { bot, broadcastContactRequest, broadcastSellRequest } from "./telegram.js";
 import { carRecords, carStatuses, customerRequests } from "./database.js";
 import { PAGE_SIZE, countCatalog, fetchCatalogPage, fetchLot, parseFilters } from "./catalog.js";
+import { recordEvent, rollup, summary } from "./analytics.js";
 
 export const app = express();
 app.set("trust proxy", 1);
@@ -100,6 +101,39 @@ app.get("/api/catalog/lots", async (request, response) => {
 app.get("/api/catalog/count", async (request, response) => {
   const filters = parseFilters(request.query as Record<string, unknown>);
   return response.json({ total: await countCatalog(filters) });
+});
+
+// Сбор посещений. Открыт наружу — его зовёт браузер посетителя; пишем только
+// обезличенное (страница, источник перехода, тип устройства), без IP и куки.
+app.post("/api/analytics/event", limiter, async (request, response) => {
+  const body = request.body as Record<string, unknown>;
+  const result = await recordEvent(
+    {
+      type: String(body.type ?? ""),
+      path: String(body.path ?? "/"),
+      referrer: typeof body.referrer === "string" ? body.referrer : undefined,
+      visitor: typeof body.visitor === "string" ? body.visitor : undefined,
+      lotId: Number.isFinite(Number(body.lotId)) ? Number(body.lotId) : undefined,
+      country: typeof body.country === "string" ? body.country : undefined,
+    },
+    request.header("user-agent"),
+  );
+  // Всегда 204: счётчик не должен ломать страницу и не должен подсказывать
+  // роботу, что его отсеяли.
+  return response.status(204).end();
+});
+
+// Сводка для админки. Закрыта тем же ключом, что и остальная админская часть.
+app.get("/api/analytics/summary", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  const days = Number(request.query.days);
+  return response.json(await summary(Number.isFinite(days) && days > 0 ? days : 30));
+});
+
+// Свёртка суток в итоги и чистка сырых событий. Дёргается по расписанию.
+app.post("/api/analytics/rollup", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  return response.json(await rollup());
 });
 
 app.get("/api/catalog/lots/:id", async (request, response) => {
