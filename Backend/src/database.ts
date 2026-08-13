@@ -19,7 +19,7 @@ export type AdminRequest = { id: string; kind: "contact" | "sell"; status: Reque
 let sqlClient: Sql | null = null;
 let schemaPromise: Promise<void> | null = null;
 
-function getSql() {
+export function getSql() {
   if (!sqlClient) sqlClient = postgres(config.DATABASE_URL, { max: 1, prepare: false, idle_timeout: 20 });
   return sqlClient;
 }

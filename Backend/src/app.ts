@@ -9,6 +9,7 @@ import { config } from "./config.js";
 import { sendContactRequestEmail, sendSellRequestEmail } from "./email.js";
 import { bot, broadcastContactRequest, broadcastSellRequest } from "./telegram.js";
 import { carRecords, carStatuses, customerRequests } from "./database.js";
+import { PAGE_SIZE, countCatalog, fetchCatalogPage, fetchLot, parseFilters } from "./catalog.js";
 
 export const app = express();
 app.set("trust proxy", 1);
@@ -84,6 +85,29 @@ const paginationSchema = z.object({
 
 app.get("/health", (_request, response) => response.json({ ok: true }));
 app.get("/api/cars", async (_request, response) => response.json({ cars: await carRecords.active() }));
+
+// Каталог CarClick. Витрина ходит сюда вместо прямых запросов к схеме `catalog`:
+// у данных должен быть один владелец, иначе структуру таблиц знают два проекта.
+app.get("/api/catalog/lots", async (request, response) => {
+  const filters = parseFilters(request.query as Record<string, unknown>);
+  const cursorRaw = Number(request.query.cursor);
+  const cursor = Number.isFinite(cursorRaw) && cursorRaw > 0 ? cursorRaw : undefined;
+  const limitRaw = Number(request.query.limit);
+  const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : PAGE_SIZE;
+  return response.json(await fetchCatalogPage(filters, cursor, limit));
+});
+
+app.get("/api/catalog/count", async (request, response) => {
+  const filters = parseFilters(request.query as Record<string, unknown>);
+  return response.json({ total: await countCatalog(filters) });
+});
+
+app.get("/api/catalog/lots/:id", async (request, response) => {
+  const lotId = Number(request.params.id);
+  if (!Number.isFinite(lotId)) return response.status(400).json({ error: "Bad lot id" });
+  const lot = await fetchLot(lotId);
+  return lot ? response.json(lot) : response.status(404).json({ error: "Lot not found" });
+});
 app.get("/api/cars/:id", async (request, response) => {
   const car = await carRecords.find(request.params.id);
   return car?.status === "active" ? response.json({ car }) : response.status(404).json({ error: "Car not found" });

@@ -1,28 +1,26 @@
 import "server-only";
 
-import { sql } from "@/lib/db";
 import type { Car } from "./cars";
 import { CARCLICK_SOURCE } from "./catalogSource";
 import { normalizeCarImages } from "./carImages";
-import type { CatalogFilters } from "@/lib/catalogFilters";
+import { serializeFilters, type CatalogFilters } from "@/lib/catalogFilters";
 
 /**
- * Чтение каталога CarClick из Postgres.
+ * Каталог CarClick через бэкенд.
  *
- * Ленту листаем курсором, а не OFFSET: каталог живой, 600–700 новых машин
- * в сутки. При OFFSET человек на середине ленты увидит дубли и пропуски,
- * потому что вставки сдвигают выдачу.
+ * Раньше эти запросы шли прямо в Postgres из серверных компонентов. Так было
+ * безопасно (в браузер из базы ничего не попадает — код серверный) и на один
+ * прыжок быстрее, но структуру таблиц знали два проекта сразу. Теперь владелец
+ * данных один: бэкенд.
  *
- * Галерея лежит массивом `image_paths` плюс `image_prefix_id` — все фото лота
- * из одного источника, поэтому префикс один на строку и склеивается здесь.
- * Отдельных таблиц `images` и `lot_options` нет: они занимали 343 МБ против
- * 68 МБ у массивов.
+ * Здесь остаётся только превращение строки базы в `Car` — тип живёт во фронте,
+ * и делать его частью контракта бэкенда незачем.
  */
 
 export const PAGE_SIZE = 24;
 
 type LotRow = {
-  id: string;
+  id: string | number;
   brand: string | null;
   brand_code: string | null;
   model: string | null;
@@ -34,7 +32,7 @@ type LotRow = {
   fuel: string | null;
   transmission: string | null;
   drive: string | null;
-  volume: number | null;
+  volume: number | string | null;
   hp: number | null;
   color_exterior: string | null;
   condition: string | null;
@@ -45,14 +43,19 @@ type LotRow = {
   option_ids: number[] | null;
   image_prefix: string | null;
   image_paths: string[] | null;
+  equipment?: string | null;
+  description?: string | null;
+  price_legal?: string | number | null;
 };
 
-const toNumber = (value: string | number | null): number =>
+const toNumber = (value: string | number | null | undefined): number =>
   value == null ? 0 : typeof value === "number" ? value : Number(value);
 
 /** «3» → «3.0 л». Нулевой объём у электромобилей — не показываем. */
-const formatVolume = (volume: number | null): string | undefined =>
-  volume == null || volume <= 0 ? undefined : `${volume.toFixed(1)} л`;
+const formatVolume = (volume: number | string | null): string | undefined => {
+  const value = volume == null ? null : Number(volume);
+  return value == null || !Number.isFinite(value) || value <= 0 ? undefined : `${value.toFixed(1)} л`;
+};
 
 function toCar(row: LotRow): Car {
   const prefix = row.image_prefix ?? "";
@@ -89,59 +92,30 @@ function toCar(row: LotRow): Car {
   };
 }
 
-/** Собирает условия и параметры. Значения только через плейсхолдеры. */
-function buildWhere(filters: CatalogFilters, cursor?: number) {
-  const conditions: string[] = ["l.gone_at IS NULL"];
-  const params: unknown[] = [];
-  const add = (value: unknown) => `$${params.push(value)}`;
+/**
+ * Запрос к бэкенду.
+ *
+ * Каталог обновляется раз в четыре часа, поэтому ответы кешируются на пять
+ * минут: страница фильтра не должна ходить в бэкенд на каждый показ.
+ *
+ * Ошибку не глотаем. Раньше здесь был молчаливый откат на захардкоженный
+ * список машин — сайт продолжал работать, показывая данные полугодовой
+ * давности, и понять это можно было только сравнив с админкой.
+ */
+async function backend<T>(path: string, params?: URLSearchParams): Promise<T> {
+  const base = process.env.BACKEND_URL;
+  if (!base) throw new Error("BACKEND_URL не задан — каталог берётся из бэкенда");
 
-  const inList = (column: string, values: string[]) => {
-    if (values.length) conditions.push(`l.${column} = ANY(${add(values)})`);
-  };
-
-  inList("country_code", filters.country);
-  inList("brand_code", filters.brand);
-  inList("model_code", filters.model);
-  inList("body_type", filters.body);
-  inList("condition", filters.condition);
-  inList("fuel", filters.fuel);
-  inList("transmission", filters.transmission);
-  inList("drive", filters.drive);
-  inList("color_exterior", filters.color);
-
-  if (filters.year.length) {
-    conditions.push(`l.year = ANY(${add(filters.year.map(Number))})`);
+  const query = params?.toString();
+  const response = await fetch(`${base}${path}${query ? `?${query}` : ""}`, {
+    headers: { Accept: "application/json" },
+    next: { revalidate: 300, tags: ["catalog"] },
+  });
+  if (!response.ok) {
+    throw new Error(`Бэкенд ответил ${response.status} на ${path}`);
   }
-  if (filters.delivery.length) {
-    conditions.push(`l.delivery_time = ANY(${add(filters.delivery.map(Number))})`);
-  }
-
-  const range = (column: string, value: { from: number; to: number | null } | null) => {
-    if (!value) return;
-    conditions.push(`l.${column} >= ${add(value.from)}`);
-    // Верхняя граница исключающая: иначе машина за 5 млн попадёт сразу в два интервала.
-    if (value.to != null) conditions.push(`l.${column} < ${add(value.to)}`);
-  };
-  range("price_individual", filters.price);
-  range("mileage", filters.mileage);
-
-  // Одно условие на все опции, и это именно «И»: «содержит весь массив».
-  if (filters.opt.length) {
-    conditions.push(`l.option_ids @> ${add(filters.opt)}`);
-  }
-  if (cursor != null) {
-    conditions.push(`l.id < ${add(cursor)}`);
-  }
-
-  return { where: conditions.join(" AND "), params };
+  return (await response.json()) as T;
 }
-
-const SELECT_COLUMNS = `
-  l.id, l.brand, l.brand_code, l.model, l.model_code, l.generation, l.body_type,
-  l.year, l.mileage, l.fuel, l.transmission, l.drive, l.volume, l.hp,
-  l.color_exterior, l.condition, l.country, l.country_code, l.delivery_time,
-  l.price_individual, l.option_ids, l.image_paths, p.prefix AS image_prefix
-`;
 
 export type CatalogPage = {
   cars: Car[];
@@ -154,31 +128,21 @@ export async function fetchCatalogPage(
   cursor?: number,
   limit: number = PAGE_SIZE,
 ): Promise<CatalogPage> {
-  const { where, params } = buildWhere(filters, cursor);
-  const rows = (await sql.query(
-    `SELECT ${SELECT_COLUMNS}
-     FROM catalog.lots l
-     LEFT JOIN catalog.image_prefixes p ON p.id = l.image_prefix_id
-     WHERE ${where}
-     ORDER BY l.id DESC
-     LIMIT $${params.length + 1}`,
-    [...params, limit],
-  )) as LotRow[];
+  const params = serializeFilters(filters);
+  if (cursor != null) params.set("cursor", String(cursor));
+  params.set("limit", String(limit));
 
-  const cars = rows.map(toCar);
-  // Курсор отдаём только когда страница полная: иначе лента запросит пустой хвост.
-  const nextCursor = rows.length === limit ? Number(rows[rows.length - 1].id) : null;
-  return { cars, nextCursor };
+  const payload = await backend<{ rows: LotRow[]; nextCursor: number | null }>(
+    "/api/catalog/lots",
+    params,
+  );
+  return { cars: payload.rows.map(toCar), nextCursor: payload.nextCursor };
 }
 
 /** Сколько машин под текущим фильтром — для кнопки «Показать N». */
 export async function countCatalog(filters: CatalogFilters): Promise<number> {
-  const { where, params } = buildWhere(filters);
-  const rows = (await sql.query(
-    `SELECT COUNT(*)::int AS total FROM catalog.lots l WHERE ${where}`,
-    params,
-  )) as { total: number }[];
-  return rows[0]?.total ?? 0;
+  const payload = await backend<{ total: number }>("/api/catalog/count", serializeFilters(filters));
+  return payload.total ?? 0;
 }
 
 /** Опция автомобиля с названием и группой — для страницы лота. */
@@ -192,48 +156,27 @@ export type LotDetail = {
 };
 
 /**
- * Один лот целиком. Возвращает `null`, если лота нет или он снят с продажи —
- * страница тогда отдаёт 404, а не пустую карточку.
- *
- * Названия опций достаём отдельным запросом по справочнику: в строке лота лежат
- * только их идентификаторы.
+ * Один лот целиком. `null`, если лота нет или он снят с продажи — страница
+ * тогда отдаёт 404, а не пустую карточку.
  */
 export async function fetchLot(lotId: number): Promise<LotDetail | null> {
-  const rows = (await sql.query(
-    `SELECT ${SELECT_COLUMNS},
-            l.equipment, l.color_interior, l.description, l.is_foreign,
-            l.price_individual_eaeu, l.price_legal, l.min_scenario_price, l.month
-     FROM catalog.lots l
-     LEFT JOIN catalog.image_prefixes p ON p.id = l.image_prefix_id
-     WHERE l.id = $1 AND l.gone_at IS NULL
-     LIMIT 1`,
-    [lotId],
-  )) as (LotRow & {
-    equipment: string | null;
-    color_interior: string | null;
-    description: string | null;
-    price_legal: string | number | null;
-  })[];
+  const base = process.env.BACKEND_URL;
+  if (!base) throw new Error("BACKEND_URL не задан — каталог берётся из бэкенда");
 
-  const row = rows[0];
-  if (!row) return null;
+  const response = await fetch(`${base}/api/catalog/lots/${lotId}`, {
+    headers: { Accept: "application/json" },
+    next: { revalidate: 300, tags: ["catalog"] },
+  });
+  // 404 — это законный ответ «такого лота нет», а не сбой.
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error(`Бэкенд ответил ${response.status} на лот ${lotId}`);
 
+  const payload = (await response.json()) as { row: LotRow; options: LotOption[] };
   const car: Car = {
-    ...toCar(row),
-    equipment: row.equipment ?? undefined,
-    description: row.description ?? undefined,
+    ...toCar(payload.row),
+    equipment: payload.row.equipment ?? undefined,
+    description: payload.row.description ?? undefined,
   };
-  const legal = toNumber(row.price_legal);
-  const priceLegal = legal > 0 ? legal : undefined;
-
-  const ids = row.option_ids ?? [];
-  if (!ids.length) return { car, options: [], priceLegal };
-
-  const options = (await sql.query(
-    `SELECT id, name, group_title AS "group" FROM catalog.options
-     WHERE id = ANY($1) ORDER BY group_title NULLS LAST, name`,
-    [ids],
-  )) as LotOption[];
-
-  return { car, options, priceLegal };
+  const legal = toNumber(payload.row.price_legal);
+  return { car, options: payload.options ?? [], priceLegal: legal > 0 ? legal : undefined };
 }
