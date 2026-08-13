@@ -51,6 +51,10 @@ export type ContactRequest = {
   phone: string;
   message?: string;
   source?: string;
+  /** Заполнено, когда заявку оставили со страницы конкретного автомобиля. */
+  carTitle?: string;
+  carPrice?: string;
+  carUrl?: string;
 };
 
 const line = (label: string, value?: string) => value ? `*${escapeMarkdown(label)}:* ${escapeMarkdown(value)}` : null;
@@ -92,12 +96,17 @@ export async function broadcastSellRequest(data: SellRequest, photos: Express.Mu
 export async function broadcastContactRequest(data: ContactRequest) {
   const recipients = await subscribers.all();
   const text = [
-    "💬 *Новая заявка с формы «Написать нам»*",
+    data.carTitle ? "🚗 *Заявка на автомобиль*" : "💬 *Новая заявка с формы «Написать нам»*",
     "",
+    line("Автомобиль", data.carTitle),
+    line("Цена", data.carPrice),
+    line("Ссылка", data.carUrl),
+    data.carTitle ? "" : null,
     line("Имя", data.name),
     line("Телефон", data.phone),
     line("Сообщение", data.message),
-    line("Страница", data.source),
+    // Адрес страницы дублирует ссылку на лот — во второй раз его не печатаем.
+    data.carUrl ? null : line("Страница", data.source),
   ].filter((item): item is string => item !== null).join("\n");
   let delivered = 0;
 

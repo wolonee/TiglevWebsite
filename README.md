@@ -1,7 +1,11 @@
 # TIGLEV.COM
 
+> **Проект меняет модель** — с собственного автосалона на арбитраж трафика
+> для CarClick. План, решения и открытые вопросы: [ROADMAP.md](ROADMAP.md).
+
 - `Frontend` — Next.js-сайт и серверный proxy для заявок.
 - `Backend` — Vercel-compatible Express API, Telegram webhook и PostgreSQL.
+- `parser` — парсер и база каталога CarClick (см. [parser/README.md](parser/README.md)).
 
 ## Локальный запуск через Docker
 

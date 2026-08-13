@@ -73,7 +73,17 @@ export default function AdminRequestDetails({ initialRequest }: { initialRequest
             {Object.entries(request.payload).map(([key, value]) => (
               <div key={key} className="grid gap-1 py-3 text-sm sm:grid-cols-[160px_1fr] sm:gap-5">
                 <dt className="text-gray-text">{requestFieldLabels[key] ?? key}</dt>
-                <dd className="whitespace-pre-wrap font-medium text-dark">{String(value || "Не указано")}</dd>
+                <dd className="whitespace-pre-wrap font-medium text-dark">
+                  {/* Ссылку на автомобиль менеджер открывает — не заставляем копировать её руками.
+                      Схему проверяет backend, сюда доходят только http(s). */}
+                  {typeof value === "string" && /^https?:\/\//.test(value) ? (
+                    <a href={value} target="_blank" rel="noreferrer" className="break-all text-primary hover:underline">
+                      {value}
+                    </a>
+                  ) : (
+                    String(value || "Не указано")
+                  )}
+                </dd>
               </div>
             ))}
           </dl>

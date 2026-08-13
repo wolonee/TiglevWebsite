@@ -160,6 +160,22 @@ describe("backend API", () => {
     expect(broadcastContactRequest).toHaveBeenCalled();
   });
 
+  it("keeps the car a lead request came from", async () => {
+    const car = { carTitle: "BMW 5 Series, 2022", carPrice: "5 115 817 ₽", carUrl: "https://tiglev.com/catalog/cc-465823" };
+    await request(app).post("/api/contact-requests").set("x-api-key", "test-api-key").send({ name: "Пётр", phone: "+79990000000", ...car }).expect(201);
+    expect(customerRequests.create).toHaveBeenCalledWith(expect.objectContaining({ payload: expect.objectContaining(car) }));
+    expect(broadcastContactRequest).toHaveBeenCalledWith(expect.objectContaining(car));
+  });
+
+  it("rejects a car link that is not a URL: it goes into a message the manager clicks", async () => {
+    await request(app)
+      .post("/api/contact-requests")
+      .set("x-api-key", "test-api-key")
+      .send({ name: "Пётр", phone: "+79990000000", carUrl: "javascript:alert(1)" })
+      .expect(400);
+    expect(broadcastContactRequest).not.toHaveBeenCalled();
+  });
+
   it("stores sell request photo URLs for the admin panel", async () => {
     const photoUrl = "https://store.public.blob.vercel-storage.com/requests/car.jpg";
     await request(app)

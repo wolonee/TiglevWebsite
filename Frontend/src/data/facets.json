@@ -1,0 +1,4786 @@
+{
+  "generatedAt": "2026-08-12T05:02:27+00:00",
+  "totalLots": 83402,
+  "detailFetched": 83397,
+  "note": "Счётчики опций считаются только по лотам с загруженной карточкой (83397 из 83402). После завершения докачки пересоберите файл.",
+  "basic": [
+    {
+      "key": "country",
+      "column": "country_code",
+      "type": "checkbox",
+      "label": "Страна",
+      "values": [
+        {
+          "value": "yuznaya-koreya",
+          "label": "Южная Корея",
+          "count": 41911
+        },
+        {
+          "value": "es-evropa",
+          "label": "Европа",
+          "count": 20786
+        },
+        {
+          "value": "kitai",
+          "label": "Китай",
+          "count": 19494
+        },
+        {
+          "value": "rossiiskaya-federaciya",
+          "label": "Россия (в наличии)",
+          "count": 1163
+        }
+      ]
+    },
+    {
+      "key": "brand",
+      "type": "search-tree",
+      "label": "Марка и модель",
+      "hint": "Список длинный — нужен поиск по названию, а не простой перечень",
+      "values": [
+        {
+          "value": "kia",
+          "label": "KIA",
+          "count": 11903,
+          "models": [
+            {
+              "value": "carnival",
+              "label": "Carnival",
+              "count": 2978
+            },
+            {
+              "value": "ray",
+              "label": "Ray",
+              "count": 1666
+            },
+            {
+              "value": "sportage",
+              "label": "Sportage",
+              "count": 1013
+            },
+            {
+              "value": "seltos",
+              "label": "Seltos",
+              "count": 915
+            },
+            {
+              "value": "sorento",
+              "label": "Sorento",
+              "count": 870
+            },
+            {
+              "value": "k5",
+              "label": "K5",
+              "count": 825
+            },
+            {
+              "value": "k3",
+              "label": "K3",
+              "count": 576
+            },
+            {
+              "value": "k8",
+              "label": "K8",
+              "count": 532
+            },
+            {
+              "value": "mohave",
+              "label": "Mohave",
+              "count": 492
+            },
+            {
+              "value": "morning",
+              "label": "Morning",
+              "count": 477
+            },
+            {
+              "value": "ev6",
+              "label": "EV6",
+              "count": 476
+            },
+            {
+              "value": "k9",
+              "label": "K9",
+              "count": 318
+            },
+            {
+              "value": "niro",
+              "label": "Niro",
+              "count": 197
+            },
+            {
+              "value": "stinger",
+              "label": "Stinger",
+              "count": 102
+            },
+            {
+              "value": "ev9",
+              "label": "EV9",
+              "count": 66
+            },
+            {
+              "value": "ev3",
+              "label": "EV3",
+              "count": 59
+            },
+            {
+              "value": "ceed",
+              "label": "Ceed",
+              "count": 54
+            },
+            {
+              "value": "k4",
+              "label": "K4",
+              "count": 42
+            },
+            {
+              "value": "ceed-ceed",
+              "label": "cee'd / Ceed",
+              "count": 39
+            },
+            {
+              "value": "ceed-sportswagon",
+              "label": "cee'd Sportswagon",
+              "count": 36
+            },
+            {
+              "value": "stonic",
+              "label": "Stonic",
+              "count": 36
+            },
+            {
+              "value": "kx1",
+              "label": "KX1",
+              "count": 33
+            },
+            {
+              "value": "rio",
+              "label": "Rio",
+              "count": 16
+            },
+            {
+              "value": "kx3",
+              "label": "KX3",
+              "count": 14
+            },
+            {
+              "value": "tasman",
+              "label": "Tasman",
+              "count": 14
+            },
+            {
+              "value": "picanto",
+              "label": "Picanto",
+              "count": 11
+            },
+            {
+              "value": "other",
+              "label": "Other",
+              "count": 9
+            }
+          ]
+        },
+        {
+          "value": "hyundai",
+          "label": "Hyundai",
+          "count": 10834,
+          "models": [
+            {
+              "value": "palisade",
+              "label": "Palisade",
+              "count": 1642
+            },
+            {
+              "value": "elantra",
+              "label": "Elantra",
+              "count": 1473
+            },
+            {
+              "value": "casper",
+              "label": "Casper",
+              "count": 1399
+            },
+            {
+              "value": "grandeur",
+              "label": "Grandeur",
+              "count": 1383
+            },
+            {
+              "value": "staria",
+              "label": "Staria",
+              "count": 821
+            },
+            {
+              "value": "tucson",
+              "label": "Tucson",
+              "count": 795
+            },
+            {
+              "value": "santa-fe",
+              "label": "Santa Fe",
+              "count": 794
+            },
+            {
+              "value": "sonata",
+              "label": "Sonata",
+              "count": 738
+            },
+            {
+              "value": "ioniq5",
+              "label": "Ioniq5",
+              "count": 601
+            },
+            {
+              "value": "kona",
+              "label": "Kona",
+              "count": 340
+            },
+            {
+              "value": "ioniq6",
+              "label": "Ioniq6",
+              "count": 202
+            },
+            {
+              "value": "venue",
+              "label": "Venue",
+              "count": 184
+            },
+            {
+              "value": "i20",
+              "label": "i20",
+              "count": 152
+            },
+            {
+              "value": "i30",
+              "label": "i30",
+              "count": 135
+            },
+            {
+              "value": "bayon",
+              "label": "Bayon",
+              "count": 37
+            },
+            {
+              "value": "ix35",
+              "label": "ix35",
+              "count": 24
+            },
+            {
+              "value": "custo",
+              "label": "Custo",
+              "count": 19
+            },
+            {
+              "value": "i10",
+              "label": "i10",
+              "count": 19
+            },
+            {
+              "value": "solati",
+              "label": "Solati",
+              "count": 18
+            },
+            {
+              "value": "veloster",
+              "label": "Veloster",
+              "count": 16
+            },
+            {
+              "value": "solaris",
+              "label": "Solaris",
+              "count": 15
+            },
+            {
+              "value": "creta",
+              "label": "Creta",
+              "count": 9
+            }
+          ]
+        },
+        {
+          "value": "bmw",
+          "label": "BMW",
+          "count": 7813,
+          "models": [
+            {
+              "value": "5-series",
+              "label": "5 Series",
+              "count": 1310
+            },
+            {
+              "value": "3-series",
+              "label": "3 Series",
+              "count": 881
+            },
+            {
+              "value": "x3",
+              "label": "X3",
+              "count": 655
+            },
+            {
+              "value": "x1",
+              "label": "X1",
+              "count": 563
+            },
+            {
+              "value": "x5",
+              "label": "X5",
+              "count": 555
+            },
+            {
+              "value": "x4",
+              "label": "X4",
+              "count": 335
+            },
+            {
+              "value": "x6",
+              "label": "X6",
+              "count": 310
+            },
+            {
+              "value": "4-series",
+              "label": "4 Series",
+              "count": 269
+            },
+            {
+              "value": "x7",
+              "label": "X7",
+              "count": 253
+            },
+            {
+              "value": "gran-turismo",
+              "label": "Gran Turismo",
+              "count": 243
+            },
+            {
+              "value": "2-series",
+              "label": "2 Series",
+              "count": 225
+            },
+            {
+              "value": "1-series",
+              "label": "1-Series",
+              "count": 208
+            },
+            {
+              "value": "7-series",
+              "label": "7 Series",
+              "count": 184
+            },
+            {
+              "value": "320",
+              "label": "320",
+              "count": 155
+            },
+            {
+              "value": "x2",
+              "label": "X2",
+              "count": 127
+            },
+            {
+              "value": "520",
+              "label": "520",
+              "count": 111
+            },
+            {
+              "value": "120",
+              "label": "120",
+              "count": 104
+            },
+            {
+              "value": "i3",
+              "label": "i3",
+              "count": 84
+            },
+            {
+              "value": "318",
+              "label": "318",
+              "count": 83
+            },
+            {
+              "value": "i4",
+              "label": "i4",
+              "count": 75
+            },
+            {
+              "value": "z4",
+              "label": "Z4",
+              "count": 70
+            },
+            {
+              "value": "ix3",
+              "label": "iX3",
+              "count": 67
+            },
+            {
+              "value": "8-series",
+              "label": "8-Series",
+              "count": 60
+            },
+            {
+              "value": "330",
+              "label": "330",
+              "count": 59
+            },
+            {
+              "value": "i5",
+              "label": "i5",
+              "count": 53
+            },
+            {
+              "value": "118",
+              "label": "118",
+              "count": 52
+            },
+            {
+              "value": "540",
+              "label": "540",
+              "count": 45
+            },
+            {
+              "value": "ix1",
+              "label": "iX1",
+              "count": 30
+            },
+            {
+              "value": "218-active-tourer",
+              "label": "218 Active Tourer",
+              "count": 29
+            },
+            {
+              "value": "420-gran-coupe",
+              "label": "420 Gran Coupé",
+              "count": 28
+            },
+            {
+              "value": "x5-import",
+              "label": "X5 (Import)",
+              "count": 28
+            },
+            {
+              "value": "220-active-tourer",
+              "label": "220 Active Tourer",
+              "count": 26
+            },
+            {
+              "value": "220-gran-coupe",
+              "label": "220 Gran Coupé",
+              "count": 23
+            },
+            {
+              "value": "218-gran-coupe",
+              "label": "218 Gran Coupé",
+              "count": 22
+            },
+            {
+              "value": "218",
+              "label": "218",
+              "count": 21
+            },
+            {
+              "value": "5-series-import",
+              "label": "5 Series (Import)",
+              "count": 20
+            },
+            {
+              "value": "6-series-gt",
+              "label": "6 Series GT",
+              "count": 20
+            },
+            {
+              "value": "m440",
+              "label": "M440",
+              "count": 20
+            },
+            {
+              "value": "x3-m50",
+              "label": "X3 M50",
+              "count": 20
+            },
+            {
+              "value": "430-gran-coupe",
+              "label": "430 Gran Coupé",
+              "count": 19
+            },
+            {
+              "value": "ix",
+              "label": "iX",
+              "count": 18
+            },
+            {
+              "value": "m240i",
+              "label": "M240i",
+              "count": 18
+            },
+            {
+              "value": "740",
+              "label": "740",
+              "count": 17
+            },
+            {
+              "value": "420",
+              "label": "420",
+              "count": 16
+            },
+            {
+              "value": "530",
+              "label": "530",
+              "count": 16
+            },
+            {
+              "value": "7-seriya",
+              "label": "7 серия",
+              "count": 15
+            },
+            {
+              "value": "2-series-import",
+              "label": "2 Series (Import)",
+              "count": 14
+            },
+            {
+              "value": "m340i",
+              "label": "M340i",
+              "count": 14
+            },
+            {
+              "value": "x5-m60",
+              "label": "X5 M60",
+              "count": 13
+            },
+            {
+              "value": "220",
+              "label": "220",
+              "count": 11
+            },
+            {
+              "value": "430",
+              "label": "430",
+              "count": 11
+            },
+            {
+              "value": "m135",
+              "label": "M135",
+              "count": 11
+            },
+            {
+              "value": "x5-m",
+              "label": "X5 M",
+              "count": 11
+            },
+            {
+              "value": "223-active-tourer",
+              "label": "223 Active Tourer",
+              "count": 10
+            },
+            {
+              "value": "z4-m40",
+              "label": "Z4 M40",
+              "count": 10
+            },
+            {
+              "value": "m340d",
+              "label": "M340d",
+              "count": 9
+            },
+            {
+              "value": "x2-import",
+              "label": "X2 (Import)",
+              "count": 9
+            },
+            {
+              "value": "xm",
+              "label": "XM",
+              "count": 9
+            },
+            {
+              "value": "116",
+              "label": "116",
+              "count": 8
+            },
+            {
+              "value": "550",
+              "label": "550",
+              "count": 8
+            },
+            {
+              "value": "i7",
+              "label": "i7",
+              "count": 8
+            }
+          ]
+        },
+        {
+          "value": "mercedes-benz",
+          "label": "Mercedes-Benz",
+          "count": 7078,
+          "models": [
+            {
+              "value": "e-class",
+              "label": "E-Class",
+              "count": 1120
+            },
+            {
+              "value": "s-class",
+              "label": "S-Class",
+              "count": 524
+            },
+            {
+              "value": "c-klasse",
+              "label": "C-Klasse",
+              "count": 475
+            },
+            {
+              "value": "glc",
+              "label": "GLC",
+              "count": 457
+            },
+            {
+              "value": "gle-klasse",
+              "label": "GLE-Klasse",
+              "count": 332
+            },
+            {
+              "value": "a-klasse",
+              "label": "A-Klasse",
+              "count": 323
+            },
+            {
+              "value": "glb",
+              "label": "GLB-Class",
+              "count": 267
+            },
+            {
+              "value": "vito",
+              "label": "Vito",
+              "count": 236
+            },
+            {
+              "value": "cls-klasse",
+              "label": "CLS-Klasse",
+              "count": 141
+            },
+            {
+              "value": "amg-gt",
+              "label": "AMG GT",
+              "count": 134
+            },
+            {
+              "value": "v-300",
+              "label": "V 300",
+              "count": 134
+            },
+            {
+              "value": "gls",
+              "label": "GLS",
+              "count": 114
+            },
+            {
+              "value": "glc-220",
+              "label": "GLC 220",
+              "count": 105
+            },
+            {
+              "value": "e-220",
+              "label": "E 220",
+              "count": 103
+            },
+            {
+              "value": "cla-klasse",
+              "label": "CLA-Klasse",
+              "count": 100
+            },
+            {
+              "value": "gla-200",
+              "label": "GLA 200",
+              "count": 93
+            },
+            {
+              "value": "eqe",
+              "label": "EQE",
+              "count": 87
+            },
+            {
+              "value": "v-class",
+              "label": "V-Class",
+              "count": 86
+            },
+            {
+              "value": "gla-klasse",
+              "label": "GLA-Klasse",
+              "count": 83
+            },
+            {
+              "value": "cle-class",
+              "label": "CLE-Class",
+              "count": 73
+            },
+            {
+              "value": "c-200",
+              "label": "C 200",
+              "count": 72
+            },
+            {
+              "value": "glc-200",
+              "label": "GLC 200",
+              "count": 67
+            },
+            {
+              "value": "gle",
+              "label": "奔驰GLE(进口)",
+              "count": 66
+            },
+            {
+              "value": "eqs",
+              "label": "EQS",
+              "count": 65
+            },
+            {
+              "value": "g-klasse",
+              "label": "G-Klasse",
+              "count": 65
+            },
+            {
+              "value": "glb-200",
+              "label": "GLB 200",
+              "count": 64
+            },
+            {
+              "value": "a-180",
+              "label": "A 180",
+              "count": 57
+            },
+            {
+              "value": "b-200",
+              "label": "B 200",
+              "count": 57
+            },
+            {
+              "value": "c-220",
+              "label": "C 220",
+              "count": 57
+            },
+            {
+              "value": "e-200",
+              "label": "E 200",
+              "count": 55
+            },
+            {
+              "value": "v-250",
+              "label": "V 250",
+              "count": 54
+            },
+            {
+              "value": "a-200",
+              "label": "A 200",
+              "count": 52
+            },
+            {
+              "value": "cla-200",
+              "label": "CLA 200",
+              "count": 51
+            },
+            {
+              "value": "g-63-amg",
+              "label": "G 63 AMG",
+              "count": 51
+            },
+            {
+              "value": "g-class-amg",
+              "label": "G-Class AMG",
+              "count": 50
+            },
+            {
+              "value": "glc-300",
+              "label": "GLC 300",
+              "count": 48
+            },
+            {
+              "value": "gla-180",
+              "label": "GLA 180",
+              "count": 43
+            },
+            {
+              "value": "gle-450",
+              "label": "GLE 450",
+              "count": 43
+            },
+            {
+              "value": "eqa",
+              "label": "EQA",
+              "count": 35
+            },
+            {
+              "value": "eqb",
+              "label": "EQB",
+              "count": 35
+            },
+            {
+              "value": "cle-200",
+              "label": "CLE 200",
+              "count": 33
+            },
+            {
+              "value": "cla-200-shooting-brake",
+              "label": "CLA 200 Shooting Brake",
+              "count": 32
+            },
+            {
+              "value": "t-class",
+              "label": "T-Class",
+              "count": 32
+            },
+            {
+              "value": "citan",
+              "label": "Citan",
+              "count": 27
+            },
+            {
+              "value": "b-180",
+              "label": "B 180",
+              "count": 25
+            },
+            {
+              "value": "c-class-amg",
+              "label": "C-class AMG",
+              "count": 25
+            },
+            {
+              "value": "cla-180-shooting-brake",
+              "label": "CLA 180 Shooting Brake",
+              "count": 25
+            },
+            {
+              "value": "e-class-import",
+              "label": "E-Class (Import)",
+              "count": 23
+            },
+            {
+              "value": "g-450",
+              "label": "G 450",
+              "count": 23
+            },
+            {
+              "value": "c-300",
+              "label": "C 300",
+              "count": 22
+            },
+            {
+              "value": "eqe-suv",
+              "label": "EQE SUV",
+              "count": 22
+            },
+            {
+              "value": "gle-amg",
+              "label": "GLE AMG",
+              "count": 22
+            },
+            {
+              "value": "cle",
+              "label": "CLE",
+              "count": 20
+            },
+            {
+              "value": "glb-220",
+              "label": "GLB 220",
+              "count": 19
+            },
+            {
+              "value": "glc-amg",
+              "label": "GLC AMG",
+              "count": 19
+            },
+            {
+              "value": "cla-180",
+              "label": "CLA 180",
+              "count": 18
+            },
+            {
+              "value": "cle-klass",
+              "label": "CLE-класс",
+              "count": 18
+            },
+            {
+              "value": "gle-300",
+              "label": "GLE 300",
+              "count": 18
+            },
+            {
+              "value": "cla-import",
+              "label": "CLA (Import)",
+              "count": 17
+            },
+            {
+              "value": "e-450",
+              "label": "E 450",
+              "count": 17
+            },
+            {
+              "value": "gls-450",
+              "label": "GLS 450",
+              "count": 17
+            },
+            {
+              "value": "s-450",
+              "label": "S 450",
+              "count": 17
+            },
+            {
+              "value": "a-class-amg",
+              "label": "A-Class AMG",
+              "count": 16
+            },
+            {
+              "value": "gla-220",
+              "label": "GLA 220",
+              "count": 16
+            },
+            {
+              "value": "glb-180",
+              "label": "GLB 180",
+              "count": 16
+            },
+            {
+              "value": "glc-450",
+              "label": "GLC 450",
+              "count": 15
+            },
+            {
+              "value": "b-220",
+              "label": "B 220",
+              "count": 14
+            },
+            {
+              "value": "gle-53-amg",
+              "label": "GLE 53 AMG",
+              "count": 14
+            },
+            {
+              "value": "cle-220",
+              "label": "CLE 220",
+              "count": 13
+            },
+            {
+              "value": "cle-53-amg",
+              "label": "CLE 53 AMG",
+              "count": 13
+            },
+            {
+              "value": "glb-amg",
+              "label": "GLB AMG",
+              "count": 13
+            },
+            {
+              "value": "a-220",
+              "label": "A 220",
+              "count": 12
+            },
+            {
+              "value": "cle-300",
+              "label": "CLE 300",
+              "count": 11
+            },
+            {
+              "value": "other",
+              "label": "Other",
+              "count": 11
+            },
+            {
+              "value": "a-class-amg-import",
+              "label": "A-Class AMG (Import)",
+              "count": 10
+            },
+            {
+              "value": "cla-220",
+              "label": "CLA 220",
+              "count": 10
+            },
+            {
+              "value": "e-klass",
+              "label": "E-класс",
+              "count": 10
+            },
+            {
+              "value": "gle-klass-amg",
+              "label": "GLE-класс AMG",
+              "count": 10
+            },
+            {
+              "value": "g-klass-amg",
+              "label": "G-класс AMG",
+              "count": 9
+            },
+            {
+              "value": "gle-coupe-amg",
+              "label": "GLE Coupe AMG",
+              "count": 9
+            },
+            {
+              "value": "gle-klasse-coupe",
+              "label": "GLE_KLASSE_COUPE",
+              "count": 9
+            },
+            {
+              "value": "cla-35-amg",
+              "label": "CLA 35 AMG",
+              "count": 8
+            },
+            {
+              "value": "cla-amg",
+              "label": "CLA AMG",
+              "count": 8
+            },
+            {
+              "value": "glc-43-amg",
+              "label": "GLC 43 AMG",
+              "count": 8
+            },
+            {
+              "value": "gle-klass",
+              "label": "GLE-класс",
+              "count": 8
+            }
+          ]
+        },
+        {
+          "value": "volkswagen",
+          "label": "Volkswagen",
+          "count": 6670,
+          "models": [
+            {
+              "value": "golf",
+              "label": "Golf",
+              "count": 1142
+            },
+            {
+              "value": "t-roc",
+              "label": "T-Roc",
+              "count": 820
+            },
+            {
+              "value": "tiguan",
+              "label": "Tiguan",
+              "count": 795
+            },
+            {
+              "value": "t-cross",
+              "label": "T-cross",
+              "count": 392
+            },
+            {
+              "value": "polo",
+              "label": "Polo",
+              "count": 314
+            },
+            {
+              "value": "passat",
+              "label": "Passat",
+              "count": 264
+            },
+            {
+              "value": "taigo",
+              "label": "Taigo",
+              "count": 256
+            },
+            {
+              "value": "tayron",
+              "label": "Tayron",
+              "count": 236
+            },
+            {
+              "value": "passat-variant",
+              "label": "Passat Variant",
+              "count": 230
+            },
+            {
+              "value": "caddy",
+              "label": "Caddy",
+              "count": 173
+            },
+            {
+              "value": "touran",
+              "label": "Touran",
+              "count": 161
+            },
+            {
+              "value": "t7-multivan",
+              "label": "T7 Multivan",
+              "count": 142
+            },
+            {
+              "value": "touareg",
+              "label": "Touareg",
+              "count": 140
+            },
+            {
+              "value": "lavida",
+              "label": "Lavida",
+              "count": 123
+            },
+            {
+              "value": "magotan",
+              "label": "Magotan",
+              "count": 121
+            },
+            {
+              "value": "arteon",
+              "label": "Arteon",
+              "count": 118
+            },
+            {
+              "value": "jetta",
+              "label": "Jetta",
+              "count": 114
+            },
+            {
+              "value": "crafter",
+              "label": "Crafter",
+              "count": 101
+            },
+            {
+              "value": "tharu",
+              "label": "Tharu",
+              "count": 88
+            },
+            {
+              "value": "sagitar",
+              "label": "Sagitar",
+              "count": 87
+            },
+            {
+              "value": "lamando",
+              "label": "Lamando",
+              "count": 86
+            },
+            {
+              "value": "teramont",
+              "label": "Teramont",
+              "count": 83
+            },
+            {
+              "value": "tiguan-allspace",
+              "label": "Tiguan Allspace",
+              "count": 69
+            },
+            {
+              "value": "bora",
+              "label": "Bora",
+              "count": 66
+            },
+            {
+              "value": "viloran",
+              "label": "Viloran",
+              "count": 38
+            },
+            {
+              "value": "cc",
+              "label": "CC",
+              "count": 35
+            },
+            {
+              "value": "t7-transporter",
+              "label": "T7 Transporter",
+              "count": 35
+            },
+            {
+              "value": "id4",
+              "label": "ID4",
+              "count": 34
+            },
+            {
+              "value": "talagon",
+              "label": "Talagon",
+              "count": 33
+            },
+            {
+              "value": "t7-california",
+              "label": "T7 California",
+              "count": 32
+            },
+            {
+              "value": "id7-vizzion",
+              "label": "ID.7 VIZZION",
+              "count": 31
+            },
+            {
+              "value": "t6-transporter",
+              "label": "T6 Transporter",
+              "count": 26
+            },
+            {
+              "value": "tavendor",
+              "label": "Tavendor",
+              "count": 26
+            },
+            {
+              "value": "amarok",
+              "label": "Amarok",
+              "count": 25
+            },
+            {
+              "value": "other",
+              "label": "Other",
+              "count": 21
+            },
+            {
+              "value": "06",
+              "label": "06",
+              "count": 19
+            },
+            {
+              "value": "t6-california",
+              "label": "T6 California",
+              "count": 19
+            },
+            {
+              "value": "golf-gti",
+              "label": "Golf GTI",
+              "count": 16
+            },
+            {
+              "value": "t7-caravelle",
+              "label": "T7 Caravelle",
+              "count": 16
+            },
+            {
+              "value": "tacqua",
+              "label": "Tacqua",
+              "count": 16
+            },
+            {
+              "value": "t6-multivan",
+              "label": "T6 Multivan",
+              "count": 15
+            },
+            {
+              "value": "phev",
+              "label": "迈腾 PHEV",
+              "count": 11
+            },
+            {
+              "value": "t6-kombi",
+              "label": "T6 Kombi",
+              "count": 9
+            },
+            {
+              "value": "id4-crozz",
+              "label": "ID.4 CROZZ",
+              "count": 8
+            }
+          ]
+        },
+        {
+          "value": "genesis",
+          "label": "Genesis",
+          "count": 4828,
+          "models": [
+            {
+              "value": "g80",
+              "label": "G80",
+              "count": 1520
+            },
+            {
+              "value": "gv80",
+              "label": "GV80",
+              "count": 1498
+            },
+            {
+              "value": "gv70",
+              "label": "GV70",
+              "count": 990
+            },
+            {
+              "value": "g90",
+              "label": "G90",
+              "count": 504
+            },
+            {
+              "value": "g70",
+              "label": "G70",
+              "count": 240
+            },
+            {
+              "value": "gv60",
+              "label": "GV60",
+              "count": 76
+            }
+          ]
+        },
+        {
+          "value": "audi",
+          "label": "Audi",
+          "count": 4789,
+          "models": [
+            {
+              "value": "a6",
+              "label": "A6",
+              "count": 931
+            },
+            {
+              "value": "a3-sedan",
+              "label": "A3 Sedan",
+              "count": 609
+            },
+            {
+              "value": "q3",
+              "label": "Q3",
+              "count": 564
+            },
+            {
+              "value": "q5",
+              "label": "Q5",
+              "count": 445
+            },
+            {
+              "value": "a4",
+              "label": "A4",
+              "count": 385
+            },
+            {
+              "value": "a5",
+              "label": "A5",
+              "count": 255
+            },
+            {
+              "value": "q2",
+              "label": "Q2",
+              "count": 204
+            },
+            {
+              "value": "a7",
+              "label": "A7",
+              "count": 188
+            },
+            {
+              "value": "q7",
+              "label": "Q7",
+              "count": 183
+            },
+            {
+              "value": "q8",
+              "label": "Q8",
+              "count": 129
+            },
+            {
+              "value": "a8",
+              "label": "A8",
+              "count": 120
+            },
+            {
+              "value": "a1",
+              "label": "A1",
+              "count": 107
+            },
+            {
+              "value": "e-tron",
+              "label": "e-tron",
+              "count": 65
+            },
+            {
+              "value": "q4-e-tron",
+              "label": "Q4 e-tron",
+              "count": 65
+            },
+            {
+              "value": "s6",
+              "label": "S6",
+              "count": 64
+            },
+            {
+              "value": "sq5",
+              "label": "SQ5",
+              "count": 61
+            },
+            {
+              "value": "rs3",
+              "label": "RS3",
+              "count": 54
+            },
+            {
+              "value": "s3",
+              "label": "S3",
+              "count": 36
+            },
+            {
+              "value": "s5",
+              "label": "S5",
+              "count": 33
+            },
+            {
+              "value": "a5-import",
+              "label": "A5 (Import)",
+              "count": 28
+            },
+            {
+              "value": "rsq8",
+              "label": "RSQ8",
+              "count": 27
+            },
+            {
+              "value": "s4",
+              "label": "S4",
+              "count": 27
+            },
+            {
+              "value": "a5l",
+              "label": "A5L",
+              "count": 26
+            },
+            {
+              "value": "sq8",
+              "label": "SQ8",
+              "count": 20
+            },
+            {
+              "value": "rs6",
+              "label": "RS6",
+              "count": 18
+            },
+            {
+              "value": "q6l-e-tron",
+              "label": "奥迪Q6L e-tron",
+              "count": 13
+            },
+            {
+              "value": "rs4",
+              "label": "RS4",
+              "count": 11
+            },
+            {
+              "value": "q5l",
+              "label": "Q5L",
+              "count": 8
+            },
+            {
+              "value": "r8",
+              "label": "R8",
+              "count": 8
+            },
+            {
+              "value": "rs-5",
+              "label": "RS 5",
+              "count": 8
+            },
+            {
+              "value": "rs7",
+              "label": "RS7",
+              "count": 8
+            },
+            {
+              "value": "sq7",
+              "label": "SQ7",
+              "count": 8
+            }
+          ]
+        },
+        {
+          "value": "ssangyong",
+          "label": "SsangYong",
+          "count": 2257,
+          "models": [
+            {
+              "value": "rexton",
+              "label": "Rexton",
+              "count": 1122
+            },
+            {
+              "value": "torres",
+              "label": "Torres",
+              "count": 648
+            },
+            {
+              "value": "tiboli",
+              "label": "TIBOLI",
+              "count": 293
+            },
+            {
+              "value": "korando",
+              "label": "Korando",
+              "count": 129
+            },
+            {
+              "value": "actyon",
+              "label": "Actyon",
+              "count": 62
+            }
+          ]
+        },
+        {
+          "value": "skoda",
+          "label": "Skoda",
+          "count": 1589,
+          "models": [
+            {
+              "value": "octavia",
+              "label": "Octavia",
+              "count": 338
+            },
+            {
+              "value": "kamiq",
+              "label": "Kamiq",
+              "count": 307
+            },
+            {
+              "value": "fabia",
+              "label": "Fabia",
+              "count": 259
+            },
+            {
+              "value": "karoq",
+              "label": "Karoq",
+              "count": 252
+            },
+            {
+              "value": "kodiaq",
+              "label": "Kodiaq",
+              "count": 202
+            },
+            {
+              "value": "superb",
+              "label": "Superb",
+              "count": 114
+            },
+            {
+              "value": "scala",
+              "label": "Scala",
+              "count": 102
+            },
+            {
+              "value": "rapid",
+              "label": "Rapid",
+              "count": 14
+            }
+          ]
+        },
+        {
+          "value": "ford",
+          "label": "Ford",
+          "count": 1588,
+          "models": [
+            {
+              "value": "explorer",
+              "label": "Explorer",
+              "count": 243
+            },
+            {
+              "value": "focus",
+              "label": "FOCUS",
+              "count": 230
+            },
+            {
+              "value": "puma",
+              "label": "Puma",
+              "count": 153
+            },
+            {
+              "value": "ranger",
+              "label": "Ranger",
+              "count": 151
+            },
+            {
+              "value": "transit-custom",
+              "label": "Transit Custom",
+              "count": 128
+            },
+            {
+              "value": "kuga",
+              "label": "Kuga",
+              "count": 121
+            },
+            {
+              "value": "mustang",
+              "label": "Mustang",
+              "count": 83
+            },
+            {
+              "value": "transit",
+              "label": "Transit",
+              "count": 74
+            },
+            {
+              "value": "tourneo-custom",
+              "label": "Tourneo Custom",
+              "count": 67
+            },
+            {
+              "value": "mondeo",
+              "label": "Mondeo",
+              "count": 56
+            },
+            {
+              "value": "bronco",
+              "label": "Bronco",
+              "count": 42
+            },
+            {
+              "value": "tourneo-courier",
+              "label": "Tourneo Courier",
+              "count": 37
+            },
+            {
+              "value": "fiesta",
+              "label": "Fiesta",
+              "count": 27
+            },
+            {
+              "value": "tourneo-connect",
+              "label": "Tourneo Connect",
+              "count": 21
+            },
+            {
+              "value": "transit-connect",
+              "label": "Transit Connect",
+              "count": 17
+            },
+            {
+              "value": "edge",
+              "label": "Edge",
+              "count": 15
+            },
+            {
+              "value": "f-150-raptor",
+              "label": "F-150 Raptor",
+              "count": 15
+            },
+            {
+              "value": "grand-tourneo",
+              "label": "Grand Tourneo",
+              "count": 13
+            },
+            {
+              "value": "ecosport",
+              "label": "EcoSport",
+              "count": 10
+            },
+            {
+              "value": "territory",
+              "label": "Territory",
+              "count": 10
+            },
+            {
+              "value": "transit-courier",
+              "label": "Transit Courier",
+              "count": 10
+            },
+            {
+              "value": "escort",
+              "label": "Escort",
+              "count": 9
+            },
+            {
+              "value": "expedition",
+              "label": "Expedition",
+              "count": 9
+            }
+          ]
+        },
+        {
+          "value": "opel",
+          "label": "Opel",
+          "count": 1425,
+          "models": [
+            {
+              "value": "corsa",
+              "label": "Corsa",
+              "count": 456
+            },
+            {
+              "value": "astra",
+              "label": "Astra",
+              "count": 308
+            },
+            {
+              "value": "mokka",
+              "label": "Mokka",
+              "count": 244
+            },
+            {
+              "value": "grandland-x",
+              "label": "Grandland X",
+              "count": 94
+            },
+            {
+              "value": "crossland-x",
+              "label": "Crossland X",
+              "count": 74
+            },
+            {
+              "value": "frontera",
+              "label": "Frontera",
+              "count": 50
+            },
+            {
+              "value": "vivaro",
+              "label": "Vivaro",
+              "count": 50
+            },
+            {
+              "value": "combo",
+              "label": "Combo",
+              "count": 38
+            },
+            {
+              "value": "movano",
+              "label": "Movano",
+              "count": 28
+            },
+            {
+              "value": "other",
+              "label": "Other",
+              "count": 18
+            },
+            {
+              "value": "zafira-life",
+              "label": "Zafira Life",
+              "count": 16
+            },
+            {
+              "value": "combo-life",
+              "label": "Combo Life",
+              "count": 15
+            },
+            {
+              "value": "zafira",
+              "label": "Zafira",
+              "count": 14
+            },
+            {
+              "value": "insignia",
+              "label": "Insignia",
+              "count": 13
+            }
+          ]
+        },
+        {
+          "value": "chevrolet",
+          "label": "Chevrolet",
+          "count": 1201,
+          "models": [
+            {
+              "value": "trax",
+              "label": "Trax",
+              "count": 353
+            },
+            {
+              "value": "trailblazer",
+              "label": "Trailblazer",
+              "count": 341
+            },
+            {
+              "value": "colorado",
+              "label": "Colorado",
+              "count": 121
+            },
+            {
+              "value": "traverse",
+              "label": "Traverse",
+              "count": 88
+            },
+            {
+              "value": "spark",
+              "label": "Spark",
+              "count": 59
+            },
+            {
+              "value": "monza",
+              "label": "Monza",
+              "count": 55
+            },
+            {
+              "value": "malibu",
+              "label": "Malibu",
+              "count": 50
+            },
+            {
+              "value": "equinox",
+              "label": "Equinox",
+              "count": 36
+            },
+            {
+              "value": "euv",
+              "label": "볼트 EUV",
+              "count": 27
+            },
+            {
+              "value": "bolt-ev",
+              "label": "Bolt EV",
+              "count": 12
+            },
+            {
+              "value": "tahoe",
+              "label": "Tahoe",
+              "count": 12
+            },
+            {
+              "value": "malibu-xl",
+              "label": "Malibu XL",
+              "count": 9
+            },
+            {
+              "value": "aveo",
+              "label": "Aveo",
+              "count": 8
+            }
+          ]
+        },
+        {
+          "value": "mini",
+          "label": "MINI",
+          "count": 1142,
+          "models": [
+            {
+              "value": "cooper",
+              "label": "Cooper",
+              "count": 301
+            },
+            {
+              "value": "countryman",
+              "label": "Countryman",
+              "count": 297
+            },
+            {
+              "value": "clubman",
+              "label": "Clubman",
+              "count": 140
+            },
+            {
+              "value": "cooper-c",
+              "label": "Cooper C",
+              "count": 76
+            },
+            {
+              "value": "cooper-convertible",
+              "label": "Cooper Convertible",
+              "count": 76
+            },
+            {
+              "value": "mini",
+              "label": "Mini",
+              "count": 35
+            },
+            {
+              "value": "cooper-s",
+              "label": "Cooper S",
+              "count": 34
+            },
+            {
+              "value": "countryman-c-cooper",
+              "label": "Countryman C (Cooper)",
+              "count": 24
+            },
+            {
+              "value": "john-cooper-works",
+              "label": "John Cooper Works",
+              "count": 22
+            },
+            {
+              "value": "cooper-cabrio",
+              "label": "Cooper Cabrio",
+              "count": 16
+            },
+            {
+              "value": "mini-cooper-ev",
+              "label": "MINI COOPER EV",
+              "count": 15
+            },
+            {
+              "value": "john-cooper-works-cabrio",
+              "label": "John Cooper Works Cabrio",
+              "count": 12
+            },
+            {
+              "value": "mini-jcw",
+              "label": "Mini JCW",
+              "count": 11
+            },
+            {
+              "value": "countryman-s-cooper",
+              "label": "Countryman S (Cooper)",
+              "count": 10
+            },
+            {
+              "value": "one",
+              "label": "One",
+              "count": 8
+            }
+          ]
+        },
+        {
+          "value": "toyota",
+          "label": "Toyota",
+          "count": 1112,
+          "models": [
+            {
+              "value": "camry",
+              "label": "Camry",
+              "count": 109
+            },
+            {
+              "value": "corolla",
+              "label": "Corolla",
+              "count": 90
+            },
+            {
+              "value": "rav4",
+              "label": "RAV4",
+              "count": 79
+            },
+            {
+              "value": "avalon",
+              "label": "Avalon",
+              "count": 64
+            },
+            {
+              "value": "sienna",
+              "label": "Sienna",
+              "count": 64
+            },
+            {
+              "value": "alphard",
+              "label": "Alphard",
+              "count": 63
+            },
+            {
+              "value": "vellfire",
+              "label": "Vellfire",
+              "count": 62
+            },
+            {
+              "value": "aygo-x",
+              "label": "Aygo X",
+              "count": 58
+            },
+            {
+              "value": "levin",
+              "label": "Levin",
+              "count": 50
+            },
+            {
+              "value": "highlander",
+              "label": "Highlander",
+              "count": 44
+            },
+            {
+              "value": "granvia",
+              "label": "Granvia",
+              "count": 42
+            },
+            {
+              "value": "yaris-l",
+              "label": "Yaris L",
+              "count": 41
+            },
+            {
+              "value": "frontlander",
+              "label": "Frontlander",
+              "count": 38
+            },
+            {
+              "value": "wildlander",
+              "label": "Wildlander",
+              "count": 31
+            },
+            {
+              "value": "3x",
+              "label": "铂智3X",
+              "count": 29
+            },
+            {
+              "value": "corolla-cross",
+              "label": "Corolla Cross",
+              "count": 27
+            },
+            {
+              "value": "proace-verso",
+              "label": "Proace (Verso)",
+              "count": 25
+            },
+            {
+              "value": "land-cruiser",
+              "label": "Land Cruiser",
+              "count": 23
+            },
+            {
+              "value": "yaris",
+              "label": "Yaris",
+              "count": 23
+            },
+            {
+              "value": "crown-kluger",
+              "label": "Crown Kluger",
+              "count": 21
+            },
+            {
+              "value": "lc-prado",
+              "label": "LC Prado",
+              "count": 18
+            },
+            {
+              "value": "proace-city",
+              "label": "ProAce City",
+              "count": 17
+            },
+            {
+              "value": "hilux",
+              "label": "Hilux",
+              "count": 14
+            },
+            {
+              "value": "c-hr",
+              "label": "C-HR",
+              "count": 9
+            },
+            {
+              "value": "86",
+              "label": "86",
+              "count": 8
+            }
+          ]
+        },
+        {
+          "value": "volvo",
+          "label": "Volvo",
+          "count": 964,
+          "models": [
+            {
+              "value": "xc60",
+              "label": "XC60",
+              "count": 275
+            },
+            {
+              "value": "xc40",
+              "label": "XC40",
+              "count": 209
+            },
+            {
+              "value": "s90",
+              "label": "S90",
+              "count": 163
+            },
+            {
+              "value": "xc90",
+              "label": "XC90",
+              "count": 89
+            },
+            {
+              "value": "v60",
+              "label": "V60",
+              "count": 73
+            },
+            {
+              "value": "s60",
+              "label": "S60",
+              "count": 71
+            },
+            {
+              "value": "em90",
+              "label": "EM90",
+              "count": 20
+            },
+            {
+              "value": "v90",
+              "label": "V90",
+              "count": 13
+            },
+            {
+              "value": "xc60-phev",
+              "label": "XC60 PHEV",
+              "count": 13
+            },
+            {
+              "value": "xc70",
+              "label": "XC70",
+              "count": 11
+            },
+            {
+              "value": "ex30",
+              "label": "EX30",
+              "count": 8
+            }
+          ]
+        },
+        {
+          "value": "tesla",
+          "label": "Tesla",
+          "count": 935,
+          "models": [
+            {
+              "value": "model-y",
+              "label": "Model Y",
+              "count": 623
+            },
+            {
+              "value": "model-3",
+              "label": "Model 3",
+              "count": 283
+            },
+            {
+              "value": "model-y-l",
+              "label": "Model Y L",
+              "count": 14
+            },
+            {
+              "value": "model-x",
+              "label": "Model X",
+              "count": 9
+            }
+          ]
+        },
+        {
+          "value": "peugeot",
+          "label": "Peugeot",
+          "count": 906,
+          "models": [
+            {
+              "value": "2008",
+              "label": "2008",
+              "count": 220
+            },
+            {
+              "value": "3008",
+              "label": "3008",
+              "count": 168
+            },
+            {
+              "value": "208",
+              "label": "208",
+              "count": 155
+            },
+            {
+              "value": "308",
+              "label": "308",
+              "count": 126
+            },
+            {
+              "value": "5008",
+              "label": "5008",
+              "count": 105
+            },
+            {
+              "value": "408",
+              "label": "408",
+              "count": 43
+            },
+            {
+              "value": "boxer",
+              "label": "Boxer",
+              "count": 19
+            },
+            {
+              "value": "traveller",
+              "label": "Traveller",
+              "count": 17
+            },
+            {
+              "value": "508",
+              "label": "508",
+              "count": 14
+            },
+            {
+              "value": "partner",
+              "label": "Partner",
+              "count": 10
+            },
+            {
+              "value": "rifter",
+              "label": "Rifter",
+              "count": 9
+            },
+            {
+              "value": "expert",
+              "label": "Expert",
+              "count": 8
+            }
+          ]
+        },
+        {
+          "value": "porsche",
+          "label": "Porsche",
+          "count": 768,
+          "models": [
+            {
+              "value": "cayenne",
+              "label": "Cayenne",
+              "count": 173
+            },
+            {
+              "value": "panamera",
+              "label": "Panamera",
+              "count": 157
+            },
+            {
+              "value": "macan",
+              "label": "Macan",
+              "count": 111
+            },
+            {
+              "value": "911",
+              "label": "911",
+              "count": 97
+            },
+            {
+              "value": "718",
+              "label": "718",
+              "count": 78
+            },
+            {
+              "value": "992",
+              "label": "992",
+              "count": 77
+            },
+            {
+              "value": "taycan",
+              "label": "Taycan",
+              "count": 43
+            }
+          ]
+        },
+        {
+          "value": "land_rover",
+          "label": "Land Rover",
+          "count": 758,
+          "models": [
+            {
+              "value": "defender",
+              "label": "Defender",
+              "count": 213
+            },
+            {
+              "value": "range-rover",
+              "label": "Range Rover",
+              "count": 139
+            },
+            {
+              "value": "discovery-sport",
+              "label": "Discovery Sport",
+              "count": 100
+            },
+            {
+              "value": "sport",
+              "label": "Sport",
+              "count": 65
+            },
+            {
+              "value": "discovery",
+              "label": "Discovery",
+              "count": 58
+            },
+            {
+              "value": "range-rover-velar",
+              "label": "Range Rover Velar",
+              "count": 50
+            },
+            {
+              "value": "range-rover-evoque",
+              "label": "Range Rover Evoque",
+              "count": 41
+            },
+            {
+              "value": "evoque",
+              "label": "EVOQUE",
+              "count": 34
+            },
+            {
+              "value": "range-rover-sport",
+              "label": "Range Rover Sport",
+              "count": 33
+            },
+            {
+              "value": "velar",
+              "label": "Velar",
+              "count": 22
+            }
+          ]
+        },
+        {
+          "value": "seat",
+          "label": "SEAT",
+          "count": 721,
+          "models": [
+            {
+              "value": "ibiza",
+              "label": "Ibiza",
+              "count": 237
+            },
+            {
+              "value": "arona",
+              "label": "Arona",
+              "count": 210
+            },
+            {
+              "value": "leon",
+              "label": "Leon",
+              "count": 156
+            },
+            {
+              "value": "ateca",
+              "label": "Ateca",
+              "count": 101
+            },
+            {
+              "value": "tarraco",
+              "label": "Tarraco",
+              "count": 13
+            }
+          ]
+        },
+        {
+          "value": "honda",
+          "label": "Honda",
+          "count": 647,
+          "models": [
+            {
+              "value": "accord",
+              "label": "Accord",
+              "count": 96
+            },
+            {
+              "value": "xr-v",
+              "label": "XR-V",
+              "count": 91
+            },
+            {
+              "value": "civic",
+              "label": "Civic",
+              "count": 70
+            },
+            {
+              "value": "vezel",
+              "label": "Vezel",
+              "count": 66
+            },
+            {
+              "value": "cr-v",
+              "label": "CR-V",
+              "count": 56
+            },
+            {
+              "value": "fit",
+              "label": "Fit",
+              "count": 54
+            },
+            {
+              "value": "breeze",
+              "label": "Breeze",
+              "count": 39
+            },
+            {
+              "value": "inspire",
+              "label": "Inspire",
+              "count": 31
+            },
+            {
+              "value": "integra",
+              "label": "Integra",
+              "count": 29
+            },
+            {
+              "value": "odyssey",
+              "label": "Odyssey",
+              "count": 22
+            },
+            {
+              "value": "elysion",
+              "label": "Elysion",
+              "count": 18
+            },
+            {
+              "value": "avancier",
+              "label": "Avancier",
+              "count": 13
+            },
+            {
+              "value": "pilot",
+              "label": "Pilot",
+              "count": 12
+            },
+            {
+              "value": "life",
+              "label": "LIFE",
+              "count": 11
+            },
+            {
+              "value": "crider",
+              "label": "Crider",
+              "count": 9
+            },
+            {
+              "value": "ur-v",
+              "label": "UR-V",
+              "count": 9
+            },
+            {
+              "value": "hr-v",
+              "label": "HR-V",
+              "count": 8
+            }
+          ]
+        },
+        {
+          "value": "geely",
+          "label": "Geely",
+          "count": 619,
+          "models": [
+            {
+              "value": "xingrui",
+              "label": "Xingrui",
+              "count": 145
+            },
+            {
+              "value": "xingyue-l",
+              "label": "Xingyue L",
+              "count": 120
+            },
+            {
+              "value": "emgrand",
+              "label": "Emgrand EC7",
+              "count": 93
+            },
+            {
+              "value": "binyue",
+              "label": "Binyue",
+              "count": 50
+            },
+            {
+              "value": "boyue-l",
+              "label": "Boyue L",
+              "count": 48
+            },
+            {
+              "value": "binrui",
+              "label": "Binrui",
+              "count": 41
+            },
+            {
+              "value": "boyue",
+              "label": "Boyue",
+              "count": 27
+            },
+            {
+              "value": "vision-x6",
+              "label": "Vision X6",
+              "count": 18
+            },
+            {
+              "value": "emgrand-s",
+              "label": "Emgrand S",
+              "count": 15
+            },
+            {
+              "value": "icon",
+              "label": "ICON",
+              "count": 14
+            },
+            {
+              "value": "cowboy",
+              "label": "Cowboy",
+              "count": 11
+            }
+          ]
+        },
+        {
+          "value": "nissan",
+          "label": "Nissan",
+          "count": 602,
+          "models": [
+            {
+              "value": "qashqai",
+              "label": "Qashqai",
+              "count": 176
+            },
+            {
+              "value": "sylphy",
+              "label": "Sylphy",
+              "count": 94
+            },
+            {
+              "value": "x-trail",
+              "label": "X-Trail",
+              "count": 82
+            },
+            {
+              "value": "teana",
+              "label": "Teana",
+              "count": 62
+            },
+            {
+              "value": "juke",
+              "label": "JUKE",
+              "count": 58
+            },
+            {
+              "value": "n7",
+              "label": "N7",
+              "count": 27
+            },
+            {
+              "value": "townstar",
+              "label": "Townstar",
+              "count": 25
+            },
+            {
+              "value": "primastar",
+              "label": "Primastar",
+              "count": 16
+            },
+            {
+              "value": "tiida",
+              "label": "Tiida",
+              "count": 10
+            },
+            {
+              "value": "kicks",
+              "label": "Kicks",
+              "count": 9
+            }
+          ]
+        },
+        {
+          "value": "cupra",
+          "label": "Cupra",
+          "count": 578,
+          "models": [
+            {
+              "value": "formentor",
+              "label": "Formentor",
+              "count": 218
+            },
+            {
+              "value": "leon",
+              "label": "Leon",
+              "count": 196
+            },
+            {
+              "value": "ateca",
+              "label": "Ateca",
+              "count": 90
+            },
+            {
+              "value": "terramar",
+              "label": "Terramar",
+              "count": 72
+            }
+          ]
+        },
+        {
+          "value": "renault_samsung",
+          "label": "Renault Samsung",
+          "count": 561,
+          "models": [
+            {
+              "value": "xm3",
+              "label": "XM3",
+              "count": 271
+            },
+            {
+              "value": "qm6",
+              "label": "QM6",
+              "count": 169
+            },
+            {
+              "value": "arkana",
+              "label": "Arkana",
+              "count": 48
+            },
+            {
+              "value": "sm6",
+              "label": "SM6",
+              "count": 48
+            },
+            {
+              "value": "grand-koleos",
+              "label": "Grand Koleos",
+              "count": 19
+            }
+          ]
+        },
+        {
+          "value": "jeep",
+          "label": "Jeep",
+          "count": 500,
+          "models": [
+            {
+              "value": "wrangler",
+              "label": "Wrangler",
+              "count": 129
+            },
+            {
+              "value": "cherokee",
+              "label": "Cherokee",
+              "count": 105
+            },
+            {
+              "value": "renegade",
+              "label": "Renegade",
+              "count": 103
+            },
+            {
+              "value": "compass",
+              "label": "Compass",
+              "count": 92
+            },
+            {
+              "value": "avenger",
+              "label": "Avenger",
+              "count": 46
+            },
+            {
+              "value": "gladiator",
+              "label": "Gladiator",
+              "count": 21
+            }
+          ]
+        },
+        {
+          "value": "xiaomi",
+          "label": "Xiaomi",
+          "count": 486,
+          "models": [
+            {
+              "value": "su7",
+              "label": "SU7",
+              "count": 292
+            },
+            {
+              "value": "yu7",
+              "label": "YU7",
+              "count": 153
+            },
+            {
+              "value": "su7-ultra",
+              "label": "SU7 Ultra",
+              "count": 41
+            }
+          ]
+        },
+        {
+          "value": "citroen",
+          "label": "Citroen",
+          "count": 464,
+          "models": [
+            {
+              "value": "c5-aircross",
+              "label": "C5 Aircross",
+              "count": 110
+            },
+            {
+              "value": "c3",
+              "label": "C3",
+              "count": 79
+            },
+            {
+              "value": "c4",
+              "label": "C4",
+              "count": 78
+            },
+            {
+              "value": "c3-aircross",
+              "label": "C3 Aircross",
+              "count": 58
+            },
+            {
+              "value": "berlingo",
+              "label": "Berlingo",
+              "count": 49
+            },
+            {
+              "value": "spacetourer",
+              "label": "Spacetourer",
+              "count": 29
+            },
+            {
+              "value": "c5-x",
+              "label": "C5 X",
+              "count": 18
+            },
+            {
+              "value": "jumpy",
+              "label": "Jumpy",
+              "count": 14
+            },
+            {
+              "value": "jumper",
+              "label": "Jumper",
+              "count": 11
+            }
+          ]
+        },
+        {
+          "value": "nio",
+          "label": "Nio",
+          "count": 462,
+          "models": [
+            {
+              "value": "et5t",
+              "label": "ET5T",
+              "count": 113
+            },
+            {
+              "value": "es6",
+              "label": "ES6",
+              "count": 94
+            },
+            {
+              "value": "es8",
+              "label": "ES8",
+              "count": 91
+            },
+            {
+              "value": "ec6",
+              "label": "EC6",
+              "count": 57
+            },
+            {
+              "value": "et5",
+              "label": "ET5",
+              "count": 54
+            },
+            {
+              "value": "et7",
+              "label": "ET7",
+              "count": 23
+            },
+            {
+              "value": "es9",
+              "label": "ES9",
+              "count": 11
+            },
+            {
+              "value": "ec7",
+              "label": "EC7",
+              "count": 9
+            }
+          ]
+        },
+        {
+          "value": "xpeng",
+          "label": "Xpeng",
+          "count": 424,
+          "models": [
+            {
+              "value": "p7",
+              "label": "P7",
+              "count": 146
+            },
+            {
+              "value": "mona-m03",
+              "label": "MONA_M03",
+              "count": 111
+            },
+            {
+              "value": "g6",
+              "label": "G6",
+              "count": 41
+            },
+            {
+              "value": "g9",
+              "label": "G9",
+              "count": 41
+            },
+            {
+              "value": "p5",
+              "label": "P5",
+              "count": 23
+            },
+            {
+              "value": "x9",
+              "label": "X9",
+              "count": 23
+            },
+            {
+              "value": "g7",
+              "label": "G7",
+              "count": 19
+            },
+            {
+              "value": "g3",
+              "label": "G3",
+              "count": 15
+            }
+          ]
+        },
+        {
+          "value": "zeekr",
+          "label": "Zeekr",
+          "count": 398,
+          "models": [
+            {
+              "value": "001",
+              "label": "001",
+              "count": 84
+            },
+            {
+              "value": "009",
+              "label": "009",
+              "count": 71
+            },
+            {
+              "value": "007",
+              "label": "007",
+              "count": 55
+            },
+            {
+              "value": "9x",
+              "label": "9X",
+              "count": 51
+            },
+            {
+              "value": "mix",
+              "label": "Mix",
+              "count": 46
+            },
+            {
+              "value": "007gt",
+              "label": "极氪007GT",
+              "count": 36
+            },
+            {
+              "value": "7x",
+              "label": "7X",
+              "count": 24
+            },
+            {
+              "value": "x",
+              "label": "X",
+              "count": 21
+            },
+            {
+              "value": "8x",
+              "label": "8X",
+              "count": 9
+            }
+          ]
+        },
+        {
+          "value": "changan",
+          "label": "Changan",
+          "count": 396,
+          "models": [
+            {
+              "value": "uni-v",
+              "label": "UNI-V",
+              "count": 141
+            },
+            {
+              "value": "eado",
+              "label": "Eado",
+              "count": 93
+            },
+            {
+              "value": "cs75plus",
+              "label": "CS75PLUS",
+              "count": 43
+            },
+            {
+              "value": "cs55plus",
+              "label": "CS55PLUS",
+              "count": 22
+            },
+            {
+              "value": "cs35plus",
+              "label": "CS35PLUS",
+              "count": 17
+            },
+            {
+              "value": "uni-t",
+              "label": "UNI-T",
+              "count": 16
+            },
+            {
+              "value": "uni-k",
+              "label": "UNI-K",
+              "count": 14
+            },
+            {
+              "value": "yida",
+              "label": "Yida",
+              "count": 13
+            },
+            {
+              "value": "cs75",
+              "label": "CS75",
+              "count": 11
+            }
+          ]
+        },
+        {
+          "value": "renault",
+          "label": "Renault",
+          "count": 394,
+          "models": [
+            {
+              "value": "captur",
+              "label": "Captur",
+              "count": 86
+            },
+            {
+              "value": "clio",
+              "label": "Clio",
+              "count": 66
+            },
+            {
+              "value": "arkana",
+              "label": "Arkana",
+              "count": 45
+            },
+            {
+              "value": "austral",
+              "label": "Austral",
+              "count": 33
+            },
+            {
+              "value": "kangoo",
+              "label": "Kangoo",
+              "count": 24
+            },
+            {
+              "value": "trafic",
+              "label": "Trafic",
+              "count": 23
+            },
+            {
+              "value": "symbioz",
+              "label": "Symbioz",
+              "count": 19
+            },
+            {
+              "value": "master",
+              "label": "Master",
+              "count": 14
+            },
+            {
+              "value": "megane",
+              "label": "Megane",
+              "count": 13
+            },
+            {
+              "value": "kaptur",
+              "label": "Kaptur",
+              "count": 10
+            },
+            {
+              "value": "koleos",
+              "label": "Koleos",
+              "count": 10
+            },
+            {
+              "value": "duster",
+              "label": "Duster",
+              "count": 9
+            }
+          ]
+        },
+        {
+          "value": "gac_motor",
+          "label": "GAC Motor",
+          "count": 394,
+          "models": [
+            {
+              "value": "shadow-leopard",
+              "label": "Shadow Leopard",
+              "count": 114
+            },
+            {
+              "value": "trumpchi-m8",
+              "label": "Trumpchi M8",
+              "count": 108
+            },
+            {
+              "value": "trumpchi-m6",
+              "label": "Trumpchi M6",
+              "count": 80
+            },
+            {
+              "value": "trumpchi-gs8",
+              "label": "Trumpchi GS8",
+              "count": 31
+            },
+            {
+              "value": "trumpchi-gs4",
+              "label": "Trumpchi GS4",
+              "count": 20
+            },
+            {
+              "value": "trumpchi-gs3",
+              "label": "Trumpchi GS3",
+              "count": 14
+            },
+            {
+              "value": "gs4-plus",
+              "label": "GS4 Plus",
+              "count": 10
+            }
+          ]
+        },
+        {
+          "value": "buick",
+          "label": "Buick",
+          "count": 393,
+          "models": [
+            {
+              "value": "gl8",
+              "label": "GL8",
+              "count": 124
+            },
+            {
+              "value": "gl8-hybrid",
+              "label": "GL8 Hybrid",
+              "count": 49
+            },
+            {
+              "value": "regal",
+              "label": "Regal",
+              "count": 37
+            },
+            {
+              "value": "velite-6",
+              "label": "Velite 6",
+              "count": 29
+            },
+            {
+              "value": "lacrosse",
+              "label": "LaCrosse",
+              "count": 28
+            },
+            {
+              "value": "verano",
+              "label": "Verano",
+              "count": 24
+            },
+            {
+              "value": "e5",
+              "label": "E5",
+              "count": 20
+            },
+            {
+              "value": "century",
+              "label": "Century",
+              "count": 19
+            },
+            {
+              "value": "excelle",
+              "label": "Excelle",
+              "count": 19
+            },
+            {
+              "value": "envision-s",
+              "label": "Envision S",
+              "count": 18
+            },
+            {
+              "value": "envision-plus",
+              "label": "Envision Plus",
+              "count": 14
+            },
+            {
+              "value": "enclave",
+              "label": "Enclave",
+              "count": 9
+            }
+          ]
+        },
+        {
+          "value": "haval",
+          "label": "Haval",
+          "count": 344,
+          "models": [
+            {
+              "value": "h6",
+              "label": "H6",
+              "count": 145
+            },
+            {
+              "value": "big-dog",
+              "label": "Big dog",
+              "count": 68
+            },
+            {
+              "value": "m6",
+              "label": "M6",
+              "count": 35
+            },
+            {
+              "value": "menglong-new-energy",
+              "label": "Menglong New Energy",
+              "count": 24
+            },
+            {
+              "value": "h9",
+              "label": "H9",
+              "count": 14
+            },
+            {
+              "value": "plus",
+              "label": "哈弗大狗 PLUS",
+              "count": 13
+            },
+            {
+              "value": "chitu",
+              "label": "Chitu",
+              "count": 12
+            },
+            {
+              "value": "h5",
+              "label": "H5",
+              "count": 12
+            }
+          ]
+        },
+        {
+          "value": "other",
+          "label": "Other",
+          "count": 335,
+          "models": [
+            {
+              "value": "other",
+              "label": "Other",
+              "count": 335
+            }
+          ]
+        },
+        {
+          "value": "tank",
+          "label": "Tank",
+          "count": 327,
+          "models": [
+            {
+              "value": "tank-300",
+              "label": "Tank 300",
+              "count": 178
+            },
+            {
+              "value": "tank-500-new-energy",
+              "label": "Tank 500 New Energy",
+              "count": 64
+            },
+            {
+              "value": "tank-400-new-energy",
+              "label": "Tank 400 New Energy",
+              "count": 52
+            },
+            {
+              "value": "tank-300-new-energy",
+              "label": "Tank 300 New Energy",
+              "count": 33
+            }
+          ]
+        },
+        {
+          "value": "hongqi",
+          "label": "Hongqi",
+          "count": 326,
+          "models": [
+            {
+              "value": "hongqi-h5",
+              "label": "Hongqi H5",
+              "count": 146
+            },
+            {
+              "value": "hongqi-hs5",
+              "label": "Hongqi HS5",
+              "count": 58
+            },
+            {
+              "value": "hongqi-h9",
+              "label": "Hongqi H9",
+              "count": 31
+            },
+            {
+              "value": "hongqi-e-qm5",
+              "label": "Hongqi E-QM5",
+              "count": 30
+            },
+            {
+              "value": "hongqi-h6",
+              "label": "Hongqi H6",
+              "count": 15
+            },
+            {
+              "value": "hongqi-e-hs9",
+              "label": "Hongqi E-HS9",
+              "count": 9
+            },
+            {
+              "value": "hongqi-hs3",
+              "label": "Hongqi HS3",
+              "count": 9
+            },
+            {
+              "value": "hongqi-eh7",
+              "label": "Hongqi EH7",
+              "count": 8
+            }
+          ]
+        },
+        {
+          "value": "leapmotor",
+          "label": "Leapmotor",
+          "count": 316,
+          "models": [
+            {
+              "value": "leapmotor-c11",
+              "label": "Leapmotor C11",
+              "count": 91
+            },
+            {
+              "value": "leapmotor-b10",
+              "label": "Leapmotor B10",
+              "count": 72
+            },
+            {
+              "value": "leapmotor-c10",
+              "label": "Leapmotor C10",
+              "count": 61
+            },
+            {
+              "value": "b01",
+              "label": "B01",
+              "count": 44
+            },
+            {
+              "value": "leapmotor-c16",
+              "label": "Leapmotor C16",
+              "count": 26
+            },
+            {
+              "value": "lafa5",
+              "label": "零跑Lafa5",
+              "count": 14
+            }
+          ]
+        },
+        {
+          "value": "chery",
+          "label": "Chery",
+          "count": 316,
+          "models": [
+            {
+              "value": "arrizo-8",
+              "label": "Arrizo 8",
+              "count": 109
+            },
+            {
+              "value": "tiggo-8-pro",
+              "label": "Tiggo 8 PRO",
+              "count": 25
+            },
+            {
+              "value": "tiggo-9",
+              "label": "Tiggo 9",
+              "count": 25
+            },
+            {
+              "value": "arrizo-8-pro",
+              "label": "Arrizo 8 Pro",
+              "count": 24
+            },
+            {
+              "value": "tiggo-8-plus",
+              "label": "Tiggo 8 PLUS",
+              "count": 24
+            },
+            {
+              "value": "tiggo-7",
+              "label": "Tiggo 7",
+              "count": 18
+            },
+            {
+              "value": "tiggo-8",
+              "label": "Tiggo 8",
+              "count": 17
+            },
+            {
+              "value": "tiggo-5x",
+              "label": "Tiggo 5x",
+              "count": 15
+            },
+            {
+              "value": "tiggo-3x",
+              "label": "Tiggo 3x",
+              "count": 13
+            },
+            {
+              "value": "tiggo-7-plus",
+              "label": "Tiggo 7 PLUS",
+              "count": 12
+            },
+            {
+              "value": "arrizo-5",
+              "label": "Arrizo 5",
+              "count": 9
+            }
+          ]
+        },
+        {
+          "value": "cadillac",
+          "label": "Cadillac",
+          "count": 316,
+          "models": [
+            {
+              "value": "ct5",
+              "label": "CT5",
+              "count": 121
+            },
+            {
+              "value": "escalade",
+              "label": "Escalade",
+              "count": 51
+            },
+            {
+              "value": "xt5",
+              "label": "XT5",
+              "count": 49
+            },
+            {
+              "value": "xt6",
+              "label": "XT6",
+              "count": 33
+            },
+            {
+              "value": "ct6",
+              "label": "CT6",
+              "count": 30
+            },
+            {
+              "value": "xt4",
+              "label": "XT4",
+              "count": 20
+            }
+          ]
+        },
+        {
+          "value": "lexus",
+          "label": "Lexus",
+          "count": 312,
+          "models": [
+            {
+              "value": "es",
+              "label": "ES",
+              "count": 146
+            },
+            {
+              "value": "rx",
+              "label": "RX",
+              "count": 51
+            },
+            {
+              "value": "lm",
+              "label": "LM",
+              "count": 29
+            },
+            {
+              "value": "nx",
+              "label": "NX",
+              "count": 21
+            },
+            {
+              "value": "lx",
+              "label": "LX",
+              "count": 18
+            },
+            {
+              "value": "ls",
+              "label": "LS",
+              "count": 15
+            },
+            {
+              "value": "gx",
+              "label": "GX",
+              "count": 8
+            },
+            {
+              "value": "rz",
+              "label": "RZ",
+              "count": 8
+            }
+          ]
+        },
+        {
+          "value": "byd",
+          "label": "BYD",
+          "count": 291,
+          "models": [
+            {
+              "value": "yuan-plus",
+              "label": "Yuan Plus",
+              "count": 74
+            },
+            {
+              "value": "han",
+              "label": "Han",
+              "count": 47
+            },
+            {
+              "value": "plus-new-energy",
+              "label": "PLUS New Energy",
+              "count": 27
+            },
+            {
+              "value": "06",
+              "label": "海豹06",
+              "count": 23
+            },
+            {
+              "value": "l",
+              "label": "汉L",
+              "count": 23
+            },
+            {
+              "value": "seal-07-ev",
+              "label": "Seal 07 EV",
+              "count": 14
+            },
+            {
+              "value": "05-ev",
+              "label": "海狮05 EV",
+              "count": 12
+            },
+            {
+              "value": "dolphin",
+              "label": "Dolphin",
+              "count": 12
+            },
+            {
+              "value": "seal",
+              "label": "Seal",
+              "count": 12
+            },
+            {
+              "value": "l-ev",
+              "label": "L EV",
+              "count": 9
+            },
+            {
+              "value": "qin-l",
+              "label": "Qin L",
+              "count": 8
+            },
+            {
+              "value": "tang-new-energy",
+              "label": "Tang New Energy",
+              "count": 8
+            }
+          ]
+        },
+        {
+          "value": "mazda",
+          "label": "Mazda",
+          "count": 279,
+          "models": [
+            {
+              "value": "cx-5",
+              "label": "CX-5",
+              "count": 82
+            },
+            {
+              "value": "3-axela",
+              "label": "3 Axela",
+              "count": 54
+            },
+            {
+              "value": "cx-30",
+              "label": "CX-30",
+              "count": 53
+            },
+            {
+              "value": "3",
+              "label": "3",
+              "count": 28
+            },
+            {
+              "value": "cx-60",
+              "label": "CX-60",
+              "count": 19
+            },
+            {
+              "value": "mx-5",
+              "label": "MX-5",
+              "count": 11
+            },
+            {
+              "value": "cx-50-xingye",
+              "label": "CX-50 Xingye",
+              "count": 9
+            },
+            {
+              "value": "cx-4",
+              "label": "CX-4",
+              "count": 8
+            }
+          ]
+        },
+        {
+          "value": "mg",
+          "label": "MG",
+          "count": 265,
+          "models": [
+            {
+              "value": "mg5",
+              "label": "MG5",
+              "count": 82
+            },
+            {
+              "value": "mg7",
+              "label": "MG7",
+              "count": 40
+            },
+            {
+              "value": "mg6",
+              "label": "MG6",
+              "count": 38
+            },
+            {
+              "value": "mg3",
+              "label": "MG3",
+              "count": 33
+            },
+            {
+              "value": "hs",
+              "label": "HS",
+              "count": 32
+            },
+            {
+              "value": "zs",
+              "label": "ZS",
+              "count": 21
+            },
+            {
+              "value": "mg5-scorpio",
+              "label": "MG5 Scorpio",
+              "count": 18
+            }
+          ]
+        },
+        {
+          "value": "lynk_co",
+          "label": "Lynk Co",
+          "count": 238,
+          "models": [
+            {
+              "value": "03",
+              "label": "03",
+              "count": 82
+            },
+            {
+              "value": "07-em-p",
+              "label": "07 EM-P",
+              "count": 23
+            },
+            {
+              "value": "900",
+              "label": "900",
+              "count": 22
+            },
+            {
+              "value": "08-em-p",
+              "label": "08 EM-P",
+              "count": 21
+            },
+            {
+              "value": "06",
+              "label": "06",
+              "count": 20
+            },
+            {
+              "value": "z20",
+              "label": "Z20",
+              "count": 17
+            },
+            {
+              "value": "01",
+              "label": "01",
+              "count": 16
+            },
+            {
+              "value": "10",
+              "label": "10",
+              "count": 13
+            },
+            {
+              "value": "z10",
+              "label": "Z10",
+              "count": 8
+            }
+          ]
+        },
+        {
+          "value": "lincoln",
+          "label": "Lincoln",
+          "count": 237,
+          "models": [
+            {
+              "value": "aviator",
+              "label": "Aviator",
+              "count": 92
+            },
+            {
+              "value": "nautilus",
+              "label": "Nautilus",
+              "count": 58
+            },
+            {
+              "value": "corsair",
+              "label": "Corsair",
+              "count": 53
+            },
+            {
+              "value": "z",
+              "label": "Z",
+              "count": 19
+            },
+            {
+              "value": "navigator",
+              "label": "Navigator",
+              "count": 14
+            }
+          ]
+        },
+        {
+          "value": "dacia",
+          "label": "Dacia",
+          "count": 213,
+          "models": [
+            {
+              "value": "sandero",
+              "label": "Sandero",
+              "count": 71
+            },
+            {
+              "value": "bigster",
+              "label": "Bigster",
+              "count": 64
+            },
+            {
+              "value": "duster",
+              "label": "Duster",
+              "count": 48
+            },
+            {
+              "value": "jogger",
+              "label": "JOGGER",
+              "count": 24
+            }
+          ]
+        },
+        {
+          "value": "fiat",
+          "label": "Fiat",
+          "count": 195,
+          "models": [
+            {
+              "value": "ducato",
+              "label": "Ducato",
+              "count": 34
+            },
+            {
+              "value": "600",
+              "label": "600",
+              "count": 25
+            },
+            {
+              "value": "tipo",
+              "label": "Tipo",
+              "count": 20
+            },
+            {
+              "value": "scudo",
+              "label": "Scudo",
+              "count": 18
+            },
+            {
+              "value": "500x",
+              "label": "500X",
+              "count": 17
+            },
+            {
+              "value": "grande-panda",
+              "label": "GRANDE_PANDA",
+              "count": 17
+            },
+            {
+              "value": "doblo",
+              "label": "Doblo",
+              "count": 13
+            },
+            {
+              "value": "panda",
+              "label": "Panda",
+              "count": 9
+            }
+          ]
+        },
+        {
+          "value": "li-auto",
+          "label": "Li Auto",
+          "count": 168,
+          "models": [
+            {
+              "value": "li-mega",
+              "label": "Li MEGA",
+              "count": 87
+            },
+            {
+              "value": "i6",
+              "label": "i6",
+              "count": 52
+            },
+            {
+              "value": "i8",
+              "label": "i8",
+              "count": 26
+            }
+          ]
+        },
+        {
+          "value": "jetour",
+          "label": "Jetour",
+          "count": 146,
+          "models": [
+            {
+              "value": "x70-plus",
+              "label": "X70 PLUS",
+              "count": 60
+            },
+            {
+              "value": "traveller",
+              "label": "Traveller",
+              "count": 46
+            },
+            {
+              "value": "dasheng",
+              "label": "Dashing",
+              "count": 22
+            }
+          ]
+        },
+        {
+          "value": "voyah",
+          "label": "Voyah",
+          "count": 143,
+          "models": [
+            {
+              "value": "dreamer",
+              "label": "Dream",
+              "count": 103
+            },
+            {
+              "value": "zhiyin",
+              "label": "Zhiyin",
+              "count": 30
+            }
+          ]
+        },
+        {
+          "value": "jetta",
+          "label": "Jetta",
+          "count": 131,
+          "models": [
+            {
+              "value": "vs7",
+              "label": "VS7",
+              "count": 82
+            },
+            {
+              "value": "vs5",
+              "label": "VS5",
+              "count": 38
+            }
+          ]
+        },
+        {
+          "value": "denza",
+          "label": "Denza",
+          "count": 126,
+          "models": [
+            {
+              "value": "denza-z9gt",
+              "label": "Denza Z9GT",
+              "count": 30
+            },
+            {
+              "value": "denza-d9",
+              "label": "Denza D9",
+              "count": 29
+            },
+            {
+              "value": "n8l",
+              "label": "N8L",
+              "count": 27
+            },
+            {
+              "value": "n9",
+              "label": "N9",
+              "count": 22
+            },
+            {
+              "value": "denza-z9",
+              "label": "Denza Z9",
+              "count": 13
+            }
+          ]
+        },
+        {
+          "value": "ferrari",
+          "label": "Ferrari",
+          "count": 114,
+          "models": [
+            {
+              "value": "296",
+              "label": "296",
+              "count": 24
+            },
+            {
+              "value": "f8",
+              "label": "F8",
+              "count": 24
+            },
+            {
+              "value": "purosangue",
+              "label": "Purosangue",
+              "count": 20
+            },
+            {
+              "value": "roma",
+              "label": "Roma",
+              "count": 15
+            },
+            {
+              "value": "sf90",
+              "label": "SF90",
+              "count": 13
+            }
+          ]
+        },
+        {
+          "value": "mitsubishi",
+          "label": "Mitsubishi",
+          "count": 107,
+          "models": [
+            {
+              "value": "outlander",
+              "label": "Outlander",
+              "count": 34
+            },
+            {
+              "value": "colt",
+              "label": "Colt",
+              "count": 23
+            },
+            {
+              "value": "asx",
+              "label": "ASX",
+              "count": 20
+            },
+            {
+              "value": "space-star",
+              "label": "Space Star",
+              "count": 9
+            }
+          ]
+        },
+        {
+          "value": "suzuki",
+          "label": "Suzuki",
+          "count": 100,
+          "models": [
+            {
+              "value": "swift",
+              "label": "Swift",
+              "count": 50
+            },
+            {
+              "value": "vitara",
+              "label": "Vitara",
+              "count": 20
+            },
+            {
+              "value": "sx4-s-cross",
+              "label": "(SX4) S-Cross",
+              "count": 13
+            }
+          ]
+        },
+        {
+          "value": "polestar",
+          "label": "Polestar",
+          "count": 92,
+          "models": [
+            {
+              "value": "polestar-2",
+              "label": "Polestar 2",
+              "count": 85
+            }
+          ]
+        },
+        {
+          "value": "wuling",
+          "label": "Wuling",
+          "count": 91,
+          "models": [
+            {
+              "value": "xingguang",
+              "label": "Xingguang",
+              "count": 28
+            },
+            {
+              "value": "hongguang-v",
+              "label": "Hongguang V",
+              "count": 13
+            }
+          ]
+        },
+        {
+          "value": "avatr",
+          "label": "Avatr",
+          "count": 91,
+          "models": [
+            {
+              "value": "avatr-12",
+              "label": "Avatr 12",
+              "count": 38
+            },
+            {
+              "value": "avatr-07",
+              "label": "Avatr 07",
+              "count": 29
+            },
+            {
+              "value": "avatr-06",
+              "label": "Avatr 06",
+              "count": 13
+            },
+            {
+              "value": "avatr-11",
+              "label": "Avatr 11",
+              "count": 11
+            }
+          ]
+        },
+        {
+          "value": "alfa_romeo",
+          "label": "Alfa Romeo",
+          "count": 90,
+          "models": [
+            {
+              "value": "stelvio",
+              "label": "Stelvio",
+              "count": 30
+            },
+            {
+              "value": "tonale",
+              "label": "Tonale",
+              "count": 24
+            },
+            {
+              "value": "giulia",
+              "label": "Giulia",
+              "count": 23
+            },
+            {
+              "value": "junior",
+              "label": "Junior",
+              "count": 13
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "price",
+      "column": "price_individual",
+      "type": "range",
+      "label": "Цена",
+      "min": 160000,
+      "max": 151367872,
+      "unit": " ₽",
+      "buckets": [
+        {
+          "from": 0,
+          "to": 1500000,
+          "label": "до 1 500 000 ₽",
+          "count": 3397
+        },
+        {
+          "from": 1500000,
+          "to": 2500000,
+          "label": "1 500 000 – 2 500 000 ₽",
+          "count": 9175
+        },
+        {
+          "from": 2500000,
+          "to": 3500000,
+          "label": "2 500 000 – 3 500 000 ₽",
+          "count": 11711
+        },
+        {
+          "from": 3500000,
+          "to": 5000000,
+          "label": "3 500 000 – 5 000 000 ₽",
+          "count": 18773
+        },
+        {
+          "from": 5000000,
+          "to": 8000000,
+          "label": "5 000 000 – 8 000 000 ₽",
+          "count": 25983
+        },
+        {
+          "from": 8000000,
+          "to": 12000000,
+          "label": "8 000 000 – 12 000 000 ₽",
+          "count": 10352
+        },
+        {
+          "from": 12000000,
+          "to": null,
+          "label": "от 12 000 000 ₽",
+          "count": 4011
+        }
+      ]
+    },
+    {
+      "key": "mileage",
+      "column": "mileage",
+      "type": "range",
+      "label": "Пробег",
+      "min": 1,
+      "max": 607000,
+      "unit": " км",
+      "buckets": [
+        {
+          "from": 0,
+          "to": 1000,
+          "label": "до 1000 км",
+          "count": 5089
+        },
+        {
+          "from": 1000,
+          "to": 30000,
+          "label": "1000 – 30000 км",
+          "count": 32484
+        },
+        {
+          "from": 30000,
+          "to": 60000,
+          "label": "30000 – 60000 км",
+          "count": 24472
+        },
+        {
+          "from": 60000,
+          "to": 100000,
+          "label": "60000 – 100000 км",
+          "count": 15442
+        },
+        {
+          "from": 100000,
+          "to": null,
+          "label": "от 100000 км",
+          "count": 5915
+        }
+      ]
+    },
+    {
+      "key": "body",
+      "column": "body_type",
+      "type": "checkbox",
+      "label": "Тип кузова",
+      "values": [
+        {
+          "value": "Внедорожник",
+          "label": "Внедорожник",
+          "count": 32739
+        },
+        {
+          "value": "Седан",
+          "label": "Седан",
+          "count": 11057
+        },
+        {
+          "value": "Универсал",
+          "label": "Универсал",
+          "count": 4127
+        },
+        {
+          "value": "Фургон",
+          "label": "Фургон",
+          "count": 2978
+        },
+        {
+          "value": "Хэтчбек",
+          "label": "Хэтчбек",
+          "count": 1947
+        },
+        {
+          "value": "Минивэн",
+          "label": "Минивэн",
+          "count": 955
+        },
+        {
+          "value": "Купе",
+          "label": "Купе",
+          "count": 766
+        },
+        {
+          "value": "Кабриолет",
+          "label": "Кабриолет",
+          "count": 515
+        },
+        {
+          "value": "Лифтбек",
+          "label": "Лифтбек",
+          "count": 93
+        }
+      ],
+      "hint": "извлечён из строки поколения; у 34% каталога данных нет — фильтр должен сужать выборку, а не прятать машины без кузова"
+    },
+    {
+      "key": "condition",
+      "column": "condition",
+      "type": "checkbox",
+      "label": "Состояние",
+      "values": [
+        {
+          "value": "used",
+          "label": "С пробегом",
+          "count": 68711
+        },
+        {
+          "value": "new",
+          "label": "Новый",
+          "count": 14691
+        }
+      ]
+    },
+    {
+      "key": "fuel",
+      "column": "fuel",
+      "type": "checkbox",
+      "label": "Двигатель",
+      "values": [
+        {
+          "value": "бензин",
+          "label": "бензин",
+          "count": 58529
+        },
+        {
+          "value": "дизель",
+          "label": "дизель",
+          "count": 16318
+        },
+        {
+          "value": "электро",
+          "label": "электро",
+          "count": 7088
+        },
+        {
+          "value": "гибрид",
+          "label": "гибрид",
+          "count": 1449
+        }
+      ]
+    },
+    {
+      "key": "transmission",
+      "column": "transmission",
+      "type": "checkbox",
+      "label": "Коробка передач",
+      "values": [
+        {
+          "value": "автомат",
+          "label": "автомат",
+          "count": 76931
+        },
+        {
+          "value": "механика",
+          "label": "механика",
+          "count": 5182
+        },
+        {
+          "value": "робот",
+          "label": "робот",
+          "count": 715
+        },
+        {
+          "value": "вариатор",
+          "label": "вариатор",
+          "count": 533
+        }
+      ]
+    },
+    {
+      "key": "drive",
+      "column": "drive",
+      "type": "checkbox",
+      "label": "Привод",
+      "values": [
+        {
+          "value": "2WD",
+          "label": "2WD",
+          "count": 59653
+        },
+        {
+          "value": "4WD",
+          "label": "4WD",
+          "count": 23439
+        },
+        {
+          "value": "другое",
+          "label": "другое",
+          "count": 310
+        }
+      ]
+    }
+  ],
+  "advanced": [
+    {
+      "key": "year",
+      "column": "year",
+      "type": "checkbox",
+      "label": "Год выпуска",
+      "values": [
+        {
+          "value": "2022",
+          "label": "2022",
+          "count": 22282
+        },
+        {
+          "value": "2024",
+          "label": "2024",
+          "count": 14754
+        },
+        {
+          "value": "2025",
+          "label": "2025",
+          "count": 14712
+        },
+        {
+          "value": "2023",
+          "label": "2023",
+          "count": 13904
+        },
+        {
+          "value": "2021",
+          "label": "2021",
+          "count": 10264
+        },
+        {
+          "value": "2026",
+          "label": "2026",
+          "count": 6733
+        },
+        {
+          "value": "2020",
+          "label": "2020",
+          "count": 167
+        }
+      ]
+    },
+    {
+      "key": "color",
+      "column": "color_exterior",
+      "type": "checkbox",
+      "label": "Цвет кузова",
+      "values": [
+        {
+          "value": "#FFFFFF",
+          "label": "Белый",
+          "count": 30611
+        },
+        {
+          "value": "#000000",
+          "label": "Черный",
+          "count": 23212
+        },
+        {
+          "value": "#C1C1C1",
+          "label": "Серый",
+          "count": 14618
+        },
+        {
+          "value": "multi",
+          "label": "Комбинированный",
+          "count": 5610
+        },
+        {
+          "value": "#0433FF",
+          "label": "Синий",
+          "count": 4714
+        },
+        {
+          "value": "#35BA2B",
+          "label": "Зеленый",
+          "count": 2360
+        },
+        {
+          "value": "#FF2600",
+          "label": "Красный",
+          "count": 1213
+        },
+        {
+          "value": "#FDE910",
+          "label": "Желтый",
+          "count": 335
+        },
+        {
+          "value": "#0088FF",
+          "label": "Голубой",
+          "count": 309
+        },
+        {
+          "value": "#926547",
+          "label": "Коричневый",
+          "count": 201
+        },
+        {
+          "value": "#FF9966",
+          "label": "Оранжевый",
+          "count": 121
+        }
+      ],
+      "hint": "в базе HEX, подписи берутся из справочника цветов"
+    },
+    {
+      "key": "delivery",
+      "column": "delivery_time",
+      "type": "checkbox",
+      "label": "Срок доставки",
+      "values": [
+        {
+          "value": "45",
+          "label": "45",
+          "count": 70789
+        },
+        {
+          "value": "30",
+          "label": "30",
+          "count": 11288
+        },
+        {
+          "value": "0",
+          "label": "0",
+          "count": 1111
+        },
+        {
+          "value": "75",
+          "label": "75",
+          "count": 111
+        }
+      ],
+      "hint": "почти повторяет страну; полезно как «в наличии» (0 дней) против «под заказ»"
+    }
+  ],
+  "optionGroups": [
+    {
+      "title": "Безопасность",
+      "options": [
+        {
+          "id": 81,
+          "label": "ABS",
+          "count": 69654,
+          "share": 84
+        },
+        {
+          "id": 82,
+          "label": "ESP",
+          "count": 69343,
+          "share": 83
+        },
+        {
+          "id": 1,
+          "label": "Подушка безопасности водителя",
+          "count": 48849,
+          "share": 59
+        },
+        {
+          "id": 2,
+          "label": "Подушка безопасности пассажира",
+          "count": 48667,
+          "share": 58
+        },
+        {
+          "id": 3,
+          "label": "Подушки безопасности боковые",
+          "count": 47415,
+          "share": 57
+        },
+        {
+          "id": 4,
+          "label": "Подушки безопасности оконные (шторки)",
+          "count": 46710,
+          "share": 56
+        },
+        {
+          "id": 71,
+          "label": "Система контроля за полосой движения",
+          "count": 43887,
+          "share": 53
+        },
+        {
+          "id": 157,
+          "label": "TCS",
+          "count": 41743,
+          "share": 50
+        },
+        {
+          "id": 72,
+          "label": "Система контроля слепых зон",
+          "count": 33941,
+          "share": 41
+        },
+        {
+          "id": 156,
+          "label": "Hi-Pass",
+          "count": 33725,
+          "share": 40
+        },
+        {
+          "id": 83,
+          "label": "Isofix / LATCH",
+          "count": 20264,
+          "share": 24
+        },
+        {
+          "id": 84,
+          "label": "Система помощи при старте в гору",
+          "count": 6550,
+          "share": 8
+        }
+      ],
+      "totalOptions": 12
+    },
+    {
+      "title": "Комфорт",
+      "options": [
+        {
+          "id": 75,
+          "label": "Адаптивный круиз-контроль",
+          "count": 53120,
+          "share": 64
+        },
+        {
+          "id": 8,
+          "label": "Датчик давления в шинах",
+          "count": 48834,
+          "share": 59
+        },
+        {
+          "id": 48,
+          "label": "Система доступа без ключа",
+          "count": 47613,
+          "share": 57
+        },
+        {
+          "id": 58,
+          "label": "Камера заднего вида",
+          "count": 46818,
+          "share": 56
+        },
+        {
+          "id": 6,
+          "label": "Активный усилитель руля",
+          "count": 41978,
+          "share": 50
+        },
+        {
+          "id": 85,
+          "label": "Система помощи при парковке (задняя)",
+          "count": 41793,
+          "share": 50
+        },
+        {
+          "id": 166,
+          "label": "Беспроводной дверной замок",
+          "count": 41192,
+          "share": 49
+        },
+        {
+          "id": 38,
+          "label": "Климат-контроль",
+          "count": 39893,
+          "share": 48
+        },
+        {
+          "id": 155,
+          "label": "ECM Зеркало",
+          "count": 36771,
+          "share": 44
+        },
+        {
+          "id": 43,
+          "label": "Усилитель руля",
+          "count": 34543,
+          "share": 41
+        },
+        {
+          "id": 86,
+          "label": "Система помощи при парковке (передняя)",
+          "count": 34003,
+          "share": 41
+        },
+        {
+          "id": 154,
+          "label": "Лепестковые переключатели скоростей",
+          "count": 31932,
+          "share": 38
+        }
+      ],
+      "totalOptions": 12
+    },
+    {
+      "title": "Салон",
+      "options": [
+        {
+          "id": 88,
+          "label": "Мультифункциональное рулевое колесо",
+          "count": 68943,
+          "share": 83
+        },
+        {
+          "id": 93,
+          "label": "Подогрев передних сидений",
+          "count": 65849,
+          "share": 79
+        },
+        {
+          "id": 96,
+          "label": "Электроподъемники передние",
+          "count": 62891,
+          "share": 75
+        },
+        {
+          "id": 89,
+          "label": "Обогрев рулевого колеса",
+          "count": 55922,
+          "share": 67
+        },
+        {
+          "id": 50,
+          "label": "Кожаный салон",
+          "count": 46416,
+          "share": 56
+        },
+        {
+          "id": 97,
+          "label": "Электрорегулировка сидений",
+          "count": 40282,
+          "share": 48
+        },
+        {
+          "id": 87,
+          "label": "Вентиляция передних сидений",
+          "count": 34316,
+          "share": 41
+        },
+        {
+          "id": 69,
+          "label": "Люк",
+          "count": 33138,
+          "share": 40
+        },
+        {
+          "id": 92,
+          "label": "Подогрев задних сидений",
+          "count": 31134,
+          "share": 37
+        },
+        {
+          "id": 90,
+          "label": "Память передних сидений",
+          "count": 27861,
+          "share": 33
+        },
+        {
+          "id": 16,
+          "label": "Спортивные передние сидения",
+          "count": 15481,
+          "share": 19
+        },
+        {
+          "id": 70,
+          "label": "Панорамная крыша / лобовое стекло",
+          "count": 11601,
+          "share": 14
+        }
+      ],
+      "totalOptions": 12
+    },
+    {
+      "title": "Мультимедиа",
+      "options": [
+        {
+          "id": 25,
+          "label": "Bluetooth",
+          "count": 68545,
+          "share": 82
+        },
+        {
+          "id": 55,
+          "label": "Штатная навигационная система",
+          "count": 58757,
+          "share": 70
+        },
+        {
+          "id": 26,
+          "label": "USB",
+          "count": 41941,
+          "share": 50
+        },
+        {
+          "id": 160,
+          "label": "AV-мониторы для передних сидений",
+          "count": 38505,
+          "share": 46
+        },
+        {
+          "id": 165,
+          "label": "EPB",
+          "count": 34481,
+          "share": 41
+        },
+        {
+          "id": 37,
+          "label": "Голосовое управление",
+          "count": 19058,
+          "share": 23
+        },
+        {
+          "id": 164,
+          "label": "HUD",
+          "count": 16039,
+          "share": 19
+        },
+        {
+          "id": 27,
+          "label": "Розетка 12V",
+          "count": 6644,
+          "share": 8
+        },
+        {
+          "id": 29,
+          "label": "Штатная аудиосистема с CD",
+          "count": 6447,
+          "share": 8
+        }
+      ],
+      "totalOptions": 9
+    },
+    {
+      "title": "Обзор",
+      "options": [
+        {
+          "id": 34,
+          "label": "Датчик света",
+          "count": 62264,
+          "share": 75
+        },
+        {
+          "id": 36,
+          "label": "Светодиодные фары",
+          "count": 54135,
+          "share": 65
+        },
+        {
+          "id": 33,
+          "label": "Датчик дождя",
+          "count": 52319,
+          "share": 63
+        },
+        {
+          "id": 99,
+          "label": "Электроскладывание зеркал",
+          "count": 47686,
+          "share": 57
+        },
+        {
+          "id": 63,
+          "label": "Противотуманные фары",
+          "count": 18043,
+          "share": 22
+        },
+        {
+          "id": 19,
+          "label": "Автоматический корректор фар",
+          "count": 6987,
+          "share": 8
+        },
+        {
+          "id": 98,
+          "label": "Электропривод зеркал",
+          "count": 6688,
+          "share": 8
+        },
+        {
+          "id": 100,
+          "label": "Электрообогрев лобового стекла",
+          "count": 5884,
+          "share": 7
+        },
+        {
+          "id": 144,
+          "label": "Датчик дождя — платная опция",
+          "count": 5192,
+          "share": 6
+        }
+      ],
+      "totalOptions": 9
+    },
+    {
+      "title": "Элементы экстерьера",
+      "options": [
+        {
+          "id": 13,
+          "label": "Легкосплавные диски 17",
+          "count": 40403,
+          "share": 48
+        },
+        {
+          "id": 39,
+          "label": "Рейлинги на крыше",
+          "count": 39235,
+          "share": 47
+        },
+        {
+          "id": 31,
+          "label": "Легкосплавные диски 16",
+          "count": 6626,
+          "share": 8
+        }
+      ],
+      "totalOptions": 3
+    },
+    {
+      "title": "Защита от угона",
+      "options": [
+        {
+          "id": 22,
+          "label": "Центральный замок",
+          "count": 69819,
+          "share": 84
+        },
+        {
+          "id": 23,
+          "label": "Штатный иммобилайзер",
+          "count": 27207,
+          "share": 33
+        }
+      ],
+      "totalOptions": 2
+    }
+  ],
+  "skipped": [
+    {
+      "field": "color_interior",
+      "label": "Цвет салона",
+      "reason": "API отдаёт значение у 0.01% лотов (0.28%), и значения нечитаемые (any, black). Фильтр построить нельзя."
+    },
+    {
+      "field": "equipment",
+      "label": "Комплектация",
+      "reason": "3326 уникальных строк вида «1.5L petrol at 150hp» — это текст, а не категория. Годится для показа в карточке, не для чекбоксов."
+    },
+    {
+      "field": "description",
+      "label": "Описание",
+      "reason": "заполнено у 0.9% лотов — ни фильтровать, ни показывать нечего."
+    }
+  ]
+}

@@ -33,4 +33,8 @@ export const requestFieldLabels: Record<string, string> = {
   transmission: "КПП",
   mileage: "Пробег",
   message: "Сообщение",
+  source: "Страница",
+  carTitle: "Автомобиль",
+  carPrice: "Цена",
+  carUrl: "Ссылка на автомобиль",
 };

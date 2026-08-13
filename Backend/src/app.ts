@@ -39,6 +39,16 @@ const contactRequestSchema = z.object({
   phone: z.string().trim().min(7).max(30),
   message: z.string().trim().max(2000).optional(),
   source: z.string().trim().max(100).optional(),
+  // Заявка со страницы автомобиля. Плоские строки, а не вложенный объект:
+  // админка, Telegram и письмо печатают значения payload как есть.
+  carTitle: z.string().trim().max(200).optional(),
+  carPrice: z.string().trim().max(50).optional(),
+  // Ссылку админ открывает из Telegram и письма, поэтому кроме http(s) ничего
+  // не принимаем: `javascript:` и `data:` — валидные URL с точки зрения парсера.
+  carUrl: z.union([
+    z.literal(""),
+    z.url().max(500).refine((value) => /^https?:$/.test(new URL(value).protocol), "Unsupported protocol"),
+  ]).optional(),
 });
 const optionalText = z.string().trim().max(200).optional();
 const carImageUrlSchema = z.string().refine(

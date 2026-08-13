@@ -11,6 +11,9 @@
   --color-gray-text: #64748B;
   --color-gray-bg: #F8FAFC;
   --color-gray-border: #E2E8F0;
+  /* Фокус — тот же красный, что у кнопок. Отдельный тёмный оттенок выглядел
+     грязным и не совпадал с акцентом на соседней кнопке. */
+  --color-focus: #C41E24;
   --color-white: #FFFFFF;
 
   --animate-fade-in: fade-in 0.6s ease-out both;
@@ -49,9 +52,16 @@
   100% { opacity: 1; transform: scale(1) rotate(0); }
 }
 
+/*
+ * Центрирование окна тут не повторяем. Классы `-translate-x-1/2 -translate-y-1/2`
+ * в Tailwind 4 пишутся в отдельное свойство `translate`, а не в `transform`,
+ * поэтому `translate(-50%, -50%)` в кадрах анимации складывался с ними и уводил
+ * окно на половину высоты вверх — у длинного окна заголовок уезжал за экран.
+ * Анимация отвечает только за появление, положение — за классами.
+ */
 @keyframes dialog-in {
-  from { opacity: 0; transform: translate(-50%, -48%) scale(.96); }
-  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  from { opacity: 0; transform: translateY(.5rem) scale(.96); }
+  to { opacity: 1; transform: none; }
 }
 
 @keyframes overlay-in { from { opacity: 0; } to { opacity: 1; } }
@@ -104,10 +114,35 @@ button, input, select, textarea { font: inherit; }
   color: var(--color-dark);
 }
 
+/*
+ * Одно кольцо фокуса на весь сайт.
+ *
+ * Раньше здесь было три слоя сразу: outline с отступом, box-shadow и вдобавок
+ * компоненты красили бордер в красный на :focus. На поле ввода это давало три
+ * разных красных обводки одновременно. Кольцо должно быть одно — этого хватает
+ * и для доступности, и выглядит спокойно.
+ */
 :focus-visible {
-  outline: 2px solid rgb(196 30 36 / 75%);
-  outline-offset: 3px;
-  box-shadow: 0 0 0 2px rgb(196 30 36 / 20%);
+  /*
+   * Отрицательный отступ уводит линию внутрь, на место самой рамки. С обычным
+   * (положительным) отступом кольцо висело снаружи отдельным контуром — выглядело
+   * как вторая рамка поверх элемента. Нужно, чтобы просто перекрасился край.
+   */
+  outline: 1px solid var(--color-focus);
+  outline-offset: -1px;
+}
+
+/*
+ * У полей и списков кольца нет вовсе — краснеет сама рамка, та же, что уже
+ * нарисована. Получается тонкая красная обводка в один пиксель, ровно того же
+ * цвета, что кнопка рядом. Толстое кольцо поверх рамки читалось как ошибка ввода.
+ */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[data-control]:focus-visible {
+  outline: none;
+  border-color: var(--color-focus);
 }
 
 /* Radix Select already exposes keyboard focus through its highlighted item. */

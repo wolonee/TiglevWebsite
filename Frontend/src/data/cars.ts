@@ -1,4 +1,5 @@
 import { normalizeCarImages, type CarImage } from "./carImages";
+import type { CarSource } from "./catalogSource";
 
 export type Car = {
   id: string;
@@ -19,6 +20,29 @@ export type Car = {
   wheel?: string;
   color?: string;
   damage?: string;
+  // Поля из каталога CarClick (см. parser/). Все опциональные: локальные
+  // машины их не заполняют, карточка показывает только то, что есть.
+  fuel?: string;
+  country?: string;
+  countryCode?: string;
+  deliveryTime?: number;
+  condition?: "new" | "used";
+  generation?: string;
+  /** Комплектация как её пишет источник: «2.0L petrol AT 150hp». Показываем, не фильтруем. */
+  equipment?: string;
+  /** Коды для фильтрации — совпадают со значениями в facets.json. */
+  brandCode?: string;
+  modelCode?: string;
+  /** HEX цвета кузова; для фильтра-образца. */
+  colorHex?: string;
+  /** id опций из справочника CarClick — для фильтра «Опции». */
+  options?: number[];
+  /**
+   * Откуда машина. Не указан — значит наша, в наличии: девять локальных
+   * записей появились раньше, чем каталог CarClick, и переписывать их
+   * ради поля со значением по умолчанию незачем.
+   */
+  source?: CarSource;
 };
 
 type CatalogCar = Omit<Car, "image" | "images" | "bodyType" | "engine"> & {
