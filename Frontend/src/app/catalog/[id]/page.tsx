@@ -13,6 +13,7 @@ import { findLanding, landingPages } from "@/data/landings";
 import { formatPrice, getCar, getCatalogCars } from "@/data/cars";
 import { fetchLot, type LotOption } from "@/data/catalogRepo";
 import { getCarGallery } from "@/data/carGallery";
+import { fetchMessengerChannels } from "@/data/messengerChannels";
 import { OWN_SOURCE } from "@/data/catalogSource";
 import { carSpecs } from "@/components/CarSpecs";
 import { fromCountry, pageTitle } from "@/lib/seo";
@@ -106,13 +107,24 @@ const Divider = () => <div className="h-px bg-gray-border" />;
  * «Описание» показываем только когда текст есть. У импортных лотов он заполнен
  * меньше чем у процента машин, и пустой заголовок выглядел бы как поломка.
  */
-export default async function CarPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function CarPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { id } = await params;
 
   const landing = findLanding(id);
-  if (landing) return <LandingView page={landing} />;
+  if (landing) return <LandingView page={landing} searchParams={await searchParams} />;
 
-  const { car, options, priceLegal } = await loadCar(id);
+  // Каналы связи параллельно с лотом: это два независимых запроса, и ждать
+  // их по очереди значит удвоить задержку карточки.
+  const [{ car, options, priceLegal }, channels] = await Promise.all([
+    loadCar(id),
+    fetchMessengerChannels(),
+  ]);
   if (!car) notFound();
 
   const optionGroups = Object.entries(
@@ -148,7 +160,7 @@ export default async function CarPage({ params }: { params: Promise<{ id: string
               {/* Блок сделки едет за прокруткой: цена и кнопка остаются на
                   экране, пока человек листает опции. */}
               <div className="lg:sticky lg:top-24">
-                <CarDealPanel car={car} priceLegal={priceLegal} />
+                <CarDealPanel car={car} priceLegal={priceLegal} channels={channels} />
               </div>
             </div>
 

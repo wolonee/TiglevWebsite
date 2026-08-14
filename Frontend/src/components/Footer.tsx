@@ -1,28 +1,21 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Phone, MapPin, ArrowUpRight, ChevronUp } from "lucide-react";
-import { CONTACT_DETAILS } from "@/data/contactDetails";
+import { useSiteContent } from "./SiteContentProvider";
 
-const NAV_SECTIONS = [
-  {
-    title: "Навигация",
-    links: [
-      { href: "/#catalog", label: "Каталог" },
-      { href: "/contacts", label: "Контакты" },
-    ],
-  },
-  {
-    title: "Услуги",
-    links: [
-      { href: "/#catalog", label: "Продажа авто" },
-      { href: "/sell", label: "Выкуп авто" },
-      { href: "/import", label: "Авто из Европы" },
-      { href: "/sell", label: "Оценка авто" },
-    ],
-  },
-];
-
+/**
+ * Клиентский, а не серверный, и это важно: подвал попадает в `SitePage`, а тот
+ * — в `loading.tsx` карточки машины. Заглушка Suspense не имеет права сама
+ * приостанавливаться, поэтому асинхронный подвал ломал оживление всей страницы:
+ * ни кнопки заявки, ни меню в шапке не работали. Данные берём из контекста —
+ * он заполнен на сервере один раз в корневом макете.
+ */
 const Footer = () => {
+  const { company, footer } = useSiteContent();
+  const sections = footer.sections;
+
   return (
     <footer className="relative bg-dark pb-8 pt-10 sm:pt-16">
       <div className="absolute inset-0 opacity-[0.02]" style={{
@@ -44,15 +37,14 @@ const Footer = () => {
                 className="h-9 w-9 rounded-md"
               />
               <span className="text-lg font-extrabold text-white">
-                TIGLEV.COM
+                {company.name}
               </span>
             </div>
             <p className="mb-6 text-sm leading-relaxed text-white/55">
-              Автосалон в Тольятти. Продажа, выкуп и заказ автомобилей с 2009
-              года. Честные цены и прозрачные сделки.
+              {company.about}
             </p>
             <a
-              href="https://vk.com/tiglev"
+              href={company.vkUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3.5 py-2 text-xs font-medium text-white/50 transition-all hover:border-white/20 hover:text-white/70"
@@ -63,7 +55,7 @@ const Footer = () => {
             </a>
           </div>
 
-          {NAV_SECTIONS.map((section) => (
+          {sections.map((section) => (
             <div key={section.title}>
               <h4 className="mb-5 text-xs font-bold uppercase tracking-[0.15em] text-white/60">
                 {section.title}
@@ -90,30 +82,27 @@ const Footer = () => {
               Контакты
             </h4>
             <div className="space-y-3">
-              <a
-                href={CONTACT_DETAILS.phones[0].href}
-                className="flex items-center gap-2.5 text-sm text-white/55 transition-colors hover:text-white"
-                aria-label={`Позвонить: ${CONTACT_DETAILS.phones[0].label}`}
-              >
-                <Phone className="h-4 w-4 shrink-0 text-primary/60" />
-                {CONTACT_DETAILS.phones[0].label}
-              </a>
-              <a
-                href={CONTACT_DETAILS.phones[1].href}
-                className="flex items-center gap-2.5 text-sm text-white/55 transition-colors hover:text-white"
-                aria-label={`Позвонить: ${CONTACT_DETAILS.phones[1].label}`}
-              >
-                <Phone className="h-4 w-4 shrink-0 text-primary/60" />
-                {CONTACT_DETAILS.phones[1].label}
-              </a>
-              <p className="flex items-center gap-2.5 text-sm text-white/55">
-                <MapPin className="h-4 w-4 shrink-0 text-primary/60" />
-                {CONTACT_DETAILS.address}
-              </p>
+              {company.phones.map((phone) => (
+                <a
+                  key={phone.href}
+                  href={phone.href}
+                  className="flex items-center gap-2.5 text-sm text-white/55 transition-colors hover:text-white"
+                  aria-label={`Позвонить: ${phone.label}`}
+                >
+                  <Phone className="h-4 w-4 shrink-0 text-primary/60" />
+                  {phone.label}
+                </a>
+              ))}
+              {company.address ? (
+                <p className="flex items-center gap-2.5 text-sm text-white/55">
+                  <MapPin className="h-4 w-4 shrink-0 text-primary/60" />
+                  {company.address}
+                </p>
+              ) : null}
             </div>
 
             <div className="mt-5 space-y-1.5 rounded-lg border border-white/[0.06] bg-white/[0.02] p-3.5">
-              {CONTACT_DETAILS.workHours.map((workHours) => (
+              {company.workHours.map((workHours) => (
                 <p key={workHours} className="text-xs font-medium text-white/50">
                   {workHours}
                 </p>
@@ -124,7 +113,7 @@ const Footer = () => {
 
         <div className="mt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
           <p className="text-xs text-white/25">
-            &copy; {new Date().getFullYear()} TIGLEV.COM. Все права защищены.
+            &copy; {new Date().getFullYear()} {company.name}. Все права защищены.
           </p>
 
           <a

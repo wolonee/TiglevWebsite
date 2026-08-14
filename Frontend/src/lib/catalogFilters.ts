@@ -39,6 +39,8 @@ export type CatalogFilters = {
 } & {
   price: NumericRange | null;
   mileage: NumericRange | null;
+  /** Мощность в л.с. Нужна для подборки «до 160 л.с.» — налогового порога. */
+  hp: NumericRange | null;
   /** id опций; условие «И» — машина должна иметь все выбранные. */
   opt: number[];
 };
@@ -46,7 +48,7 @@ export type CatalogFilters = {
 export const emptyFilters: CatalogFilters = {
   country: [], brand: [], model: [], body: [], condition: [], fuel: [],
   transmission: [], drive: [], year: [], color: [], delivery: [], avail: [],
-  price: null, mileage: null, opt: [],
+  price: null, mileage: null, hp: null, opt: [],
 };
 
 const splitList = (value: string | null): string[] =>
@@ -71,6 +73,7 @@ export function parseFilters(params: URLSearchParams): CatalogFilters {
   for (const key of MULTI_KEYS) filters[key] = splitList(params.get(key));
   filters.price = parseRange(params.get("price"));
   filters.mileage = parseRange(params.get("mileage"));
+  filters.hp = parseRange(params.get("hp"));
   filters.opt = splitList(params.get("opt")).map(Number).filter(Number.isFinite);
   return filters;
 }
@@ -82,6 +85,7 @@ export function serializeFilters(filters: CatalogFilters): URLSearchParams {
   }
   if (filters.price) params.set("price", serializeRange(filters.price));
   if (filters.mileage) params.set("mileage", serializeRange(filters.mileage));
+  if (filters.hp) params.set("hp", serializeRange(filters.hp));
   if (filters.opt.length) params.set("opt", filters.opt.join(","));
   return params;
 }
@@ -90,6 +94,7 @@ export function countActive(filters: CatalogFilters): number {
   let total = MULTI_KEYS.reduce((sum, key) => sum + filters[key].length, 0);
   if (filters.price) total += 1;
   if (filters.mileage) total += 1;
+  if (filters.hp) total += 1;
   return total + filters.opt.length;
 }
 
@@ -133,6 +138,8 @@ export function matchesFilters(car: Car, filters: CatalogFilters): boolean {
   }
   if (!inRange(car.price, filters.price)) return false;
   if (!inRange(car.mileage, filters.mileage)) return false;
+  // У своих машин мощность — строка («249»), у импортных её кладёт репозиторий.
+  if (!inRange(car.power == null ? undefined : Number(car.power), filters.hp)) return false;
 
   // Опции — «И»: выбрал ABS и люк, значит нужны обе.
   if (filters.opt.length) {

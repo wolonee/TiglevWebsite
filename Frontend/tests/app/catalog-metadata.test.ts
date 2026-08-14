@@ -5,7 +5,6 @@ import type { Car } from "@/data/cars";
 // исключение, и подключение к Postgres, которого в тестах нет. Метаданные ни от
 // того, ни от другого не зависят.
 vi.mock("server-only", () => ({}));
-vi.mock("@/lib/db", () => ({ sql: { query: vi.fn().mockResolvedValue([]) } }));
 
 /**
  * Заголовки и canonical у каталога и карточки автомобиля.
@@ -70,11 +69,17 @@ const lotMetadata = async (id: string) => {
 describe("метаданные каталога", () => {
   it("каталог сводит любые фильтры к одному адресу", async () => {
     vi.resetModules();
-    const { metadata } = await import("@/app/page");
+    const { generateMetadata } = await import("@/app/page");
+    const metadata = await generateMetadata();
 
     expect(metadata.alternates?.canonical).toBe("/");
-    expect(String(metadata.title)).toContain("Каталог");
-    expect(String(metadata.description)).toMatch(/автомобилей под заказ/);
+    // Заголовок собирается из тех же строк, что и `h1` в Hero: раньше поиск и
+    // человек видели разное обещание — «Каталог…» в выдаче и «Автомобили
+    // с пробегом» на экране.
+    expect(String(metadata.title)).toContain("из Кореи, Китая и Европы");
+    // «Авто», а не «Автомобили»: проверено по подсказкам Яндекса.
+    expect(String(metadata.description)).toMatch(/авто под заказ в Россию/);
+    expect(String(metadata.description)).toMatch(/с растаможкой/);
   });
 
   it("карточка импортной машины называет модель, страну и цену", async () => {

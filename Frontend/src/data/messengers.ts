@@ -5,73 +5,91 @@ import { formatPrice } from "./cars";
  * Связь с клиентом через мессенджеры.
  *
  * Почта — только сигнал администратору «пришла заявка»; переписки там нет.
- * Живой разговор идёт в Telegram, Max или VK, поэтому на странице лота
- * человеку дают прямую ссылку в чат, а не адрес почты.
+ * Живой разговор идёт в Telegram, VK или другом канале, поэтому на странице
+ * лота человеку дают прямую ссылку в чат, а не адрес почты.
  *
- * Ники берутся из переменных окружения: у сайта, backend-бота и личного
- * аккаунта менеджера они разные и меняются без правки кода. Ненастроенный
- * мессенджер просто не показывается — лучше две кнопки, чем третья в никуда.
+ * Список каналов приходит из базы и правится в админке (`/admin/messengers`).
+ * Переменные окружения остались запасным вариантом: если бэкенд не ответил,
+ * сайт всё равно показывает связь, а не пустое место под кнопкой заявки.
  */
 
-export type MessengerId = "telegram" | "max" | "vk";
-
-export type MessengerLink = {
-  id: MessengerId;
+export type MessengerChannel = {
+  /** Слаг: попадает в разметку и в статистику переходов. */
+  id: string;
   label: string;
-  href: string;
+  handle: string;
+  /** Шаблон ссылки: `{handle}` и `{message}` подставляются. */
+  urlTemplate: string;
   /**
    * Ссылка сама подставит заготовленный текст в поле ввода.
-   * Так умеет только Telegram (`?text=`). У Max и VK такого параметра нет,
+   * Так умеет только Telegram (`?text=`). У остальных такого параметра нет,
    * поэтому текст туда кладём в буфер обмена — иначе человек напишет
    * «здравствуйте» без ссылки на машину, и менеджер не поймёт, о чём речь.
    */
   prefillsMessage: boolean;
-  /** Ник не настроен: кнопка стоит для вида и ведёт на сайт мессенджера. */
-  isMock?: boolean;
+  enabled: boolean;
 };
 
-/**
- * Читаем окружение при каждом вызове, а не один раз на уровне модуля: так
- * значение можно подменить в тестах. Next всё равно подставит его в бандл —
- * ему важно только обращение литералом `process.env.NEXT_PUBLIC_…`.
- */
-const handles = (): Record<MessengerId, string | undefined> => ({
-  telegram: process.env.NEXT_PUBLIC_TELEGRAM_USERNAME,
-  max: process.env.NEXT_PUBLIC_MAX_USERNAME,
-  // Этот аккаунт уже опубликован в подвале сайта и в контактах, так что кнопка
-  // работает без настройки. Переменной окружения можно перекрыть.
-  vk: process.env.NEXT_PUBLIC_VK_USERNAME || "prosto_tigl",
-});
-
-const LABELS: Record<MessengerId, string> = {
-  telegram: "Telegram",
-  max: "Max",
-  vk: "VK",
+export type MessengerLink = {
+  id: string;
+  label: string;
+  href: string;
+  prefillsMessage: boolean;
 };
 
 const clean = (handle?: string) => handle?.trim().replace(/^@/, "") ?? "";
 
 /**
- * Заглушек здесь нет намеренно.
+ * Запасной список, когда бэкенд не ответил.
  *
- * У MAX не оказалось публичных ников — искать человека можно только по номеру
- * телефона, поэтому кнопки для него нет. Раньше она стояла ради симметрии ряда
- * и вела на главную `max.ru`: покупатель нажимал и попадал в никуда, что хуже
- * отсутствующей кнопки. Появится способ дать прямую ссылку на чат —
- * достаточно задать `NEXT_PUBLIC_MAX_USERNAME`.
+ * Читаем окружение при каждом вызове, а не один раз на уровне модуля: так
+ * значение можно подменить в тестах. Next всё равно подставит его в бандл —
+ * ему важно только обращение литералом `process.env.NEXT_PUBLIC_…`.
+ *
+ * У Telegram и VK ники заданы по умолчанию: эти аккаунты уже опубликованы,
+ * а без значения кнопка молча пропадала на любой сборке, где переменную
+ * забыли задать, и заметить это можно было только глазами.
  */
-const MOCKED: Partial<Record<MessengerId, string>> = {};
+export function defaultChannels(): MessengerChannel[] {
+  return [
+    {
+      id: "telegram",
+      label: "Telegram",
+      handle: process.env.NEXT_PUBLIC_TELEGRAM_USERNAME || "NARCI33IST",
+      urlTemplate: "https://t.me/{handle}?text={message}",
+      prefillsMessage: true,
+      enabled: true,
+    },
+    {
+      // У MAX нет публичных ников — человека ищут по номеру телефона, поэтому
+      // канал появляется, только если ник всё-таки задали переменной.
+      id: "max",
+      label: "Max",
+      handle: process.env.NEXT_PUBLIC_MAX_USERNAME ?? "",
+      urlTemplate: "https://max.ru/{handle}",
+      prefillsMessage: false,
+      enabled: true,
+    },
+    {
+      id: "vk",
+      label: "VK",
+      handle: process.env.NEXT_PUBLIC_VK_USERNAME || "prosto_tigl",
+      urlTemplate: "https://vk.me/{handle}",
+      prefillsMessage: false,
+      enabled: true,
+    },
+  ];
+}
 
-const buildHref = (id: MessengerId, handle: string, message: string): string => {
-  switch (id) {
-    case "telegram":
-      return `https://t.me/${handle}?text=${encodeURIComponent(message)}`;
-    case "max":
-      return `https://max.ru/${handle}`;
-    case "vk":
-      return `https://vk.me/${handle}`;
-  }
-};
+/**
+ * Подстановка в шаблон. Ник кодируем: он приходит из админки, и пробел или
+ * кириллица в нём не должны ломать ссылку.
+ */
+export function buildHref(channel: Pick<MessengerChannel, "urlTemplate" | "handle">, message: string): string {
+  return channel.urlTemplate
+    .replace("{handle}", encodeURIComponent(clean(channel.handle)))
+    .replace("{message}", encodeURIComponent(message));
+}
 
 /** Текст, который клиент отправит первым сообщением. */
 export function leadMessage(car: Pick<Car, "brand" | "model" | "year" | "price">, pageUrl: string): string {
@@ -79,22 +97,19 @@ export function leadMessage(car: Pick<Car, "brand" | "model" | "year" | "price">
   return `Здравствуйте! Интересует ${title} — ${formatPrice(car.price)}.\n${pageUrl}\nПодскажите, пожалуйста, по этому автомобилю.`;
 }
 
-/** Настроен ли хоть один мессенджер. Нужно до того, как известен адрес страницы. */
-export function hasMessengers(): boolean {
-  return messengerLinks("").length > 0;
-}
-
-/** Мессенджеры со ссылками на чат. Ненастроенные показываем только если замоканы. */
-export function messengerLinks(message: string): MessengerLink[] {
-  const configured = handles();
-  return (Object.keys(configured) as MessengerId[])
-    .map((id) => ({ id, handle: clean(configured[id]) }))
-    .filter(({ id, handle }) => handle.length > 0 || MOCKED[id])
-    .map(({ id, handle }) => ({
-      id,
-      label: LABELS[id],
-      href: handle ? buildHref(id, handle, message) : MOCKED[id]!,
-      prefillsMessage: Boolean(handle) && id === "telegram",
-      ...(handle ? {} : { isMock: true }),
+/**
+ * Мессенджеры со ссылками на чат.
+ *
+ * Без списка каналов берём значения из окружения: это путь на случай, когда
+ * бэкенд недоступен, — потерять кнопки связи хуже, чем показать вчерашние.
+ */
+export function messengerLinks(message: string, channels?: MessengerChannel[]): MessengerLink[] {
+  return (channels ?? defaultChannels())
+    .filter((channel) => channel.enabled && clean(channel.handle).length > 0)
+    .map((channel) => ({
+      id: channel.id,
+      label: channel.label,
+      href: buildHref(channel, message),
+      prefillsMessage: channel.prefillsMessage,
     }));
 }

@@ -4,11 +4,12 @@ import { MapPin, Truck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Car } from "@/data/cars";
 import { formatPrice } from "@/data/cars";
-import { CONTACT_DETAILS } from "@/data/contactDetails";
+import { useSiteContent } from "./SiteContentProvider";
 import { OWN_SOURCE } from "@/data/catalogSource";
 import Button from "./ui/Button";
 import LeadDialog from "./LeadDialog";
 import MessengerLinks from "./MessengerLinks";
+import type { MessengerChannel } from "@/data/messengers";
 
 /**
  * Блок сделки на странице автомобиля.
@@ -34,6 +35,12 @@ type CarDealPanelProps = {
   car: Car;
   /** Цена для юридического лица, если источник её указал. */
   priceLegal?: number;
+  /**
+   * Каналы связи из админки: панель только передаёт их кнопкам.
+   * Без них кнопки берут запасной список — так витрина ui-kit и тесты
+   * обходятся без похода в бэкенд.
+   */
+  channels?: MessengerChannel[];
 };
 
 type Pill = { label: string; icon?: React.ReactNode; tone: "neutral" | "accent" | "good" };
@@ -44,7 +51,9 @@ const PILL_TONES: Record<Pill["tone"], string> = {
   good: "bg-green-50 text-green-700",
 };
 
-export default function CarDealPanel({ car, priceLegal }: CarDealPanelProps) {
+export default function CarDealPanel({ car, priceLegal, channels }: CarDealPanelProps) {
+  // Адрес и часы работы своей машины — из админки: там их и меняют.
+  const { company } = useSiteContent();
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [isPanelVisible, setPanelVisible] = useState(true);
   const panel = useRef<HTMLElement>(null);
@@ -85,8 +94,8 @@ export default function CarDealPanel({ car, priceLegal }: CarDealPanelProps) {
   const lines = (
     isOwn
       ? [
-          line("Где посмотреть", CONTACT_DETAILS.address),
-          line("Часы работы", CONTACT_DETAILS.workHours[0].replace("Будние дни: ", "будни ")),
+          line("Где посмотреть", company.address),
+          line("Часы работы", company.workHours[0]?.replace("Будние дни: ", "будни ") ?? ""),
         ]
       : [
           line("Срок доставки", car.deliveryTime ? `${car.deliveryTime} дней` : null),
@@ -129,7 +138,7 @@ export default function CarDealPanel({ car, priceLegal }: CarDealPanelProps) {
         <Button size="lg" block className="mt-5" onClick={() => setDialogOpen(true)}>
           Оставить заявку
         </Button>
-        <MessengerLinks car={car} className="mt-2" hint />
+        <MessengerLinks car={car} channels={channels} className="mt-2" hint />
 
         <div className="mt-5 border-t border-gray-border pt-2">
           <dl>

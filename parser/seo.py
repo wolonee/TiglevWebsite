@@ -41,15 +41,29 @@ COUNTRIES = {
 }
 
 # Сегменты — запросы, которые задают отдельно от марки.
+# «Авто», а не «Автомобили»: по подсказкам Яндекса «авто из …» дополняется
+# коммерческими запросами, «автомобиль из …» — сканвордами и фильмами.
+# Здесь это сама искомая фраза, а не счётное слово.
 SEGMENTS = [
-    ("novye", "Новые автомобили под заказ", "condition = 'new'"),
-    ("v-nalichii", "Автомобили в наличии в России", "country_code = 'rossiiskaya-federaciya'"),
+    ("novye", "Новые авто под заказ", "condition = 'new'"),
+    ("v-nalichii", "Авто в наличии в России", "country_code = 'rossiiskaya-federaciya'"),
     ("elektromobili", "Электромобили под заказ", "fuel = 'электро'"),
     ("gibridy", "Гибриды под заказ", "fuel = 'гибрид'"),
     ("vnedorozhniki", "Внедорожники под заказ", "body_type = 'Внедорожник'"),
-    ("do-2-mln", "Автомобили до 2 млн рублей", "price_individual < 2000000"),
-    ("polnyy-privod", "Автомобили с полным приводом", "drive = '4WD'"),
-    ("bez-probega", "Автомобили с пробегом до 30 000 км", "mileage < 30000"),
+    ("do-2-mln", "Авто до 2 млн рублей", "price_individual < 2000000"),
+    ("polnyy-privod", "Авто с полным приводом", "drive = '4WD'"),
+    ("bez-probega", "Авто с пробегом до 30 000 км", "mileage < 30000"),
+    # Налоговый порог: до 160 л.с. ставка транспортного налога заметно ниже,
+    # и «авто до 160 лс» устойчиво выходит в подсказках по всем трём странам.
+    ("do-160-ls", "Авто до 160 л.с.", "hp <= 160"),
+]
+
+# Города. Пока один: домен и салон в Тольятти, а подсказка
+# «авто из кореи под заказ в тольятти» существует и конкурентов там нет.
+# Общий «автосалон тольятти» брать бессмысленно — он целиком за АвтоВАЗом.
+CITIES = [
+    ("avto-iz-korei-tolyatti", "Авто из Кореи под заказ в Тольятти",
+     "country_code = 'yuznaya-koreya'"),
 ]
 
 
@@ -60,6 +74,33 @@ def money(value: Any) -> str:
 def million(value: Any) -> str:
     """4 812 996 -> «4.8 млн» — для заголовков, где важна краткость."""
     return "" if value is None else f"{value / 1_000_000:.1f}".replace(".", ",") + " млн"
+
+
+def plural(count: int, one: str, few: str, many: str) -> str:
+    """
+    «2994 автомобиля», а не «2994 автомобилей».
+
+    Форма зависит от двух последних цифр, а не от одной: 11–14 всегда берут
+    «многие» (11 автомобилей), хотя оканчиваются на 1–4. Строки отсюда уходят
+    в заголовки 144 страниц — неверная форма видна прямо в выдаче поиска.
+    """
+    tail = count % 100
+    if 11 <= tail <= 14:
+        return many
+    last = count % 10
+    if last == 1:
+        return one
+    if 2 <= last <= 4:
+        return few
+    return many
+
+
+def cars(count: int) -> str:
+    return f"{count} {plural(count, 'автомобиль', 'автомобиля', 'автомобилей')}"
+
+
+def offers(count: int) -> str:
+    return f"{count} {plural(count, 'предложение', 'предложения', 'предложений')}"
 
 
 class SeoBuilder:
@@ -218,16 +259,16 @@ class SeoBuilder:
             page = {
                 "type": "country-model",
                 "slug": f"{brand_code}/{model_code}/iz-{meta['slug']}",
-                "title": f"{brand} {model} из {meta['genitive']} — {count} автомобилей под заказ",
+                "title": f"{brand} {model} из {meta['genitive']} — {cars(count)} под заказ",
                 "h1": f"{brand} {model} из {meta['genitive']}",
                 "filter": {"country": country, "brand": brand_code, "model": model_code},
                 "count": count,
                 "stats": stats,
             }
             page["description"] = (
-                f"{count} предложений {brand} {model} из {meta['genitive']}. "
+                f"{offers(count)} {brand} {model} из {meta['genitive']}. "
                 f"Цены от {money(stats['priceMin'])} ₽, медиана {money(stats['priceMedian'])} ₽. "
-                f"Доставка под заказ, проверка перед отправкой."
+                f"Под заказ в Россию, под ключ с растаможкой и доставкой."
             )
             comparison = compare.get((brand_code, model_code))
             if comparison:
@@ -262,11 +303,12 @@ class SeoBuilder:
             pages.append({
                 "type": "country-brand",
                 "slug": f"{brand_code}/iz-{meta['slug']}",
-                "title": f"{brand} из {meta['genitive']} — {count} автомобилей под заказ",
+                "title": f"{brand} из {meta['genitive']} — {cars(count)} под заказ",
                 "h1": f"{brand} из {meta['genitive']}",
                 "description": (
-                    f"{count} автомобилей {brand} из {meta['genitive']}. "
+                    f"{cars(count)} {brand} из {meta['genitive']}. "
                     f"Цены от {money(stats['priceMin'])} до {money(stats['priceMax'])} ₽. "
+                    f"Под заказ в Россию с растаможкой. "
                     f"Популярные модели: {', '.join((m[0] or '').strip() for m in models[:4])}."
                 ),
                 "filter": {"country": country, "brand": brand_code},
@@ -290,17 +332,54 @@ class SeoBuilder:
             pages.append({
                 "type": "segment",
                 "slug": slug,
-                "title": f"{title} — {stats['count']} предложений",
+                "title": f"{title} — {offers(stats['count'])}",
                 "h1": title,
                 "description": (
-                    f"{stats['count']} автомобилей. Цены от {money(stats['priceMin'])} ₽, "
-                    f"медиана {money(stats['priceMedian'])} ₽. "
+                    f"{cars(stats['count'])} под заказ в Россию, под ключ с растаможкой. "
+                    f"Цены от {money(stats['priceMin'])} ₽, медиана {money(stats['priceMedian'])} ₽. "
                     f"Чаще всего: {', '.join(b[0] for b in brands[:4])}."
                 ),
                 "sqlCondition": condition,
                 "count": stats["count"],
                 "stats": stats,
                 "topBrands": [{"name": b[0], "count": b[1]} for b in brands],
+            })
+        return pages
+
+    def city_pages(self) -> list[dict[str, Any]]:
+        """
+        Городские страницы. Отличаются от сегментов только текстом: город
+        в запросе есть, а в данных его нет — машины едут из-за границы,
+        а не лежат в Тольятти.
+
+        Поэтому никаких обещаний про доставку здесь не генерируем: условия
+        у партнёра, и мы их не знаем. Страница честно говорит, что это тот же
+        каталог, а компания — местная.
+        """
+        pages = []
+        for slug, title, condition in CITIES:
+            stats = self.stats(condition)
+            if stats["count"] < MIN_BRAND_LOTS:
+                continue
+            brands = self.rows(
+                f"SELECT brand, COUNT(*) n FROM {self.prefix}lots "
+                f"WHERE gone_at IS NULL AND ({condition}) AND brand IS NOT NULL "
+                f"GROUP BY brand ORDER BY n DESC LIMIT 6"
+            )
+            pages.append({
+                "type": "city",
+                "topBrands": [{"name": b[0], "count": b[1]} for b in brands],
+                "slug": slug,
+                "title": f"{title} — {cars(stats['count'])} в каталоге",
+                "h1": title,
+                "description": (
+                    f"{cars(stats['count'])} под заказ в Россию, под ключ с растаможкой. "
+                    f"Цены от {money(stats['priceMin'])} ₽, медиана {money(stats['priceMedian'])} ₽. "
+                    f"Компания в Тольятти с 2009 года."
+                ),
+                "sqlCondition": condition,
+                "count": stats["count"],
+                "stats": stats,
             })
         return pages
 
@@ -311,6 +390,7 @@ class SeoBuilder:
         model_pages = self.model_pages(by_model)
         brand_pages = self.brand_pages()
         segment_pages = self.segment_pages()
+        city_pages = self.city_pages()
         total_live = self.rows(
             f"SELECT COUNT(*) FROM {self.prefix}lots WHERE gone_at IS NULL"
         )[0][0]
@@ -318,12 +398,13 @@ class SeoBuilder:
         return {
             "generatedAt": now_iso(),
             "totalLots": total_live,
-            "pages": model_pages + brand_pages + segment_pages,
+            "pages": model_pages + brand_pages + segment_pages + city_pages,
             "pageCounts": {
                 "country-model": len(model_pages),
                 "country-brand": len(brand_pages),
                 "segment": len(segment_pages),
-                "total": len(model_pages) + len(brand_pages) + len(segment_pages),
+                "city": len(city_pages),
+                "total": len(model_pages) + len(brand_pages) + len(segment_pages) + len(city_pages),
             },
             # Отдельно: годится для обзорной страницы «откуда дешевле везти».
             "comparisons": comparisons,

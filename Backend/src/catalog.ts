@@ -24,6 +24,8 @@ export type CatalogFilters = {
   year: string[]; color: string[]; delivery: string[]; avail: string[];
   price: NumericRange | null;
   mileage: NumericRange | null;
+  /** Мощность в л.с. Нужна для сегмента «до 160 л.с.» — налогового порога. */
+  hp: NumericRange | null;
   /** id опций; условие «И» — машина должна иметь все выбранные. */
   opt: number[];
 };
@@ -31,7 +33,7 @@ export type CatalogFilters = {
 export const emptyFilters: CatalogFilters = {
   country: [], brand: [], model: [], body: [], condition: [], fuel: [],
   transmission: [], drive: [], year: [], color: [], delivery: [], avail: [],
-  price: null, mileage: null, opt: [],
+  price: null, mileage: null, hp: null, opt: [],
 };
 
 const MULTI_KEYS = [
@@ -58,6 +60,7 @@ export function parseFilters(query: Record<string, unknown>): CatalogFilters {
   for (const key of MULTI_KEYS) filters[key] = splitList(get(key));
   filters.price = parseRange(get("price"));
   filters.mileage = parseRange(get("mileage"));
+  filters.hp = parseRange(get("hp"));
   filters.opt = splitList(get("opt")).map(Number).filter(Number.isFinite);
   return filters;
 }
@@ -95,6 +98,7 @@ function buildWhere(filters: CatalogFilters, cursor?: number) {
   };
   range("price_individual", filters.price);
   range("mileage", filters.mileage);
+  range("hp", filters.hp);
 
   // Одно условие на все опции, и это именно «И»: «содержит весь массив».
   if (filters.opt.length) conditions.push(`l.option_ids @> ${add(filters.opt)}`);

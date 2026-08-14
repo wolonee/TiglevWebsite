@@ -123,7 +123,7 @@ const CarCard = ({ car, preloadCover = false }: CarCardProps) => {
           <Image
             src={cover.url}
             alt={`${car.brand} ${car.model} ${car.year}`}
-            className="h-full w-full object-cover transition-transform duration-700 ease-out will-change-transform md:group-hover:scale-[1.05]"
+            className="h-full w-full object-cover transition-transform duration-700 ease-out md:group-hover:scale-[1.05]"
             fill
             priority={preloadCover}
             unoptimized={isExternalCover}

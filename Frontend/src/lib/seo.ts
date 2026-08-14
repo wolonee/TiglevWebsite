@@ -26,6 +26,32 @@ export const pageTitle = (title: string) => `${title} — ${SITE_NAME}`;
  */
 export const CATALOG_SIZE = Math.floor((facets.totalLots ?? 0) / 1000) * 1000;
 
+type FacetValue = { value: string; label: string; count: number };
+
+const facetValues = (key: string): FacetValue[] =>
+  [...(facets.basic ?? []), ...(facets.advanced ?? [])]
+    .find((facet) => facet.key === key)
+    ?.values ?? [];
+
+/**
+ * Цифры для первого экрана — из данных, а не написанные руками.
+ *
+ * Каталог живой: каждая цифра в вёрстке устаревает к следующему обходу.
+ * Здесь берём то, что пересобирает парсер, и округляем — точность до машины
+ * на первом экране никому не нужна, а «83 402» через неделю станет неправдой.
+ */
+export function catalogFacts(): { value: string; label: string }[] {
+  const round = (count: number) => `${(Math.floor(count / 1000) * 1000).toLocaleString("ru-RU")}+`;
+  const countries = facetValues("country").filter((item) => item.value !== "rossiiskaya-federaciya");
+  const fresh = facetValues("condition").find((item) => item.value === "new");
+
+  return [
+    { value: round(CATALOG_SIZE), label: "автомобилей в каталоге" },
+    { value: String(countries.length), label: "страны под заказ" },
+    ...(fresh ? [{ value: round(fresh.count), label: "новых, без пробега" }] : []),
+  ];
+}
+
 /**
  * Страна в родительном падеже: «из Китая», а не «из Китай».
  *
@@ -35,7 +61,11 @@ export const CATALOG_SIZE = Math.floor((facets.totalLots ?? 0) / 1000) * 1000;
  * подставляем как есть — лучше именительный падеж, чем выдуманное окончание.
  */
 const COUNTRY_GENITIVE: Record<string, string> = {
-  "Южная Корея": "Южной Кореи",
+  // «Южная Корея» намеренно сворачивается до «Кореи». Проверено по подсказкам
+  // Яндекса: «авто из южной кореи» тянет за собой сканворды («3 буквы»),
+  // а «авто из кореи» — только коммерческие запросы. Это заголовки 41 911
+  // страниц, так что разница не косметическая.
+  "Южная Корея": "Кореи",
   Корея: "Кореи",
   Китай: "Китая",
   Европа: "Европы",

@@ -28,20 +28,45 @@ describe("messengers", () => {
     // MAX выпал намеренно: публичных ников там нет, человека ищут по номеру
     // телефона. Раньше на его месте стояла заглушка на главную max.ru —
     // покупатель нажимал и попадал в никуда, что хуже отсутствующей кнопки.
-    expect(links.map((link) => link.id)).toEqual(["vk"]);
+    expect(links.map((link) => link.id)).toEqual(["telegram", "vk"]);
   });
 
-  it("оставляет VK даже без переменной: этот аккаунт уже опубликован на сайте", () => {
+  it("оставляет Telegram и VK даже без переменных: эти аккаунты уже известны", () => {
     setHandles("", "", "");
-    expect(messengerLinks("привет").find((link) => link.id === "vk")?.href).toBe("https://vk.me/prosto_tigl");
+    const byId = Object.fromEntries(messengerLinks("привет").map((link) => [link.id, link]));
+
+    // Без значений по умолчанию кнопка пропадала на любой сборке, где
+    // переменную забыли задать, и заметить это можно было только глазами.
+    expect(byId.vk?.href).toBe("https://vk.me/prosto_tigl");
+    expect(byId.telegram?.href).toContain("https://t.me/NARCI33IST");
   });
 
-  it("перестаёт мокать MAX, как только появился ник", () => {
+  it("показывает MAX, как только появился ник", () => {
     setHandles("", "tiglev_max", "");
     const max = messengerLinks("привет").find((link) => link.id === "max");
 
     expect(max?.href).toBe("https://max.ru/tiglev_max");
-    expect(max?.isMock).toBeUndefined();
+  });
+
+  it("берёт каналы из админки вместо переменных, когда они переданы", () => {
+    setHandles("env_telegram", "env_max", "env_vk");
+    const links = messengerLinks("привет", [
+      { id: "telegram", label: "Telegram", handle: "from_admin", urlTemplate: "https://t.me/{handle}?text={message}", prefillsMessage: true, enabled: true },
+      // Выключенный канал администратор оставил в списке, но на сайте его быть
+      // не должно — иначе кнопка «отключить» не значит ничего.
+      { id: "vk", label: "VK", handle: "prosto_tigl", urlTemplate: "https://vk.me/{handle}", prefillsMessage: false, enabled: false },
+    ]);
+
+    expect(links.map((link) => link.id)).toEqual(["telegram"]);
+    expect(links[0].href).toContain("https://t.me/from_admin");
+  });
+
+  it("собирает ссылку по шаблону: так добавляют канал, которого нет в коде", () => {
+    const [link] = messengerLinks("Здравствуйте", [
+      { id: "whatsapp", label: "WhatsApp", handle: "79991234567", urlTemplate: "https://wa.me/{handle}?text={message}", prefillsMessage: true, enabled: true },
+    ]);
+
+    expect(link.href).toBe(`https://wa.me/79991234567?text=${encodeURIComponent("Здравствуйте")}`);
   });
 
   it("подставляет текст только в Telegram: у Max и VK такого параметра нет", () => {

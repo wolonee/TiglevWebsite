@@ -26,6 +26,30 @@ type CatalogGridProps = {
    * и заголовок страницы там уже стоит выше — поэтому его можно убрать совсем.
    */
   heading?: { eyebrow: string; title: string } | null;
+  /**
+   * Адрес посадочной страницы. Пока её собственный фильтр не снят, менять
+   * фильтры нужно, не уходя со страницы.
+   */
+  basePath?: string;
+  /** Фильтр самой посадочной: страна, марка, модель или условие сегмента. */
+  baseFilters?: CatalogFilters;
+};
+
+/**
+ * Остались ли в фильтре все условия посадочной страницы.
+ *
+ * Раньше любое движение фильтра уводило на `/?…`: человек читал «Hyundai
+ * Elantra из Кореи» со сравнением цен, нажимал «Под заказ» — и оказывался
+ * в общем каталоге без заголовка и без сравнения. Пока подборка не нарушена,
+ * остаёмся на её адресе; снял марку — ушёл в общий каталог, и это честно.
+ */
+const keepsBase = (next: CatalogFilters, base?: CatalogFilters): boolean => {
+  if (!base) return false;
+  const lists = ["country", "brand", "model", "body", "condition", "fuel", "drive"] as const;
+  const sameLists = lists.every((key) => base[key].every((value) => next[key].includes(value)));
+  const sameRange = (a: CatalogFilters["price"], b: CatalogFilters["price"]) =>
+    a == null || (b != null && b.from === a.from && b.to === a.to);
+  return sameLists && sameRange(base.price, next.price) && sameRange(base.mileage, next.mileage);
 };
 
 const plural = (count: number) => {
@@ -56,6 +80,8 @@ export default function CatalogGrid({
   total,
   initialFilters,
   heading = { eyebrow: "Каталог", title: "Автомобили в наличии и под заказ" },
+  basePath,
+  baseFilters,
 }: CatalogGridProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -75,11 +101,15 @@ export default function CatalogGrid({
   const applyFilters = useCallback(
     (next: CatalogFilters) => {
       const query = serializeFilters(next).toString();
-      startTransition(() => {
-        router.replace(query ? `/?${query}#catalog` : "/#catalog", { scroll: false });
-      });
+      const stays = basePath && keepsBase(next, baseFilters);
+      const target = stays
+        ? `${basePath}${query ? `?${query}` : ""}#catalog`
+        : query
+          ? `/?${query}#catalog`
+          : "/#catalog";
+      startTransition(() => router.replace(target, { scroll: false }));
     },
-    [router],
+    [router, basePath, baseFilters],
   );
 
   const loadMore = useCallback(async () => {

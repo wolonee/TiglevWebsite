@@ -1,7 +1,33 @@
 import Image from "next/image";
 import heroCar from "../../public/images/hero-car.webp";
+import { CATALOG_SIZE, catalogFacts } from "@/lib/seo";
+import { fetchSiteContent } from "@/data/siteContentServer";
 
-const Hero = () => {
+/**
+ * Первый экран.
+ *
+ * Раньше здесь стоял заголовок «Автомобили с пробегом» и обещание «заказ
+ * автомобилей из Европы» — от прежнего бизнеса, автосалона в Тольятти.
+ * К нынешнему каталогу это не подходит: Корея (41 911) вдвое больше Европы
+ * (20 786), а 14 691 машина вообще новая. Заголовок отсекал пятую часть товара
+ * и не называл главную страну.
+ *
+ * «Авто», а не «Автомобили»: по подсказкам Яндекса «авто из …» дополняется
+ * коммерческими запросами (китая, кореи, германии), а «автомобиль из …» —
+ * сканвордами и фильмами. Слово выбрано по данным, а не на слух.
+ *
+ * Цифры внизу берутся из `facets.json`, а не написаны руками. Прежние
+ * «3 000+ продано» и «98% довольных клиентов» убраны: проверить их нельзя,
+ * а первое ещё и относится к другому бизнесу.
+ */
+const Hero = async () => {
+  const { hero } = await fetchSiteContent();
+  // Пустой список цифр — это «считать из каталога»: 41 911 автомобилей берётся
+  // из данных и не устаревает. Заполненный вручную список эту связь разрывает,
+  // поэтому по умолчанию он пуст.
+  const facts = hero.stats.length ? hero.stats : catalogFacts();
+  const description = hero.description.replace("{catalogSize}", CATALOG_SIZE.toLocaleString("ru-RU"));
+
   return (
     <section className="relative flex min-h-[88svh] items-center overflow-hidden bg-dark sm:min-h-[100svh]">
       <Image
@@ -18,23 +44,22 @@ const Hero = () => {
 
       <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-12 pt-20 sm:px-6 sm:pb-20 sm:pt-28 lg:px-8">
         <div className="max-w-2xl animate-fade-in">
-          <div className="mb-4 inline-flex max-w-full items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 backdrop-blur-sm sm:mb-5 sm:px-4">
+          {hero.badge ? <div className="mb-4 inline-flex max-w-full items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 backdrop-blur-sm sm:mb-5 sm:px-4">
             <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
             <span className="truncate text-xs font-medium tracking-wide text-white/70">
-              Автосалон в Тольятти — с 2009 года
+              {hero.badge}
             </span>
-          </div>
+          </div> : null}
 
           <h1 className="mb-4 text-3xl leading-[1.08] font-extrabold tracking-tight text-white sm:mb-6 sm:text-5xl lg:text-6xl">
-            Автомобили{" "}
+            {hero.titleLead}{" "}
             <span className="bg-gradient-to-r from-primary-light to-primary bg-clip-text text-transparent">
-              с пробегом
+              {hero.titleAccent}
             </span>
           </h1>
 
           <p className="mb-8 max-w-lg text-sm leading-relaxed text-white/60 sm:mb-12 sm:text-lg">
-            Продажа, выкуп и заказ автомобилей из Европы. Честные цены,
-            юридическая чистота и прозрачные сделки.
+            {description}
           </p>
         </div>
 
@@ -42,11 +67,7 @@ const Hero = () => {
           className="grid grid-cols-3 gap-3 animate-fade-in sm:flex sm:flex-wrap sm:justify-start sm:gap-12"
           style={{ animationDelay: "200ms" }}
         >
-          {[
-            { value: "3 000+", label: "автомобилей продано" },
-            { value: "15+", label: "лет на рынке" },
-            { value: "98%", label: "довольных клиентов" },
-          ].map((stat) => (
+          {facts.map((stat) => (
             <div key={stat.label}>
               <p className="text-lg font-extrabold text-white sm:text-3xl">
                 {stat.value}

@@ -11,6 +11,8 @@ import { bot, broadcastContactRequest, broadcastMessengerLead, broadcastSellRequ
 import { carRecords, carStatuses, customerRequests } from "./database.js";
 import { PAGE_SIZE, countCatalog, fetchCatalogPage, fetchLot, parseFilters } from "./catalog.js";
 import { recordEvent, rollup, summary } from "./analytics.js";
+import { messengerChannels } from "./messengers.js";
+import { siteContent } from "./content.js";
 
 export const app = express();
 app.set("trust proxy", 1);
@@ -198,6 +200,109 @@ app.get("/api/cars/:id", async (request, response) => {
   const car = await carRecords.find(request.params.id);
   return car?.status === "active" ? response.json({ car }) : response.status(404).json({ error: "Car not found" });
 });
+/**
+ * Каналы связи для сайта. Без ключа: список публичный — эти же ссылки видит
+ * любой посетитель карточки.
+ */
+app.get("/api/messengers", async (_request, response) => {
+  return response.json({ channels: await messengerChannels.enabled() });
+});
+
+const messengerSchema = z.object({
+  // Слаг, а не произвольная строка: он попадает в разметку и в статистику.
+  id: z.string().trim().regex(/^[a-z0-9_-]{2,20}$/, "Латиница, цифры, дефис"),
+  label: z.string().trim().min(1).max(30),
+  handle: z.string().trim().min(1).max(80),
+  // Шаблон ограничен https: ссылка ведёт покупателя наружу, и `javascript:`
+  // в поле админки превратился бы в дыру на каждой карточке машины.
+  urlTemplate: z.string().trim().url().startsWith("https://").max(300)
+    .refine((value) => value.includes("{handle}"), "Нужен {handle}"),
+  prefillsMessage: z.boolean(),
+  enabled: z.boolean(),
+});
+
+/**
+ * Ссылка из формы админки. Внутренний путь, телефон, почта или https —
+ * и ничего больше: `javascript:` в пункте меню выполнялся бы у каждого
+ * посетителя сайта.
+ */
+const linkHref = z.string().trim().min(1).max(300)
+  .refine((value) => /^(\/|#|tel:|mailto:|https:\/\/)/.test(value), "Недопустимая ссылка");
+
+const navLink = z.object({ href: linkHref, label: z.string().trim().min(1).max(40) });
+
+const contentSchema = z.object({
+  header: z.object({
+    nav: z.array(navLink).max(8),
+    ctaLabel: z.string().trim().min(1).max(30),
+    ctaHref: linkHref,
+  }),
+  hero: z.object({
+    badge: z.string().trim().max(60),
+    titleLead: z.string().trim().min(1).max(80),
+    titleAccent: z.string().trim().max(80),
+    description: z.string().trim().max(400),
+    stats: z.array(z.object({
+      value: z.string().trim().min(1).max(20),
+      label: z.string().trim().min(1).max(40),
+    })).max(4),
+  }),
+  company: z.object({
+    name: z.string().trim().min(1).max(60),
+    about: z.string().trim().max(400),
+    address: z.string().trim().max(160),
+    phones: z.array(z.object({ label: z.string().trim().min(1).max(30), href: linkHref })).max(4),
+    email: z.object({ label: z.string().trim().max(80), href: linkHref }),
+    workHours: z.array(z.string().trim().min(1).max(60)).max(7),
+    vkUrl: linkHref,
+  }),
+  footer: z.object({
+    sections: z.array(z.object({
+      title: z.string().trim().min(1).max(40),
+      links: z.array(navLink).max(8),
+    })).max(4),
+  }),
+});
+
+/** Тексты сайта. Без ключа: это ровно то, что видит любой посетитель. */
+app.get("/api/content", async (_request, response) => {
+  return response.json({ content: await siteContent.get() });
+});
+
+app.get("/api/admin/content", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  return response.json({ content: await siteContent.get(), history: await siteContent.history() });
+});
+
+app.put("/api/admin/content", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  const parsed = contentSchema.safeParse((request.body as { content?: unknown })?.content);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    return response.status(400).json({ error: `${issue?.path.join(".") ?? "content"}: ${issue?.message ?? "некорректные данные"}` });
+  }
+  return response.json({ content: await siteContent.save(parsed.data) });
+});
+
+app.get("/api/admin/messengers", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  return response.json({ channels: await messengerChannels.all() });
+});
+
+app.put("/api/admin/messengers", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  const parsed = z.object({ channels: z.array(messengerSchema).max(10) }).safeParse(request.body);
+  if (!parsed.success) return response.status(400).json({ error: parsed.error.issues[0]?.message ?? "Некорректные данные" });
+
+  const ids = parsed.data.channels.map((channel) => channel.id);
+  if (new Set(ids).size !== ids.length) return response.status(400).json({ error: "Повторяющийся идентификатор" });
+
+  const channels = await messengerChannels.replace(
+    parsed.data.channels.map((channel, index) => ({ ...channel, position: index })),
+  );
+  return response.json({ channels });
+});
+
 app.get("/api/admin/cars", async (request, response) => {
   if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
   return response.json({ cars: await carRecords.all(request.query.deleted === "true") });

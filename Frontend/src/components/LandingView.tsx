@@ -4,8 +4,15 @@ import { ArrowLeft, TrendingDown } from "lucide-react";
 import SitePage from "@/components/SitePage";
 import CatalogGrid from "@/components/CatalogGrid";
 import { formatPrice } from "@/data/cars";
+import { parseFilters } from "@/lib/catalogFilters";
 import { countCatalog, fetchCatalogPage } from "@/data/catalogRepo";
-import { countryName, landingFilters, type LandingPage } from "@/data/landings";
+import {
+  countryName,
+  landingFilters,
+  pageComparison,
+  relatedLinks,
+  type LandingPage,
+} from "@/data/landings";
 
 /**
  * Посадочная страница каталога: «KIA Carnival из Кореи», «Электромобили под заказ».
@@ -93,8 +100,51 @@ const ComparisonBlock = ({ comparison }: { comparison: NonNullable<LandingPage["
   </section>
 );
 
-export default async function LandingView({ page }: { page: LandingPage }) {
-  const filters = landingFilters(page);
+/**
+ * Соседние подборки. Это и содержимое, которого больше нигде на странице нет,
+ * и единственный путь робота к остальным 143 страницам: до сих пор на них
+ * не вела ни одна ссылка.
+ */
+const RelatedBlock = ({ title, links }: { title: string; links: ReturnType<typeof relatedLinks> }) => (
+  <section>
+    <h2 className="text-lg font-extrabold text-dark">{title}</h2>
+    <div className="mt-3 flex flex-wrap gap-2">
+      {links.map((link) => (
+        <Link
+          key={link.name}
+          href={link.href}
+          className="inline-flex items-center gap-2 rounded-lg border border-gray-border bg-white px-3 py-2 text-sm font-semibold text-dark transition-colors hover:border-gray-text/40"
+        >
+          {link.name}
+          <span className="text-xs font-medium text-gray-text tabular-nums">{link.count}</span>
+        </Link>
+      ))}
+    </div>
+  </section>
+);
+
+/**
+ * Фильтр подборки плюс то, что человек выбрал в панели.
+ *
+ * Страница читает параметры адреса, поэтому рендерится по запросу, а не
+ * собирается заранее. Это осознанный размен: иначе смена фильтра либо уводила
+ * бы с посадочной, либо потребовала второго механизма фильтрации на клиенте —
+ * а два источника правды о выдаче обязательно разъедутся.
+ */
+export default async function LandingView({
+  page,
+  searchParams,
+}: {
+  page: LandingPage;
+  searchParams?: Record<string, string | string[] | undefined>;
+}) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(searchParams ?? {})) {
+    if (typeof value === "string") query.set(key, value);
+  }
+  const base = landingFilters(page);
+  // Параметры адреса уже содержат условия подборки: панель отдаёт их целиком.
+  const filters = query.size ? { ...base, ...parseFilters(query) } : base;
   const [firstPage, total] = await Promise.all([
     fetchCatalogPage(filters),
     countCatalog(filters),
@@ -113,7 +163,8 @@ export default async function LandingView({ page }: { page: LandingPage }) {
       : null,
   ].filter((fact): fact is { label: string; value: string } => fact !== null);
 
-  const popular = page.topModels ?? page.topBrands ?? [];
+  const comparison = pageComparison(page);
+  const related = relatedLinks(page);
 
   return (
     <SitePage>
@@ -139,19 +190,13 @@ export default async function LandingView({ page }: { page: LandingPage }) {
             </dl>
           ) : null}
 
-          {page.comparison ? <ComparisonBlock comparison={page.comparison} /> : null}
+          {comparison ? <ComparisonBlock comparison={comparison} /> : null}
 
-          {popular.length ? (
-            <p className="text-sm text-gray-text">
-              Чаще всего берут:{" "}
-              {popular.slice(0, 6).map((item, index) => (
-                <span key={item.name}>
-                  {index > 0 ? ", " : ""}
-                  <span className="font-semibold text-dark">{item.name}</span>{" "}
-                  <span className="tabular-nums">({item.count})</span>
-                </span>
-              ))}
-            </p>
+          {related.length ? (
+            <RelatedBlock
+              title={page.type === "country-brand" ? "Модели этой марки" : "Марки в этой подборке"}
+              links={related}
+            />
           ) : null}
         </div>
       </section>
@@ -161,7 +206,9 @@ export default async function LandingView({ page }: { page: LandingPage }) {
         initialCursor={firstPage.nextCursor}
         total={total}
         initialFilters={filters}
-        heading={null}
+        heading={{ eyebrow: "Подборка", title: page.h1 }}
+        basePath={`/catalog/${page.slug}`}
+        baseFilters={base}
       />
     </SitePage>
   );

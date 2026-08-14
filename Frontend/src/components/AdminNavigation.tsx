@@ -4,16 +4,21 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { startTransition, useState, type MouseEvent } from "react";
 import { flushSync } from "react-dom";
-import { CarFront, ChartLine, MessageSquare } from "lucide-react";
+import { CarFront, ChartLine, MessageSquare, Send, Type } from "lucide-react";
 
 const items = [
   { href: "/admin/cars", label: "Автомобили", shortLabel: "", icon: CarFront },
   { href: "/admin/requests", label: "Заявки", shortLabel: "", icon: MessageSquare },
   { href: "/admin/analytics", label: "Аналитика", shortLabel: "", icon: ChartLine },
+  { href: "/admin/messengers", label: "Каналы", shortLabel: "", icon: Send },
+  { href: "/admin/content", label: "Тексты", shortLabel: "", icon: Type },
 ] as const;
 
 function activeSection(pathname: string) {
   if (pathname.startsWith("/admin/requests")) return "/admin/requests";
+  if (pathname.startsWith("/admin/analytics")) return "/admin/analytics";
+  if (pathname.startsWith("/admin/messengers")) return "/admin/messengers";
+  if (pathname.startsWith("/admin/content")) return "/admin/content";
   return "/admin/cars";
 }
 

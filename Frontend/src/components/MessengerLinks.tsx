@@ -2,7 +2,7 @@
 
 import { useState, useSyncExternalStore } from "react";
 import type { Car } from "@/data/cars";
-import { leadMessage, messengerLinks, type MessengerId } from "@/data/messengers";
+import { leadMessage, messengerLinks, type MessengerChannel } from "@/data/messengers";
 import { track } from "./Analytics";
 
 /**
@@ -32,6 +32,11 @@ const lotIdOf = (car: { id?: string }): number | undefined => {
 
 type MessengerLinksProps = {
   car: Car;
+  /**
+   * Каналы связи из админки; приходят с сервера уже готовым списком.
+   * Без них берётся запасной набор из переменных окружения.
+   */
+  channels?: MessengerChannel[];
   /** Пояснение под кнопками. Нужно там, где неочевидно, что текст уже готов. */
   hint?: boolean;
   className?: string;
@@ -45,13 +50,17 @@ type MessengerLinksProps = {
  * различали мессенджеры — Telegram, VK и MAX все синие, три заливки читались
  * одной полосой. На белом знак работает опознавателем, а вес остаётся у заявки.
  */
-const MARK_COLORS: Record<MessengerId, string> = {
+const MARK_COLORS: Record<string, string> = {
   telegram: "#229ED9",
   // Средний тон градиента из логотипа MAX: он единственный уходит в фиолетовый
   // и отличает кнопку от двух синих соседей.
   max: "#7075DC",
   vk: "#0077FF",
+  whatsapp: "#25D366",
 };
+
+/** Незнакомый канал из админки рисуем нейтрально, а не наугад чужим цветом. */
+const DEFAULT_MARK = "#1f2933";
 
 const TelegramMark = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className="h-[18px] w-[18px]">
@@ -65,11 +74,16 @@ const TelegramMark = () => (
  * буквы названия, поэтому рисуем их шрифтом, а не приблизительным SVG:
  * кривой самодельный логотип узнаётся хуже, чем честная надпись.
  */
-const CONTENT: Record<MessengerId, React.ReactNode> = {
+const MARKS: Record<string, React.ReactNode> = {
   telegram: <TelegramMark />,
-  max: <span className="text-[15px] font-black tracking-tight">MAX</span>,
-  vk: <span className="text-[15px] font-black tracking-tight">VK</span>,
 };
+
+/**
+ * Знак канала. Для добавленных из админки его взять неоткуда, поэтому пишем
+ * название — короткое слово узнаётся лучше, чем чужой логотип наугад.
+ */
+const markOf = (id: string, label: string): React.ReactNode =>
+  MARKS[id] ?? <span className="text-[15px] font-black tracking-tight">{label.toUpperCase()}</span>;
 
 /**
  * Адрес страницы. Через `useSyncExternalStore`, а не через эффект с `setState`:
@@ -84,11 +98,11 @@ const usePageUrl = () =>
     () => "",
   );
 
-export default function MessengerLinks({ car, hint = false, className = "" }: MessengerLinksProps) {
+export default function MessengerLinks({ car, channels, hint = false, className = "" }: MessengerLinksProps) {
   const pageUrl = usePageUrl();
   const [copied, setCopied] = useState(false);
 
-  const links = pageUrl ? messengerLinks(leadMessage(car, pageUrl)) : [];
+  const links = pageUrl ? messengerLinks(leadMessage(car, pageUrl), channels) : [];
   if (!links.length) return null;
 
   /**
@@ -134,10 +148,10 @@ export default function MessengerLinks({ car, hint = false, className = "" }: Me
               });
               if (!link.prefillsMessage) void copyMessage();
             }}
-            style={{ color: MARK_COLORS[link.id] }}
+            style={{ color: MARK_COLORS[link.id] ?? DEFAULT_MARK }}
             className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-gray-border bg-white text-sm font-bold transition-colors duration-200 hover:border-gray-text/40 active:scale-[0.98]"
           >
-            {CONTENT[link.id]}
+            {markOf(link.id, link.label)}
           </a>
         ))}
       </div>

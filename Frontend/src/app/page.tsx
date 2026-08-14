@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import { fetchSiteContent } from "@/data/siteContentServer";
 import CatalogGrid from "@/components/CatalogGrid";
 import Footer from "@/components/Footer";
+import PopularLandings from "@/components/PopularLandings";
 import { getCatalogCars } from "@/data/cars";
 import { countCatalog, fetchCatalogPage } from "@/data/catalogRepo";
 import { OWN_SOURCE } from "@/data/catalogSource";
@@ -23,13 +25,22 @@ export const revalidate = 900;
  * робот тратит обход на дубли. Отдельные заголовки появятся у посадочных
  * страниц из `seo.json` — там содержимое действительно разное (SEO.md, шаг 6).
  */
-export const metadata: Metadata = {
-  title: pageTitle("Каталог автомобилей в наличии и под заказ"),
-  description:
-    `Более ${CATALOG_SIZE.toLocaleString("ru-RU")} автомобилей под заказ из Кореи, Китая и Европы ` +
-    "и машины в наличии в Тольятти. Цена под ключ, сроки доставки, подбор по марке, году, пробегу и комплектации.",
-  alternates: { canonical: "/" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  // Заголовок собирается из тех же двух строк, что и `h1` на экране. Раньше он
+  // был отдельной константой, и стоило поправить заголовок в админке, как поиск
+  // и человек снова видели разное обещание — ровно та ошибка, ради которой
+  // строку когда-то и переписывали.
+  const { hero } = await fetchSiteContent();
+  const headline = [hero.titleLead, hero.titleAccent].filter(Boolean).join(" ");
+
+  return {
+    title: pageTitle(headline),
+    description:
+      `Более ${CATALOG_SIZE.toLocaleString("ru-RU")} авто под заказ в Россию из Кореи, Китая и Европы ` +
+      "— под ключ, с растаможкой и доставкой. Плюс машины в наличии в Тольятти. Подбор по марке, году, пробегу и комплектации.",
+    alternates: { canonical: "/" },
+  };
+}
 
 type HomePageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -79,6 +90,7 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
           total={own.length + carclickTotal}
           initialFilters={filters}
         />
+        <PopularLandings />
       </main>
       <Footer />
     </>

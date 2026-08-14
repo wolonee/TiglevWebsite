@@ -5,16 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, MessageCircle, Phone, X } from "lucide-react";
 import { type MouseEvent, useEffect, useState } from "react";
-import { CONTACT_DETAILS } from "@/data/contactDetails";
-
-const links = [
-  { href: "/", label: "Главная" },
-  { href: "/#catalog", label: "Каталог" },
-  { href: "/sell", label: "Продать авто" },
-  { href: "/import", label: "Авто на заказ" },
-];
+import { useSiteContent } from "./SiteContentProvider";
 
 export default function Header({ solid = false }: { solid?: boolean }) {
+  // Пункты меню, подпись кнопки и телефон приходят из админки.
+  const { header, company } = useSiteContent();
+  const links = header.nav;
+  const phone = company.phones[0];
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -64,8 +61,8 @@ export default function Header({ solid = false }: { solid?: boolean }) {
         {links.map(link => { const active = link.href === "/" ? pathname === "/" : !link.href.includes("#") && pathname.startsWith(link.href); return <Link key={link.href} href={link.href} onClick={(event) => handleNavigation(event, link.href)} aria-current={active ? "page" : undefined} className={`relative px-4 py-2 text-sm font-medium transition-colors hover:text-primary ${active ? opaque ? "text-primary" : "text-white" : opaque ? "text-dark-light" : "text-white/80"}`}>{link.label}{active && <span aria-hidden className="absolute inset-x-4 -bottom-0.5 h-0.5 bg-primary" />}</Link>; })}
       </nav>
       <div className="hidden items-center gap-3 lg:flex">
-        <a href={CONTACT_DETAILS.phones[0].href} className={`flex items-center gap-2 text-sm font-semibold hover:text-primary ${opaque ? "text-dark" : "text-white"}`}><Phone size={16}/>{CONTACT_DETAILS.phones[0].label}</a>
-        <Link href="/contacts" className="flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-primary-dark"><MessageCircle size={16}/>Написать нам</Link>
+        {phone ? <a href={phone.href} className={`flex items-center gap-2 text-sm font-semibold hover:text-primary ${opaque ? "text-dark" : "text-white"}`}><Phone size={16}/>{phone.label}</a> : null}
+        <Link href={header.ctaHref} className="flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-primary-dark"><MessageCircle size={16}/>{header.ctaLabel}</Link>
       </div>
       <button className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg lg:hidden ${opaque ? "text-dark" : "text-white"}`} onClick={() => setOpen(v => !v)} aria-expanded={open} aria-label={open ? "Закрыть меню" : "Открыть меню"}>{open ? <X/> : <Menu/>}</button>
     </div>
@@ -76,8 +73,8 @@ export default function Header({ solid = false }: { solid?: boolean }) {
         {links.map(link => <Link key={link.href} href={link.href} onClick={(event) => handleNavigation(event, link.href)} className={`block rounded-xl px-4 py-3.5 font-medium transition-colors ${!link.href.includes("#") && pathname === link.href ? "bg-primary/10 text-primary" : "text-dark-light hover:bg-gray-bg"}`}>{link.label}</Link>)}
       </div>
       <div className="mt-6 border-t border-gray-border pt-5">
-        <a href={CONTACT_DETAILS.phones[0].href} className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold text-dark hover:bg-gray-bg"><Phone className="text-primary" size={20}/>{CONTACT_DETAILS.phones[0].label}</a>
-        <Link href="/contacts" onClick={() => setOpen(false)} className="mt-3 block rounded-xl bg-primary px-5 py-3.5 text-center font-semibold text-white transition-colors hover:bg-primary-dark">Написать нам</Link>
+        {phone ? <a href={phone.href} className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold text-dark hover:bg-gray-bg"><Phone className="text-primary" size={20}/>{phone.label}</a> : null}
+        <Link href={header.ctaHref} onClick={() => setOpen(false)} className="mt-3 block rounded-xl bg-primary px-5 py-3.5 text-center font-semibold text-white transition-colors hover:bg-primary-dark">{header.ctaLabel}</Link>
       </div>
     </nav>
   </>;

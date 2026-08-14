@@ -30,8 +30,14 @@ export async function generateMetadata({
   return page ? landingMetadata(page) : {};
 }
 
-export default async function CatalogLandingPage({ params }: { params: Promise<{ slug: string[] }> }) {
+export default async function CatalogLandingPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const page = findLanding((await params).slug.join("/"));
   if (!page) notFound();
-  return <LandingView page={page} />;
+  return <LandingView page={page} searchParams={await searchParams} />;
 }

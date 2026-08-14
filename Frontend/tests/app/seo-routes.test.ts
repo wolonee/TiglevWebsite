@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
-vi.mock("@/lib/db", () => ({ sql: { query: vi.fn().mockResolvedValue([]) } }));
 
 describe("robots.txt", () => {
   it("закрывает адреса с фильтрами и админку, но не сам каталог", async () => {
