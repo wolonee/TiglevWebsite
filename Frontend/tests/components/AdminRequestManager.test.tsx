@@ -23,9 +23,9 @@ describe("AdminRequestManager", () => {
   it("opens every request on its own details page", async () => {
     render(<AdminRequestManager />);
 
-    // Ссылка стоит на имени, а не на карточке целиком: блок-ссылка не даёт
-    // ни выделить текст, ни осмысленно открыть заявку в новой вкладке.
-    expect(await screen.findByRole("link", { name: "Иван" })).toHaveAttribute(
+    // Карточка кликабельна целиком — это показывает ховер на рамке.
+    // Стрелка в углу убрана: она повторяла то же самое и занимала место статуса.
+    expect(await screen.findByRole("link", { name: /Иван/ })).toHaveAttribute(
       "href",
       "/admin/requests/request-1",
     );

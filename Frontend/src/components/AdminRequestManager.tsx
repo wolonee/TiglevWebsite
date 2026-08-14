@@ -58,18 +58,17 @@ export default function AdminRequestManager() {
         ) : (
           <div className="grid gap-3 lg:grid-cols-2">
             {requests.map((request) => (
-              <article
+              <Link
                 key={request.id}
-                className="rounded-2xl border border-gray-border bg-white p-4 sm:p-5"
+                href={`/admin/requests/${request.id}`}
+                /* Карточка кликабельна целиком, и это показывает ховер на рамке.
+                   Стрелки в углу нет: она повторяла то, что уже сказал ховер,
+                   и занимала место, куда просится статус. */
+                className="group rounded-2xl border border-gray-border bg-white p-4 transition-colors hover:border-primary sm:p-5"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h2 className="min-w-0 text-base font-bold text-dark">
-                    {/* Ссылка — на имени, а не на всей карточке: кликабельный
-                        блок целиком нельзя ни выделить текстом, ни открыть
-                        в новой вкладке осмысленно. */}
-                    <Link href={`/admin/requests/${request.id}`} className="hover:text-primary">
-                      {String(request.payload.firstName ?? request.payload.name ?? "Без имени")}
-                    </Link>
+                    {String(request.payload.firstName ?? request.payload.name ?? "Без имени")}
                   </h2>
                   <Badge tone={requestStatusTones[request.status]}>
                     {requestStatusLabels[request.status]}
@@ -89,7 +88,7 @@ export default function AdminRequestManager() {
                     {request.note}
                   </p>
                 )}
-              </article>
+              </Link>
             ))}
             {requests.length < total && <button type="button" disabled={loading} onClick={() => void load(page + 1, true)} className="rounded-xl border border-gray-border bg-white px-4 py-3 text-sm font-semibold text-dark disabled:opacity-50 lg:col-span-2">{loading ? "Загружаем…" : "Показать ещё"}</button>}
           </div>
