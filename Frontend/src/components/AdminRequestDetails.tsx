@@ -4,7 +4,7 @@ import Image from "next/image";
 import { imageVariants } from "@/data/imageVariants";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, LoaderCircle } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Badge from "@/components/ui/Badge";
 import {
   requestFieldLabels,
@@ -22,35 +22,6 @@ export default function AdminRequestDetails({ initialRequest }: { initialRequest
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
-
-  /**
-   * Открыли новую заявку — она больше не новая.
-   *
-   * Иначе «Новая» означает «пришла», а не «не смотрели», и список перестаёт
-   * отвечать на единственный вопрос, ради которого в него заходят: что ещё
-   * не разобрано. Ставим один раз и молча: это не действие администратора,
-   * а факт просмотра.
-   */
-  const marked = useRef(false);
-  useEffect(() => {
-    if (request.status !== "new" || marked.current) return;
-    marked.current = true;
-    void fetch(`/api/admin/requests/${request.id}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ status: "in_progress" }),
-    })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((result) => {
-        if (!result?.request) return;
-        setRequest(result.request);
-        // Значение в селекте двигаем только если администратор его ещё не трогал.
-        setStatus((current) => (current === "new" ? "in_progress" : current));
-      })
-      .catch(() => {
-        // Молча: пометка о просмотре не стоит того, чтобы пугать ошибкой.
-      });
-  }, [request.id, request.status]);
 
   async function save() {
     setSaving(true);

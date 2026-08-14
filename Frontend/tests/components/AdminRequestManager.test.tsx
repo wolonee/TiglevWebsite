@@ -38,6 +38,6 @@ describe("AdminRequestManager", () => {
     // Цвет метки — подсказка, но не единственный носитель смысла:
     // так состояние доступно и при монохромном зрении, и читалке экрана.
     expect(await screen.findByText("Новая")).toBeInTheDocument();
-    expect(screen.getByText(/Не просмотрено: 1 из 1/)).toBeInTheDocument();
+    expect(screen.getByText(/Новых: 1 из 1/)).toBeInTheDocument();
   });
 });
