@@ -1,18 +1,65 @@
+# Локальный запуск всего проекта.
+#
+#   ./scripts/dev-up.sh
+#
+# Порядок важен и поэтому вынесен в скрипт: сборка фронта заранее строит
+# 136 посадочных страниц и ходит за данными в бэкенд, так что бэкенд должен
+# быть поднят раньше. Обычный `docker compose up --build` собирает всё сразу
+# и падает на этом шаге.
+#
+# База — та же Neon, что и на проде: каталог с 84 тысячами машин лежит там,
+# и локальный пустой Postgres показал бы пустую витрину. Отсюда предупреждение:
+# отправленная здесь форма создаст НАСТОЯЩУЮ заявку, а не тестовую.
+
 services:
+  backend:
+    build: ./Backend
+    ports:
+      - "4000:4000"
+    environment:
+      # Neon, а не локальный контейнер: там каталог, свои машины и подписчики бота.
+      DATABASE_URL: ${DATABASE_URL:?нужен DATABASE_URL, возьмите из Backend/.env}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET}
+      BACKEND_API_KEY: ${BACKEND_API_KEY}
+      FRONTEND_ORIGIN: http://localhost:${WEB_PORT:-3000}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_RECIPIENT: ${EMAIL_RECIPIENT:?нужен EMAIL_RECIPIENT}
+      EMAIL_FROM: ${EMAIL_FROM:-TIGLEV.COM <onboarding@resend.dev>}
+      PORT: 4000
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
   frontend:
     build:
       context: ./Frontend
       args:
+        # host.docker.internal — способ достучаться из контейнера сборки
+        # до бэкенда, который уже слушает порт хоста.
+        BACKEND_URL: http://host.docker.internal:4000
+        BACKEND_API_KEY: ${BACKEND_API_KEY}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:${WEB_PORT:-3000}}
         NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
         NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${NEXT_PUBLIC_CLERK_SIGN_IN_URL:-/admin/sign-in}
         NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: ${NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL:-/admin}
+        # Ники мессенджеров попадают в клиентский бандл, поэтому нужны на сборке.
+        NEXT_PUBLIC_TELEGRAM_USERNAME: ${NEXT_PUBLIC_TELEGRAM_USERNAME:-}
+        NEXT_PUBLIC_VK_USERNAME: ${NEXT_PUBLIC_VK_USERNAME:-prosto_tigl}
+        NEXT_PUBLIC_MAX_USERNAME: ${NEXT_PUBLIC_MAX_USERNAME:-}
     ports:
-      - "3000:3000"
+      # Порт снаружи настраивается: 3000 часто занят локальным `npm run dev`.
+      - "${WEB_PORT:-3000}:3000"
     environment:
+      # На исполнении контейнеры общаются по имени сервиса.
       BACKEND_URL: http://backend:4000
       BACKEND_API_KEY: ${BACKEND_API_KEY}
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:${WEB_PORT:-3000}}
       CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
       BLOB_READ_WRITE_TOKEN: ${BLOB_READ_WRITE_TOKEN}
       NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${NEXT_PUBLIC_CLERK_SIGN_IN_URL:-/admin/sign-in}
       NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: ${NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL:-/admin}
@@ -20,46 +67,3 @@ services:
       backend:
         condition: service_healthy
     restart: unless-stopped
-
-  backend:
-    build: ./Backend
-    command: sh -c "npm run db:migrate && npm start"
-    ports:
-      - "4000:4000"
-    environment:
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET}
-      BACKEND_API_KEY: ${BACKEND_API_KEY}
-      FRONTEND_ORIGIN: http://localhost:3000
-      DATABASE_URL: postgresql://postgres:postgres@database:5432/tiglev
-      RESEND_API_KEY: ${RESEND_API_KEY:-}
-      EMAIL_RECIPIENT: ${EMAIL_RECIPIENT:?EMAIL_RECIPIENT is required}
-      EMAIL_FROM: ${EMAIL_FROM:-TIGLEV.COM <onboarding@resend.dev>}
-      PORT: 4000
-    depends_on:
-      database:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4000/health"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-    restart: unless-stopped
-
-  database:
-    image: postgres:17-alpine
-    environment:
-      POSTGRES_DB: tiglev
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d tiglev"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-    restart: unless-stopped
-
-volumes:
-  postgres_data:
