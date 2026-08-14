@@ -12,6 +12,10 @@ const schema = z.object({
   RESEND_API_KEY: z.string().min(10).optional(),
   EMAIL_RECIPIENT: z.string().email(),
   EMAIL_FROM: z.string().default("TIGLEV.COM <onboarding@resend.dev>"),
+  // Реферальная метка партнёрки CarClick. Пока её нет — ссылки уходят чистыми,
+  // переход не оплачивается. Появится код — достаточно задать переменную.
+  CARCLICK_REF_PARAM: z.string().default("r"),
+  CARCLICK_REF_CODE: z.string().optional(),
 });
 
 export const config = schema.parse(process.env);

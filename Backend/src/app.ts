@@ -124,18 +124,44 @@ app.post("/api/analytics/event", limiter, async (request, response) => {
   // запроса: текст уходит в Telegram, и доверять ему присланному нельзя.
   if (result.ok && String(body.type) === "outbound" && typeof body.messenger === "string") {
     try {
-      const lot = Number.isFinite(Number(body.lotId)) ? await fetchLot(Number(body.lotId)) : null;
-      const row = lot?.row as Record<string, unknown> | undefined;
-      const title = row
-        ? [row.brand, row.model, row.year ? `${row.year} г.` : ""].filter(Boolean).join(" ")
-        : "Автомобиль из каталога";
-      const price = row?.price_individual
-        ? `${Number(row.price_individual).toLocaleString("ru-RU")} ₽`
-        : undefined;
+      // Импортный лот или своя машина — определяем по числовому id.
+      // У лотов CarClick он есть, у своих машин id текстовый (`kia-sorento-2017`).
+      const lotId = Number.isFinite(Number(body.lotId)) ? Number(body.lotId) : null;
+      const carId = typeof body.carId === "string" ? body.carId.slice(0, 100) : undefined;
+
+      let title = "Автомобиль из каталога";
+      let price: string | undefined;
+      let partnerUrl: string | undefined;
+      let own = false;
+
+      if (lotId) {
+        const lot = await fetchLot(lotId);
+        const row = lot?.row as Record<string, unknown> | undefined;
+        if (row) {
+          title = [row.brand, row.model, row.year ? `${row.year} г.` : ""].filter(Boolean).join(" ");
+          if (row.price_individual) price = `${Number(row.price_individual).toLocaleString("ru-RU")} ₽`;
+        }
+        // Ссылка на лот у партнёра. Реферальная метка добавляется, только когда
+        // партнёрка подтверждена: без неё переход всё равно не оплачивается.
+        const ref = config.CARCLICK_REF_CODE
+          ? `?${config.CARCLICK_REF_PARAM}=${encodeURIComponent(config.CARCLICK_REF_CODE)}`
+          : "";
+        partnerUrl = `https://carclick.ru/marketplace/${lotId}${ref}`;
+      } else if (carId) {
+        own = true;
+        const car = await carRecords.find(carId);
+        if (car) {
+          title = [car.brand, car.model, car.year ? `${car.year} г.` : ""].filter(Boolean).join(" ");
+          price = `${car.price.toLocaleString("ru-RU")} ₽`;
+        }
+      }
+
       await broadcastMessengerLead({
         messenger: String(body.messenger),
         title,
         price,
+        own,
+        partnerUrl,
         url: typeof body.pageUrl === "string" ? body.pageUrl.slice(0, 300) : undefined,
       });
     } catch (error) {

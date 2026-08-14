@@ -127,6 +127,9 @@ export default function MessengerLinks({ car, hint = false, className = "" }: Me
                 type: "outbound",
                 messenger: link.id,
                 lotId: lotIdOf(car),
+                // Своя машина ссылки на CarClick не имеет, поэтому её узнают
+                // по строковому id — иначе в бота ушло бы «Автомобиль из каталога».
+                carId: car.id,
                 pageUrl,
               });
               if (!link.prefillsMessage) void copyMessage();

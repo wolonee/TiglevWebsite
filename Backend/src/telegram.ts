@@ -135,7 +135,12 @@ export async function broadcastMessengerLead(data: {
   messenger: string;
   title: string;
   price?: string;
+  /** Карточка на нашем сайте. */
   url?: string;
+  /** Лот у партнёра. У своих машин его нет и быть не может. */
+  partnerUrl?: string;
+  /** Своя машина из салона или импорт под заказ. */
+  own?: boolean;
 }) {
   const recipients = await subscribers.all();
   const where = { telegram: "Telegram", vk: "VK", max: "Max" }[data.messenger] ?? data.messenger;
@@ -144,7 +149,12 @@ export async function broadcastMessengerLead(data: {
     "",
     data.title,
     data.price ? `Цена: ${data.price}` : "",
-    data.url ? `\n${data.url}` : "",
+    // Разница важна на практике: свою машину показывают в Тольятти сегодня,
+    // импортную везут полтора месяца, и разговор строится иначе.
+    data.own ? "🏠 Наша машина, в наличии" : "🚢 Импорт под заказ",
+    "",
+    data.url ? `Карточка: ${data.url}` : "",
+    data.partnerUrl ? `У партнёра: ${data.partnerUrl}` : "",
     "",
     "Человек открыл чат с заготовленным сообщением. Ждите обращения.",
   ].filter(Boolean);

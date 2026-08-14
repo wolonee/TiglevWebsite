@@ -47,6 +47,8 @@ export function track(event: {
   type: string;
   path?: string;
   lotId?: number;
+  /** Строковый id карточки. У своих машин это единственный опознаватель. */
+  carId?: string;
   country?: string;
   /** Куда ушёл человек: telegram | vk | max. Только для `outbound`. */
   messenger?: string;
