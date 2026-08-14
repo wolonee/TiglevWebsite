@@ -39,11 +39,11 @@ export default function AdminRequestManager() {
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-dark">Заявки</h1>
-            {/* Счётчик неразобранных — первое, ради чего сюда заходят. */}
+            {/* Счётчик неоткрытых — первое, ради чего сюда заходят. */}
             <p className="mt-2 text-sm text-gray-text">
               {newCount > 0
                 ? `Новых: ${newCount} из ${requests.length}`
-                : `Все разобраны, всего ${requests.length}`}
+                : `Новых нет, всего ${requests.length}`}
             </p>
           </div>
           <button onClick={() => void load()} className="rounded-xl border border-gray-border bg-white p-3 text-gray-text hover:text-primary" aria-label="Обновить">

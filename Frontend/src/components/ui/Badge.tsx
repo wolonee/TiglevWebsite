@@ -15,13 +15,15 @@ import type { ReactNode } from "react";
  * перестают замечать вовсе — вместе с новыми заявками.
  */
 
-export type BadgeTone = "new" | "progress" | "done" | "muted";
+export type BadgeTone = "new" | "seen" | "progress" | "done" | "muted";
 
 const TONES: Record<BadgeTone, string> = {
   // Синяя, а не красная: красный на сайте занят целевым действием, и метка
   // «Новая» рядом с красной кнопкой читалась как вторая кнопка или как ошибка.
   // Синий в интерфейсе означает «непрочитанное», а не «случилась беда».
   new: "bg-blue-600 text-white",
+  // Тот же синий, но тише: прочитано, а дальше ещё ничего не решено.
+  seen: "bg-blue-50 text-blue-800",
   // Работа идёт, но не закончена. Спутать с «готово» нельзя.
   progress: "bg-amber-100 text-amber-900",
   done: "bg-green-100 text-green-900",

@@ -79,7 +79,7 @@ const carSchema = z.object({
   wheel: optionalText, color: optionalText, damage: optionalText,
   status: z.enum(carStatuses).default("active"),
 });
-const requestUpdateSchema = z.object({ status: z.enum(["new", "in_progress", "completed", "archived"]), note: z.string().trim().max(4000).optional() });
+const requestUpdateSchema = z.object({ status: z.enum(["new", "viewed", "in_progress", "completed", "archived"]), note: z.string().trim().max(4000).optional() });
 const orderSchema = z.object({ ids: z.array(z.string().min(1)).min(1).max(500) });
 const paginationSchema = z.object({
   page: z.coerce.number().int().positive().default(1),

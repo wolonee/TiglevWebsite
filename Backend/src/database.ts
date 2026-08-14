@@ -13,7 +13,8 @@ export type CarRecord = {
   transmission?: string; mileage?: number; drive?: string; wheel?: string; color?: string; damage?: string;
   status: CarStatus; sortOrder: number; deletedAt?: string;
 };
-export type RequestStatus = "new" | "in_progress" | "completed" | "archived";
+// `viewed` ставится сам, когда администратор открыл заявку. Остальные — руками.
+export type RequestStatus = "new" | "viewed" | "in_progress" | "completed" | "archived";
 export type AdminRequest = { id: string; kind: "contact" | "sell"; status: RequestStatus; payload: Record<string, unknown>; photoCount: number; photoUrls: string[]; note?: string; createdAt: string; updatedAt: string };
 
 let sqlClient: Sql | null = null;

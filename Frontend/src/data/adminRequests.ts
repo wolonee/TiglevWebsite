@@ -1,6 +1,6 @@
 import type { BadgeTone } from "@/components/ui/Badge";
 
-export type RequestStatus = "new" | "in_progress" | "completed" | "archived";
+export type RequestStatus = "new" | "viewed" | "in_progress" | "completed" | "archived";
 
 export type CustomerRequest = {
   id: string;
@@ -16,6 +16,7 @@ export type CustomerRequest = {
 
 export const requestStatusLabels: Record<RequestStatus, string> = {
   new: "Новая",
+  viewed: "Просмотрена",
   in_progress: "В работе",
   completed: "Завершена",
   archived: "Архив",
@@ -28,6 +29,7 @@ export const requestStatusLabels: Record<RequestStatus, string> = {
  */
 export const requestStatusTones: Record<RequestStatus, BadgeTone> = {
   new: "new",
+  viewed: "seen",
   in_progress: "progress",
   completed: "done",
   archived: "muted",
@@ -35,11 +37,12 @@ export const requestStatusTones: Record<RequestStatus, BadgeTone> = {
 
 /**
  * Пояснение к статусу — в админке работает не только автор этих слов.
- * Статус меняется только вручную, поэтому «Новая» означает «не взяли в работу»,
- * а не «не открывали»: открытие заявки её состояния не трогает.
+ * Сам по себе меняется только один переход: открыли заявку — она «Просмотрена».
+ * Всё остальное администратор ставит руками.
  */
 export const requestStatusHints: Record<RequestStatus, string> = {
-  new: "Никто ещё не взялся",
+  new: "Никто ещё не открывал",
+  viewed: "Прочитана, в работу не взята",
   in_progress: "Взята в работу, ответ не закрыт",
   completed: "Клиенту ответили, вопрос закрыт",
   archived: "Убрана из работы",
