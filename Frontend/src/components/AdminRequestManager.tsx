@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ChevronRight, ImageIcon, LoaderCircle, RefreshCw } from "lucide-react";
+import { ImageIcon, LoaderCircle, RefreshCw } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import { requestStatusLabels, requestStatusTones, type CustomerRequest } from "@/data/adminRequests";
 
@@ -38,14 +38,13 @@ export default function AdminRequestManager() {
     <section>
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
-            <p className="eyebrow">Обращения клиентов</p>
-            <h1 className="mt-3 text-3xl font-bold text-dark">Заявки</h1>
+            <h1 className="text-3xl font-bold text-dark">Заявки</h1>
             {/* Счётчик непросмотренных — первое, ради чего сюда заходят. */}
-            {newCount > 0 && (
-              <p className="mt-2 text-sm font-semibold text-primary">
-                {newCount === 1 ? "1 новая заявка" : `Новых заявок: ${newCount}`}
-              </p>
-            )}
+            <p className="mt-2 text-sm text-gray-text">
+              {newCount > 0
+                ? `Не просмотрено: ${newCount} из ${requests.length}`
+                : `Все просмотрены, всего ${requests.length}`}
+            </p>
           </div>
           <button onClick={() => void load()} className="rounded-xl border border-gray-border bg-white p-3 text-gray-text hover:text-primary" aria-label="Обновить">
             <RefreshCw className="h-5 w-5" />
@@ -59,39 +58,38 @@ export default function AdminRequestManager() {
         ) : (
           <div className="grid gap-3 lg:grid-cols-2">
             {requests.map((request) => (
-              <Link
+              <article
                 key={request.id}
-                href={`/admin/requests/${request.id}`}
-                /* Непросмотренная заявка выделена и фоном, и полосой слева:
-                   в списке из двадцати карточек одного цветного слова мало.
-                   Ничего мигающего — админку держат открытой часами. */
-                className={`group rounded-2xl border p-4 transition-colors sm:p-5 ${
-                  request.status === "new"
-                    ? "border-l-4 border-gray-border border-l-primary bg-primary/[0.03] hover:border-primary"
-                    : "border-gray-border bg-white hover:border-primary"
-                }`}
+                className="rounded-2xl border border-gray-border bg-white p-4 sm:p-5"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <strong className="text-dark">{request.kind === "sell" ? "Продать авто" : "Написать нам"}</strong>
-                    <p className="mt-2 text-sm text-gray-text">
-                      {String(request.payload.firstName ?? request.payload.name ?? "Без имени")} · {String(request.payload.phone ?? "")}
-                    </p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 shrink-0 text-gray-text transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+                  <h2 className="min-w-0 text-base font-bold text-dark">
+                    {/* Ссылка — на имени, а не на всей карточке: кликабельный
+                        блок целиком нельзя ни выделить текстом, ни открыть
+                        в новой вкладке осмысленно. */}
+                    <Link href={`/admin/requests/${request.id}`} className="hover:text-primary">
+                      {String(request.payload.firstName ?? request.payload.name ?? "Без имени")}
+                    </Link>
+                  </h2>
+                  <Badge tone={requestStatusTones[request.status]}>
+                    {requestStatusLabels[request.status]}
+                  </Badge>
                 </div>
+                <p className="mt-1 text-sm text-gray-text">
+                  {request.kind === "sell" ? "Продать авто" : "Написать нам"}
+                  {request.payload.phone ? ` · ${String(request.payload.phone)}` : ""}
+                </p>
                 <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-gray-text">
-                  <Badge tone={requestStatusTones[request.status]}>{requestStatusLabels[request.status]}</Badge>
                   {request.photoCount > 0 && <span className="inline-flex items-center gap-1"><ImageIcon className="h-3.5 w-3.5" />{request.photoCount}</span>}
                   <span className="ml-auto">{new Date(request.createdAt).toLocaleString("ru-RU")}</span>
                 </div>
                 {request.note && (
-                  <div className="mt-4 rounded-xl bg-gray-bg px-3 py-2.5">
-                    <p className="text-xs font-semibold text-gray-text">Заметка администратора</p>
-                    <p className="mt-1 line-clamp-2 text-sm text-dark">{request.note}</p>
-                  </div>
+                  <p className="mt-3 line-clamp-2 border-t border-gray-border pt-3 text-sm text-dark">
+                    <span className="text-gray-text">Заметка: </span>
+                    {request.note}
+                  </p>
                 )}
-              </Link>
+              </article>
             ))}
             {requests.length < total && <button type="button" disabled={loading} onClick={() => void load(page + 1, true)} className="rounded-xl border border-gray-border bg-white px-4 py-3 text-sm font-semibold text-dark disabled:opacity-50 lg:col-span-2">{loading ? "Загружаем…" : "Показать ещё"}</button>}
           </div>

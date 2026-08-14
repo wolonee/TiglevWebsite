@@ -18,12 +18,15 @@ import type { ReactNode } from "react";
 export type BadgeTone = "new" | "progress" | "done" | "muted";
 
 const TONES: Record<BadgeTone, string> = {
-  // Красный — фирменный акцент и здесь означает «требует действия».
-  new: "bg-primary/10 text-primary ring-1 ring-inset ring-primary/25",
-  // Янтарный: работа идёт, но не закончена. Спутать с «готово» нельзя.
-  progress: "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200",
-  done: "bg-green-50 text-green-700 ring-1 ring-inset ring-green-200",
-  muted: "bg-gray-bg text-gray-text ring-1 ring-inset ring-gray-border",
+  // Тёмная заливка, а не красная. Красный на сайте занят целевым действием,
+  // и метка «Новая» рядом с красной кнопкой читалась как вторая кнопка или
+  // как ошибка. Непрочитанное принято помечать плотностью, а не тревогой.
+  new: "bg-dark text-white",
+  // Работа идёт, но не закончена. Спутать с «готово» нельзя.
+  progress: "bg-amber-100 text-amber-900",
+  done: "bg-green-100 text-green-900",
+  // Отработанное отступает: без заливки, только тонкая рамка.
+  muted: "bg-white text-gray-text ring-1 ring-inset ring-gray-border",
 };
 
 const Badge = ({
