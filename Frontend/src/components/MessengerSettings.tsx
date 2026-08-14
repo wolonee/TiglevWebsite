@@ -8,6 +8,7 @@ import Note from "@/components/ui/Note";
 import Panel from "@/components/ui/Panel";
 import Toggle from "@/components/ui/Toggle";
 import { buildHref, type MessengerChannel } from "@/data/messengers";
+import { colorOf, markOf } from "./messengerMarks";
 
 /**
  * Управление каналами связи.
@@ -20,14 +21,26 @@ import { buildHref, type MessengerChannel } from "@/data/messengers";
  * временно, и ник со ссылкой стоит сохранить, чтобы не искать заново.
  */
 
-/** Заготовки: у известных сервисов адрес чата строится по своим правилам. */
-const PRESETS: { id: string; label: string; urlTemplate: string; prefillsMessage: boolean; hint: string }[] = [
-  { id: "telegram", label: "Telegram", urlTemplate: "https://t.me/{handle}?text={message}", prefillsMessage: true, hint: "ник без @" },
-  { id: "vk", label: "VK", urlTemplate: "https://vk.me/{handle}", prefillsMessage: false, hint: "короткое имя страницы" },
-  { id: "whatsapp", label: "WhatsApp", urlTemplate: "https://wa.me/{handle}?text={message}", prefillsMessage: true, hint: "номер: 79991234567" },
-  { id: "max", label: "Max", urlTemplate: "https://max.ru/{handle}", prefillsMessage: false, hint: "имя профиля" },
-  { id: "custom", label: "Другой сервис", urlTemplate: "https://example.com/{handle}", prefillsMessage: false, hint: "" },
+/**
+ * Заготовки: у известных сервисов адрес чата строится по своим правилам,
+ * и у каждого свой знак на кнопке.
+ *
+ * Показываются только те, которых в списке ещё нет: речь про связь по одной
+ * машине, и два «Telegram» подряд покупателя только запутают. Удалили канал —
+ * заготовка возвращается.
+ */
+const PRESETS: { id: string; label: string; urlTemplate: string; prefillsMessage: boolean; handleHint: string }[] = [
+  { id: "telegram", label: "Telegram", urlTemplate: "https://t.me/{handle}?text={message}", prefillsMessage: true, handleHint: "ник без @" },
+  { id: "vk", label: "VK", urlTemplate: "https://vk.me/{handle}", prefillsMessage: false, handleHint: "короткое имя страницы" },
+  { id: "max", label: "MAX", urlTemplate: "https://max.ru/u/{handle}", prefillsMessage: false, handleHint: "токен из ссылки max.ru/u/…" },
+  { id: "whatsapp", label: "WhatsApp", urlTemplate: "https://wa.me/{handle}?text={message}", prefillsMessage: true, handleHint: "номер: 79991234567" },
 ];
+
+/** Свой знак есть не у всякого сервиса — на кнопке будет название. */
+const CUSTOM_PRESET = {
+  id: "custom", label: "Другой сервис", urlTemplate: "https://example.com/{handle}",
+  prefillsMessage: false, handleHint: "",
+};
 
 const SAMPLE = "Здравствуйте! Интересует KIA Sorento 2024 г.";
 
@@ -57,17 +70,16 @@ export default function MessengerSettings({ initial }: { initial: MessengerChann
     setChannels((list) => list.filter((_, i) => i !== index));
   };
 
-  const add = (preset: (typeof PRESETS)[number]) => {
+  const add = (preset: (typeof PRESETS)[number] | typeof CUSTOM_PRESET) => {
     setMessage(null);
     setChannels((list) => {
-      // Один сервис — одна кнопка: два «Telegram» подряд покупателя запутают,
-      // да и бэкенд отклонит повторный идентификатор.
-      const id = list.some((channel) => channel.id === preset.id)
-        ? `${preset.id}-${list.length + 1}`
-        : preset.id;
+      // «Другой сервис» можно добавить не один раз, поэтому у него номер;
+      // у известных сервисов повторов не бывает — их заготовки скрыты.
+      const taken = list.some((channel) => channel.id === preset.id);
+      const id = taken ? `${preset.id}-${list.length + 1}` : preset.id;
       return [...list, {
         id,
-        label: preset.label,
+        label: preset.id === "custom" ? "" : preset.label,
         handle: "",
         urlTemplate: preset.urlTemplate,
         prefillsMessage: preset.prefillsMessage,
@@ -97,6 +109,10 @@ export default function MessengerSettings({ initial }: { initial: MessengerChann
   }
 
   const activeCount = channels.filter((channel) => channel.enabled && channel.handle.trim()).length;
+  // Заготовка исчезает, как только канал добавлен, и возвращается после удаления.
+  const available = PRESETS.filter((preset) => !channels.some((channel) => channel.id === preset.id));
+  const handleHintOf = (id: string) =>
+    PRESETS.find((preset) => preset.id === id)?.handleHint ?? "";
 
   return (
     <div className="space-y-5">
@@ -124,12 +140,22 @@ export default function MessengerSettings({ initial }: { initial: MessengerChann
               }`}
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <Toggle
-                  checked={channel.enabled}
-                  onChange={(next) => patch(index, { enabled: next })}
-                  label={channel.label || channel.id}
-                  hint={channel.enabled ? undefined : "выключен — на сайте кнопки нет"}
-                />
+                <div className="flex items-center gap-3">
+                  {/* Тот же знак и цвет, что и на кнопке у покупателя. */}
+                  <span
+                    aria-hidden
+                    className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-border bg-white"
+                    style={{ color: colorOf(channel.id) }}
+                  >
+                    {markOf(channel.id, channel.label || "?")}
+                  </span>
+                  <Toggle
+                    checked={channel.enabled}
+                    onChange={(next) => patch(index, { enabled: next })}
+                    label={channel.label || channel.id}
+                    hint={channel.enabled ? undefined : "выключен — на сайте кнопки нет"}
+                  />
+                </div>
 
                 <div className="flex items-center gap-1">
                   <IconButton label="Выше" onClick={() => move(index, -1)} disabled={index === 0}>
@@ -158,7 +184,7 @@ export default function MessengerSettings({ initial }: { initial: MessengerChann
                   <input
                     className={CONTROL_BASE}
                     value={channel.handle}
-                    placeholder="например, NARCI33IST"
+                    placeholder={handleHintOf(channel.id) || "например, NARCI33IST"}
                     onChange={(event) => patch(index, { handle: event.target.value })}
                   />
                 </div>
@@ -204,12 +230,23 @@ export default function MessengerSettings({ initial }: { initial: MessengerChann
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <span className="text-sm text-gray-text">Добавить:</span>
-          {PRESETS.map((preset) => (
+          {available.map((preset) => (
             <Button key={preset.id} variant="outline" size="sm" onClick={() => add(preset)}>
-              <Plus className="h-3.5 w-3.5" />
+              <span aria-hidden style={{ color: colorOf(preset.id) }} className="inline-flex items-center">
+                {markOf(preset.id, preset.label)}
+              </span>
               {preset.label}
             </Button>
           ))}
+          {/* «Другой сервис» доступен всегда: своего знака у него нет, на кнопке
+              будет название, а адрес чата задаётся шаблоном вручную. */}
+          <Button variant="outline" size="sm" onClick={() => add(CUSTOM_PRESET)}>
+            <Plus className="h-3.5 w-3.5" />
+            {CUSTOM_PRESET.label}
+          </Button>
+          {available.length === 0 && (
+            <span className="text-sm text-gray-text">— все известные сервисы уже добавлены</span>
+          )}
         </div>
       </Panel>
 

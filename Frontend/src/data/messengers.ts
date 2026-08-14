@@ -61,12 +61,12 @@ export function defaultChannels(): MessengerChannel[] {
       enabled: true,
     },
     {
-      // У MAX нет публичных ников — человека ищут по номеру телефона, поэтому
-      // канал появляется, только если ник всё-таки задали переменной.
+      // У MAX нет публичных ников: человека находят по токену из личной ссылки
+      // вида max.ru/u/<токен>. Канал появляется, только если токен задали.
       id: "max",
-      label: "Max",
+      label: "MAX",
       handle: process.env.NEXT_PUBLIC_MAX_USERNAME ?? "",
-      urlTemplate: "https://max.ru/{handle}",
+      urlTemplate: "https://max.ru/u/{handle}",
       prefillsMessage: false,
       enabled: true,
     },

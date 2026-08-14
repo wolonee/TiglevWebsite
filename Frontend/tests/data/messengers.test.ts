@@ -45,7 +45,7 @@ describe("messengers", () => {
     setHandles("", "tiglev_max", "");
     const max = messengerLinks("привет").find((link) => link.id === "max");
 
-    expect(max?.href).toBe("https://max.ru/tiglev_max");
+    expect(max?.href).toBe("https://max.ru/u/tiglev_max");
   });
 
   it("берёт каналы из админки вместо переменных, когда они переданы", () => {
@@ -78,7 +78,7 @@ describe("messengers", () => {
       `https://t.me/tiglev_auto?text=${encodeURIComponent("Здравствуйте! Интересует BMW")}`,
     );
     expect(byId.telegram.prefillsMessage).toBe(true);
-    expect(byId.max.href).toBe("https://max.ru/tiglev");
+    expect(byId.max.href).toBe("https://max.ru/u/tiglev");
     expect(byId.max.prefillsMessage).toBe(false);
     expect(byId.vk.href).toBe("https://vk.me/tiglev");
   });
