@@ -5,10 +5,13 @@ import CarCard from "@/components/CarCard";
 import CarDealPanel from "@/components/CarDealPanel";
 import CarSpecs from "@/components/CarSpecs";
 import type { Car } from "@/data/cars";
-import Button from "@/components/ui/Button";
+import Button, { IconButton } from "@/components/ui/Button";
 import CheckRow from "@/components/ui/CheckRow";
 import Counter from "@/components/ui/Counter";
-import { Field, FieldLabel, TextField } from "@/components/ui/Field";
+import { Field, FieldLabel, TextArea, TextField } from "@/components/ui/Field";
+import Note from "@/components/ui/Note";
+import Panel from "@/components/ui/Panel";
+import Toggle from "@/components/ui/Toggle";
 import Segmented from "@/components/ui/Segmented";
 import Select from "@/components/ui/Select";
 
@@ -78,6 +81,8 @@ export default function UiKitPage() {
   const [year, setYear] = useState("");
   const [avail, setAvail] = useState("");
   const [checks, setChecks] = useState<string[]>(["#000000"]);
+  const [live, setLive] = useState(true);
+  const [muted, setMuted] = useState(false);
 
   const toggle = (value: string) =>
     setChecks((list) => (list.includes(value) ? list.filter((item) => item !== value) : [...list, value]));
@@ -202,6 +207,56 @@ export default function UiKitPage() {
               ))}
               <CheckRow label="Вложенная строка (модель)" compact checked={false} onChange={() => {}} count={870} />
             </div>
+          </Section>
+
+          <Section
+            title="Рубильник"
+            note="Для админки: включает и выключает целый кусок сайта. Не галочка — та означает «выбрал из списка», а здесь смысл другой. Цвет тёмный, потому что красная кнопка на экране одна и это «Сохранить»."
+          >
+            <div className="space-y-3">
+              <Toggle checked={live} onChange={setLive} label="Telegram" hint="Кнопка видна покупателю на карточке машины." />
+              <Toggle checked={muted} onChange={setMuted} label="VK" hint={muted ? undefined : "выключен — на сайте кнопки нет"} />
+              <Toggle checked disabled onChange={() => {}} label="Недоступен" hint="Состояние без права на изменение." />
+            </div>
+          </Section>
+
+          <Section
+            title="Кнопка-знак"
+            note="Удалить строку, переставить выше. Всегда с подписью для читалки экрана и всегда одной ширины: иначе ряд иконок пляшет."
+          >
+            <div className="flex items-center gap-1">
+              <IconButton label="Выше">↑</IconButton>
+              <IconButton label="Ниже">↓</IconButton>
+              <IconButton label="Удалить">✕</IconButton>
+              <IconButton label="Недоступно" disabled>✕</IconButton>
+            </div>
+          </Section>
+
+          <Section
+            title="Многострочное поле"
+            note="Размер не тянется мышью: растянутое поле ломает сетку соседних колонок. Высота задаётся числом строк."
+          >
+            <TextArea
+              rows={3}
+              defaultValue={"Подберём и привезём автомобиль из Кореи, Китая и Европы.\nПод ключ, с растаможкой и доставкой до Тольятти."}
+            />
+          </Section>
+
+          <Section
+            title="Блок и сообщения"
+            note="Белый блок с рамкой — основа экранов админки. Сообщения к нему трёх тонов и ни одного своего цвета по месту."
+          >
+            <Panel
+              title="Каналы связи"
+              note="Кнопки под ценой на карточке машины."
+              aside={<span className="text-sm text-gray-text">3 шт.</span>}
+            >
+              <div className="space-y-2">
+                <Note tone="success">Сохранено. На сайте уже применилось.</Note>
+                <Note tone="warning">Ни один канал не включён — написать напрямую покупатель не сможет.</Note>
+                <Note>Переход в мессенджер приходит уведомлением в Telegram-бот.</Note>
+              </div>
+            </Panel>
           </Section>
 
           <Section title="Счётчик" note="Сколько фильтров выбрано. Ноль не показывается вовсе.">

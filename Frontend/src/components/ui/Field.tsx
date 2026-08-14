@@ -1,6 +1,6 @@
 "use client";
 
-import type { InputHTMLAttributes, ReactNode } from "react";
+import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
 
 /**
  * Подпись поля. Вынесена отдельно, чтобы «Цена, ₽» с парой полей и обычный
@@ -37,4 +37,24 @@ export const Field = ({ label, children }: { label: string; children: ReactNode 
     <FieldLabel>{label}</FieldLabel>
     {children}
   </div>
+);
+
+type TextAreaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  label?: string;
+};
+
+/**
+ * Многострочное поле. Высота задаётся через `rows`, размер руками не тянется:
+ * растянутое пользователем поле ломает сетку соседних колонок.
+ *
+ * `CONTROL_BASE` фиксирует высоту в 10, поэтому здесь она снимается —
+ * остальное (рамка, фокус, отступы) должно совпадать с однострочным полем.
+ */
+export const TextArea = ({ label, className = "", rows = 3, ...rest }: TextAreaProps) => (
+  <textarea
+    rows={rows}
+    aria-label={label}
+    className={`${CONTROL_BASE} h-auto resize-none py-2 leading-relaxed ${className}`}
+    {...rest}
+  />
 );

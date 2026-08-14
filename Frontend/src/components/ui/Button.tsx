@@ -61,3 +61,29 @@ const Button = ({
 );
 
 export default Button;
+
+/**
+ * Кнопка-квадрат с одним знаком: удалить строку, переставить выше.
+ *
+ * Отдельным компонентом, потому что у такой кнопки два обязательных свойства,
+ * о которых легко забыть: подпись для читалки экрана (знака мало) и
+ * фиксированная ширина — иначе ряд из трёх иконок пляшет по ширине.
+ */
+export const IconButton = ({
+  label,
+  variant = "ghost",
+  className = "",
+  children,
+  ...rest
+}: Omit<ButtonProps, "block" | "size"> & { label: string }) => (
+  <Button
+    variant={variant}
+    size="sm"
+    aria-label={label}
+    title={label}
+    className={`w-8 px-0 ${className}`}
+    {...rest}
+  >
+    {children}
+  </Button>
+);
