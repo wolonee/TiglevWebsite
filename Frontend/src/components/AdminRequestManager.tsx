@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ChevronRight, ImageIcon, LoaderCircle, RefreshCw } from "lucide-react";
-import { requestStatusLabels, type CustomerRequest } from "@/data/adminRequests";
+import Badge from "@/components/ui/Badge";
+import { requestStatusLabels, requestStatusTones, type CustomerRequest } from "@/data/adminRequests";
 
 export default function AdminRequestManager() {
   const [requests, setRequests] = useState<CustomerRequest[]>([]);
@@ -31,12 +32,20 @@ export default function AdminRequestManager() {
 
   useEffect(() => { void load(); }, []);
 
+  const newCount = requests.filter((request) => request.status === "new").length;
+
   return (
     <section>
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Обращения клиентов</p>
             <h1 className="mt-3 text-3xl font-bold text-dark">Заявки</h1>
+            {/* Счётчик непросмотренных — первое, ради чего сюда заходят. */}
+            {newCount > 0 && (
+              <p className="mt-2 text-sm font-semibold text-primary">
+                {newCount === 1 ? "1 новая заявка" : `Новых заявок: ${newCount}`}
+              </p>
+            )}
           </div>
           <button onClick={() => void load()} className="rounded-xl border border-gray-border bg-white p-3 text-gray-text hover:text-primary" aria-label="Обновить">
             <RefreshCw className="h-5 w-5" />
@@ -53,7 +62,14 @@ export default function AdminRequestManager() {
               <Link
                 key={request.id}
                 href={`/admin/requests/${request.id}`}
-                className="group rounded-2xl border border-gray-border bg-white p-4 transition-colors hover:border-primary sm:p-5"
+                /* Непросмотренная заявка выделена и фоном, и полосой слева:
+                   в списке из двадцати карточек одного цветного слова мало.
+                   Ничего мигающего — админку держат открытой часами. */
+                className={`group rounded-2xl border p-4 transition-colors sm:p-5 ${
+                  request.status === "new"
+                    ? "border-l-4 border-gray-border border-l-primary bg-primary/[0.03] hover:border-primary"
+                    : "border-gray-border bg-white hover:border-primary"
+                }`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -65,7 +81,7 @@ export default function AdminRequestManager() {
                   <ChevronRight className="h-5 w-5 shrink-0 text-gray-text transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
                 </div>
                 <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-gray-text">
-                  <span>{requestStatusLabels[request.status]}</span>
+                  <Badge tone={requestStatusTones[request.status]}>{requestStatusLabels[request.status]}</Badge>
                   {request.photoCount > 0 && <span className="inline-flex items-center gap-1"><ImageIcon className="h-3.5 w-3.5" />{request.photoCount}</span>}
                   <span className="ml-auto">{new Date(request.createdAt).toLocaleString("ru-RU")}</span>
                 </div>

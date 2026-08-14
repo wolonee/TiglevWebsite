@@ -9,9 +9,11 @@ import Button, { IconButton } from "@/components/ui/Button";
 import CheckRow from "@/components/ui/CheckRow";
 import Counter from "@/components/ui/Counter";
 import { Field, FieldLabel, TextArea, TextField } from "@/components/ui/Field";
+import Badge from "@/components/ui/Badge";
 import Note from "@/components/ui/Note";
 import Panel from "@/components/ui/Panel";
 import Toggle from "@/components/ui/Toggle";
+import { colorOf, markOf } from "@/components/messengerMarks";
 import Segmented from "@/components/ui/Segmented";
 import Select from "@/components/ui/Select";
 
@@ -217,6 +219,35 @@ export default function UiKitPage() {
               <Toggle checked={live} onChange={setLive} label="Telegram" hint="Кнопка видна покупателю на карточке машины." />
               <Toggle checked={muted} onChange={setMuted} label="VK" hint={muted ? undefined : "выключен — на сайте кнопки нет"} />
               <Toggle checked disabled onChange={() => {}} label="Недоступен" hint="Состояние без права на изменение." />
+            </div>
+          </Section>
+
+          <Section
+            title="Метка состояния"
+            note="Статус заявки. Красная — требует действия, янтарная — в работе, зелёная — закрыта, серая — убрана из работы. Ничего мигающего: админку держат открытой часами, и пульсирующую точку перестают замечать вместе с новыми заявками."
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge tone="new">Новая</Badge>
+              <Badge tone="progress">В работе</Badge>
+              <Badge tone="done">Завершена</Badge>
+              <Badge tone="muted">Архив</Badge>
+            </div>
+          </Section>
+
+          <Section
+            title="Знаки мессенджеров"
+            note="Один набор на кнопки у покупателя и на заготовки в админке. У Telegram и WhatsApp знак рисуется, у VK и MAX знак — это сами буквы названия. Незнакомому сервису достаётся название и нейтральный цвет: кривой самодельный логотип узнаётся хуже честной надписи."
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              {[["telegram", "Telegram"], ["max", "MAX"], ["vk", "VK"], ["whatsapp", "WhatsApp"], ["viber", "Viber"]].map(([id, label]) => (
+                <span
+                  key={id}
+                  style={{ color: colorOf(id) }}
+                  className="inline-flex h-11 w-24 items-center justify-center rounded-lg border border-gray-border bg-white text-sm font-bold"
+                >
+                  {markOf(id, label)}
+                </span>
+              ))}
             </div>
           </Section>
 

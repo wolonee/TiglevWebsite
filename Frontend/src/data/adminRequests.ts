@@ -1,3 +1,5 @@
+import type { BadgeTone } from "@/components/ui/Badge";
+
 export type RequestStatus = "new" | "in_progress" | "completed" | "archived";
 
 export type CustomerRequest = {
@@ -17,6 +19,26 @@ export const requestStatusLabels: Record<RequestStatus, string> = {
   in_progress: "В работе",
   completed: "Завершена",
   archived: "Архив",
+};
+
+/**
+ * Цвет состояния. Здесь, а не в компонентах: список заявок и карточка должны
+ * красить статус одинаково, иначе «Новая» в списке и «Новая» внутри выглядят
+ * как разные состояния.
+ */
+export const requestStatusTones: Record<RequestStatus, BadgeTone> = {
+  new: "new",
+  in_progress: "progress",
+  completed: "done",
+  archived: "muted",
+};
+
+/** Пояснение к статусу — в админке работает не только автор этих слов. */
+export const requestStatusHints: Record<RequestStatus, string> = {
+  new: "Ещё не открывали",
+  in_progress: "Открыта, ответ не закрыт",
+  completed: "Клиенту ответили, вопрос закрыт",
+  archived: "Убрана из работы",
 };
 
 export const requestFieldLabels: Record<string, string> = {

@@ -312,9 +312,19 @@ export const customerRequests = {
     const [row] = await sql`SELECT * FROM customer_requests WHERE id = ${id}`;
     return row ? mapRequest(row) : null;
   },
+  /**
+   * Заметка не передана — значит её не трогали.
+   *
+   * Раньше отсутствующее поле записывалось как NULL, и запрос, меняющий только
+   * статус, стирал заметку администратора. Пустую строку COALESCE пропускает,
+   * поэтому очистить заметку по-прежнему можно — надо прислать `note: ""`.
+   */
   async update(id: string, data: { status: RequestStatus; note?: string }) {
     const sql = getSql();
-    const [row] = await sql`UPDATE customer_requests SET status = ${data.status}, note = ${data.note ?? null}, updated_at = NOW() WHERE id = ${id} RETURNING *`;
+    const [row] = await sql`
+      UPDATE customer_requests
+      SET status = ${data.status}, note = COALESCE(${data.note ?? null}, note), updated_at = NOW()
+      WHERE id = ${id} RETURNING *`;
     return row ? mapRequest(row) : null;
   },
 };

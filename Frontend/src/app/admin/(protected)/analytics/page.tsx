@@ -25,8 +25,11 @@ const STEPS: { type: string; label: string; hint: string }[] = [
   { type: "pageview", label: "Зашли на сайт", hint: "открыли любую страницу" },
   { type: "catalog", label: "Дошли до каталога", hint: "открыли список машин или фильтр" },
   { type: "lot", label: "Открыли машину", hint: "зашли в карточку" },
-  { type: "outbound", label: "Перешли к продавцу", hint: "нажали кнопку перехода" },
-  { type: "lead", label: "Оставили заявку", hint: "заполнили форму" },
+  // Раньше здесь стояло «Перешли к продавцу» — формулировка из старой затеи,
+  // когда этот шаг означал уход на CarClick. Сейчас это кнопки Telegram, VK
+  // и MAX на карточке: человек пишет НАМ, и уведомление приходит в бот.
+  { type: "outbound", label: "Написали в мессенджер", hint: "нажали Telegram, VK или MAX" },
+  { type: "lead", label: "Оставили заявку", hint: "заполнили форму с телефоном" },
 ];
 
 async function loadSummary(days: number): Promise<Summary | null> {
@@ -120,12 +123,11 @@ export default async function AnalyticsPage({
             );
           })}
         </div>
-        {!byType.get("outbound")?.hits && (
-          <p className="mt-4 rounded-lg bg-gray-bg px-3 py-2 text-sm text-gray-text">
-            Переходов к продавцу нет: на карточке машины пока нет кнопки перехода.
-            Пока её не добавить, воронка обрывается на просмотре.
-          </p>
-        )}
+        <p className="mt-4 rounded-lg bg-gray-bg px-3 py-2 text-sm text-gray-text">
+          Последние два шага — это два способа связаться, а не один за другим:
+          кто-то пишет в мессенджер, кто-то оставляет телефон в форме. Складывать
+          их не нужно, сравнивать между собой — можно.
+        </p>
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -185,9 +187,10 @@ export default async function AnalyticsPage({
 
       {summary.topLots.length > 0 && (
         <section className="rounded-2xl border border-gray-border bg-white p-5">
-          <h2 className="mb-1 text-lg font-bold text-dark">По каким машинам уходят</h2>
+          <h2 className="mb-1 text-lg font-bold text-dark">О каких машинах пишут</h2>
           <p className="mb-3 text-sm text-gray-text">
-            Это переходы к продавцу — то, за что платят в арбитраже.
+            С этих карточек нажимали кнопку мессенджера. По каждому такому нажатию
+            в бот приходит уведомление с машиной и ссылкой.
           </p>
           <ul className="space-y-1.5 text-sm">
             {summary.topLots.map((row) => (
