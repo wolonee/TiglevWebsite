@@ -10,8 +10,10 @@ import type { ReactNode } from "react";
  * что означает «выбрал из списка», а здесь смысл другой: рубильник, который
  * прямо сейчас меняет то, что видит покупатель.
  *
- * Цвет включённого состояния — тёмный, не красный. Красная кнопка на экране
- * одна, и это целевое действие («Сохранить»), а не десяток рубильников рядом.
+ * Цвет включённого состояния — зелёный: он читается как «работает» с одного
+ * взгляда, тогда как тёмная заливка выглядела просто выключателем в другом
+ * положении. Красным он быть не может — красная кнопка на экране одна, и это
+ * целевое действие («Сохранить»), а не десяток рубильников рядом.
  */
 
 type ToggleProps = {
@@ -34,7 +36,7 @@ const Toggle = ({ checked, onChange, label, hint, disabled = false }: ToggleProp
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={`relative mt-0.5 h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ${
-        checked ? "bg-dark" : "bg-gray-border"
+        checked ? "bg-green-600" : "bg-gray-border"
       } ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
     >
       <span

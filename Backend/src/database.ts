@@ -71,7 +71,7 @@ export function migrateDatabase() {
         CREATE TABLE IF NOT EXISTS customer_requests (
           id TEXT PRIMARY KEY,
           kind TEXT NOT NULL CHECK (kind IN ('contact', 'sell')),
-          status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'in_progress', 'completed', 'archived')),
+          status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'viewed', 'in_progress', 'completed', 'archived')),
           payload JSONB NOT NULL,
           photo_count INTEGER NOT NULL DEFAULT 0,
           photo_urls JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -81,6 +81,14 @@ export function migrateDatabase() {
         )
       `;
       await transaction`ALTER TABLE customer_requests ADD COLUMN IF NOT EXISTS photo_urls JSONB NOT NULL DEFAULT '[]'::jsonb`;
+      // `CREATE TABLE IF NOT EXISTS` существующую таблицу не трогает, поэтому
+      // список статусов в ограничении обновляем отдельно. Без этого добавленный
+      // «Просмотрена» падал с 500: значение не проходило CHECK.
+      await transaction`ALTER TABLE customer_requests DROP CONSTRAINT IF EXISTS customer_requests_status_check`;
+      await transaction`
+        ALTER TABLE customer_requests ADD CONSTRAINT customer_requests_status_check
+        CHECK (status IN ('new', 'viewed', 'in_progress', 'completed', 'archived'))
+      `;
       await transaction`CREATE INDEX IF NOT EXISTS customer_requests_created_at_idx ON customer_requests (created_at DESC)`;
       await transaction`CREATE TABLE IF NOT EXISTS app_migrations (key TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`;
       const [catalogMigration] = await transaction`
