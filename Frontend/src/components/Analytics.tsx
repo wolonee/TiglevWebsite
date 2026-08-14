@@ -48,6 +48,10 @@ export function track(event: {
   path?: string;
   lotId?: number;
   country?: string;
+  /** Куда ушёл человек: telegram | vk | max. Только для `outbound`. */
+  messenger?: string;
+  /** Полный адрес карточки — попадёт в уведомление администратору. */
+  pageUrl?: string;
 }): void {
   try {
     const body = JSON.stringify({

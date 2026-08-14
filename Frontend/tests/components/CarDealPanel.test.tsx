@@ -78,7 +78,7 @@ describe("CarDealPanel", () => {
     // VK настроен по умолчанию — этот аккаунт уже опубликован на сайте.
     expect(screen.getByRole("link", { name: "Написать в VK" })).toHaveAttribute(
       "href",
-      "https://vk.me/tiglev",
+      "https://vk.me/prosto_tigl",
     );
   });
 

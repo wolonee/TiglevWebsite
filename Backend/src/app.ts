@@ -7,7 +7,7 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { config } from "./config.js";
 import { sendContactRequestEmail, sendSellRequestEmail } from "./email.js";
-import { bot, broadcastContactRequest, broadcastSellRequest } from "./telegram.js";
+import { bot, broadcastContactRequest, broadcastMessengerLead, broadcastSellRequest } from "./telegram.js";
 import { carRecords, carStatuses, customerRequests } from "./database.js";
 import { PAGE_SIZE, countCatalog, fetchCatalogPage, fetchLot, parseFilters } from "./catalog.js";
 import { recordEvent, rollup, summary } from "./analytics.js";
@@ -115,9 +115,35 @@ app.post("/api/analytics/event", limiter, async (request, response) => {
       visitor: typeof body.visitor === "string" ? body.visitor : undefined,
       lotId: Number.isFinite(Number(body.lotId)) ? Number(body.lotId) : undefined,
       country: typeof body.country === "string" ? body.country : undefined,
+      messenger: typeof body.messenger === "string" ? body.messenger : undefined,
     },
     request.header("user-agent"),
   );
+  // Переход в мессенджер — это заявка, о ней администратор должен узнать сразу,
+  // а не когда человек сам напишет. Название машины берём из базы, а не из тела
+  // запроса: текст уходит в Telegram, и доверять ему присланному нельзя.
+  if (result.ok && String(body.type) === "outbound" && typeof body.messenger === "string") {
+    try {
+      const lot = Number.isFinite(Number(body.lotId)) ? await fetchLot(Number(body.lotId)) : null;
+      const row = lot?.row as Record<string, unknown> | undefined;
+      const title = row
+        ? [row.brand, row.model, row.year ? `${row.year} г.` : ""].filter(Boolean).join(" ")
+        : "Автомобиль из каталога";
+      const price = row?.price_individual
+        ? `${Number(row.price_individual).toLocaleString("ru-RU")} ₽`
+        : undefined;
+      await broadcastMessengerLead({
+        messenger: String(body.messenger),
+        title,
+        price,
+        url: typeof body.pageUrl === "string" ? body.pageUrl.slice(0, 300) : undefined,
+      });
+    } catch (error) {
+      // Уведомление не должно ломать приём события: статистика важнее.
+      console.error("Messenger lead notification failed:", error);
+    }
+  }
+
   // Всегда 204: счётчик не должен ломать страницу и не должен подсказывать
   // роботу, что его отсеяли.
   return response.status(204).end();

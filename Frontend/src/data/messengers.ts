@@ -40,7 +40,7 @@ const handles = (): Record<MessengerId, string | undefined> => ({
   max: process.env.NEXT_PUBLIC_MAX_USERNAME,
   // Этот аккаунт уже опубликован в подвале сайта и в контактах, так что кнопка
   // работает без настройки. Переменной окружения можно перекрыть.
-  vk: process.env.NEXT_PUBLIC_VK_USERNAME || "tiglev",
+  vk: process.env.NEXT_PUBLIC_VK_USERNAME || "prosto_tigl",
 });
 
 const LABELS: Record<MessengerId, string> = {
@@ -52,12 +52,15 @@ const LABELS: Record<MessengerId, string> = {
 const clean = (handle?: string) => handle?.trim().replace(/^@/, "") ?? "";
 
 /**
- * MAX замокан: аккаунта пока нет. Кнопка стоит в ряду, чтобы ряд был из трёх,
- * и ведёт на сайт мессенджера. Это заглушка, а не рабочая связь —
- * до публикации сайта нужен настоящий ник (`NEXT_PUBLIC_MAX_USERNAME`),
- * иначе покупатель уйдёт в никуда. Пункт стоит в ROADMAP.md.
+ * Заглушек здесь нет намеренно.
+ *
+ * У MAX не оказалось публичных ников — искать человека можно только по номеру
+ * телефона, поэтому кнопки для него нет. Раньше она стояла ради симметрии ряда
+ * и вела на главную `max.ru`: покупатель нажимал и попадал в никуда, что хуже
+ * отсутствующей кнопки. Появится способ дать прямую ссылку на чат —
+ * достаточно задать `NEXT_PUBLIC_MAX_USERNAME`.
  */
-const MOCKED: Partial<Record<MessengerId, string>> = { max: "https://max.ru/" };
+const MOCKED: Partial<Record<MessengerId, string>> = {};
 
 const buildHref = (id: MessengerId, handle: string, message: string): string => {
   switch (id) {

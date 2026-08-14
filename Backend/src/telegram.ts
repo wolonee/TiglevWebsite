@@ -121,3 +121,46 @@ export async function broadcastContactRequest(data: ContactRequest) {
   }
   return { recipients: recipients.length, delivered };
 }
+
+
+/**
+ * Переход в мессенджер — тоже заявка, просто разговор пойдёт не у нас.
+ *
+ * Без этого уведомления администратор узнаёт о человеке, только когда тот сам
+ * напишет, и не знает, из-за какой машины. Имени здесь быть не может: при
+ * переходе мы о человеке ничего не знаем. Опознать помогает сама машина —
+ * в мессенджер уходит заготовленный текст с ней же.
+ */
+export async function broadcastMessengerLead(data: {
+  messenger: string;
+  title: string;
+  price?: string;
+  url?: string;
+}) {
+  const recipients = await subscribers.all();
+  const where = { telegram: "Telegram", vk: "VK", max: "Max" }[data.messenger] ?? data.messenger;
+  const lines = [
+    `💬 Переход в ${where}`,
+    "",
+    data.title,
+    data.price ? `Цена: ${data.price}` : "",
+    data.url ? `\n${data.url}` : "",
+    "",
+    "Человек открыл чат с заготовленным сообщением. Ждите обращения.",
+  ].filter(Boolean);
+  const text = lines.join("\n");
+
+  let delivered = 0;
+  for (const subscriber of recipients) {
+    try {
+      // Без разметки: в названии машины попадаются символы, которые
+      // MarkdownV2 требует экранировать, и одна «(» роняет всю отправку.
+      await bot.api.sendMessage(subscriber.chat_id, text, { link_preview_options: { is_disabled: true } });
+      delivered += 1;
+    } catch (error) {
+      console.error(`Failed to deliver messenger lead to ${subscriber.chat_id}:`, error);
+      if (error instanceof GrammyError && [400, 403].includes(error.error_code)) await subscribers.remove(subscriber.chat_id);
+    }
+  }
+  return { recipients: recipients.length, delivered };
+}

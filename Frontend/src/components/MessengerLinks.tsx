@@ -3,6 +3,17 @@
 import { useState, useSyncExternalStore } from "react";
 import type { Car } from "@/data/cars";
 import { leadMessage, messengerLinks, type MessengerId } from "@/data/messengers";
+import { track } from "./Analytics";
+
+/**
+ * Числовой id лота CarClick из строкового id карточки (`cc-467642`).
+ * У своих машин id текстовый — им числа нет, и в уведомление уйдёт
+ * название без ссылки на каталог CarClick.
+ */
+const lotIdOf = (car: { id?: string }): number | undefined => {
+  const match = /^cc-(\d+)$/.exec(car?.id ?? "");
+  return match ? Number(match[1]) : undefined;
+};
 
 /**
  * Кнопки перехода в мессенджер с заготовленным сообщением.
@@ -108,7 +119,18 @@ export default function MessengerLinks({ car, hint = false, className = "" }: Me
             target="_blank"
             rel="noreferrer"
             aria-label={`Написать в ${link.label}`}
-            onClick={link.prefillsMessage ? undefined : () => void copyMessage()}
+            onClick={() => {
+              // Маячок вместо перехода через наш сервер: если бэкенд затормозит,
+              // человек всё равно попадёт в чат. Несколько процентов потерянной
+              // статистики дешевле потерянного клиента.
+              track({
+                type: "outbound",
+                messenger: link.id,
+                lotId: lotIdOf(car),
+                pageUrl,
+              });
+              if (!link.prefillsMessage) void copyMessage();
+            }}
             style={{ color: MARK_COLORS[link.id] }}
             className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-gray-border bg-white text-sm font-bold transition-colors duration-200 hover:border-gray-text/40 active:scale-[0.98]"
           >

@@ -21,21 +21,19 @@ describe("messengers", () => {
     expect(message).toContain("https://tiglev.com/catalog/cc-465823");
   });
 
-  it("не показывает мессенджер без ника — кроме замоканного MAX", () => {
+  it("не показывает мессенджер без ника", () => {
     setHandles("", "", "vk_account");
     const links = messengerLinks("привет");
 
-    expect(links.map((link) => link.id)).toEqual(["max", "vk"]);
-    // Заглушка ведёт на сайт мессенджера, а не в чат: аккаунта ещё нет.
-    expect(links.find((link) => link.id === "max")).toMatchObject({
-      isMock: true,
-      href: "https://max.ru/",
-    });
+    // MAX выпал намеренно: публичных ников там нет, человека ищут по номеру
+    // телефона. Раньше на его месте стояла заглушка на главную max.ru —
+    // покупатель нажимал и попадал в никуда, что хуже отсутствующей кнопки.
+    expect(links.map((link) => link.id)).toEqual(["vk"]);
   });
 
   it("оставляет VK даже без переменной: этот аккаунт уже опубликован на сайте", () => {
     setHandles("", "", "");
-    expect(messengerLinks("привет").find((link) => link.id === "vk")?.href).toBe("https://vk.me/tiglev");
+    expect(messengerLinks("привет").find((link) => link.id === "vk")?.href).toBe("https://vk.me/prosto_tigl");
   });
 
   it("перестаёт мокать MAX, как только появился ник", () => {

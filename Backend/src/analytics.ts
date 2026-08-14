@@ -46,11 +46,15 @@ export function migrateAnalytics() {
           device      text,
           -- Для outbound — id лота, чтобы видеть, по каким машинам уходят.
           lot_id      bigint,
-          country     text
+          country     text,
+          -- Куда ушёл: telegram | vk | max. Только для outbound.
+          messenger   text
         )`);
       await sql.unsafe(
         `CREATE INDEX IF NOT EXISTS events_at_idx ON analytics.events (at DESC)`,
       );
+      // Догоняем таблицы, созданные до появления колонки.
+      await sql.unsafe(`ALTER TABLE analytics.events ADD COLUMN IF NOT EXISTS messenger text`);
       await sql.unsafe(`
         CREATE TABLE IF NOT EXISTS analytics.daily (
           day       date NOT NULL,
@@ -86,6 +90,7 @@ export type IncomingEvent = {
   visitor?: string;
   lotId?: number;
   country?: string;
+  messenger?: string;
 };
 
 export async function recordEvent(event: IncomingEvent, userAgent: string | undefined) {
@@ -96,10 +101,11 @@ export async function recordEvent(event: IncomingEvent, userAgent: string | unde
   await migrateAnalytics();
   const sql = getSql();
   await sql`
-    INSERT INTO analytics.events (type, path, referrer, visitor, device, lot_id, country)
+    INSERT INTO analytics.events (type, path, referrer, visitor, device, lot_id, country, messenger)
     VALUES (${event.type}, ${path}, ${event.referrer?.slice(0, 300) ?? null},
             ${event.visitor?.slice(0, 64) ?? null}, ${deviceFrom(userAgent)},
-            ${event.lotId ?? null}, ${event.country?.slice(0, 40) ?? null})
+            ${event.lotId ?? null}, ${event.country?.slice(0, 40) ?? null},
+            ${event.messenger?.slice(0, 20) ?? null})
   `;
   return { ok: true as const };
 }
@@ -141,6 +147,7 @@ export type Summary = {
   topReferrers: { referrer: string; hits: number }[];
   devices: { device: string; hits: number }[];
   topLots: { lot_id: number; brand: string | null; model: string | null; hits: number }[];
+  messengers: { messenger: string; hits: number }[];
 };
 
 /**
@@ -152,7 +159,7 @@ export async function summary(days: number): Promise<Summary> {
   const sql = getSql();
   const span = Math.min(Math.max(1, days), 90);
 
-  const [totals, byDay, topPages, topReferrers, devices, topLots] = await Promise.all([
+  const [totals, byDay, topPages, topReferrers, devices, topLots, messengers] = await Promise.all([
     sql`SELECT type, COUNT(*)::int AS hits, COUNT(DISTINCT visitor)::int AS visitors
         FROM analytics.events WHERE at > now() - make_interval(days => ${span})
         GROUP BY type`,
@@ -177,6 +184,9 @@ export async function summary(days: number): Promise<Summary> {
         WHERE e.at > now() - make_interval(days => ${span})
           AND e.type = 'outbound' AND e.lot_id IS NOT NULL
         GROUP BY e.lot_id, l.brand, l.model ORDER BY hits DESC LIMIT 15`,
+    sql`SELECT messenger, COUNT(*)::int AS hits FROM analytics.events
+        WHERE at > now() - make_interval(days => ${span}) AND messenger IS NOT NULL
+        GROUP BY messenger ORDER BY hits DESC`,
   ]);
 
   return {
@@ -186,5 +196,6 @@ export async function summary(days: number): Promise<Summary> {
     topReferrers: topReferrers as unknown as Summary["topReferrers"],
     devices: devices as unknown as Summary["devices"],
     topLots: topLots as unknown as Summary["topLots"],
+    messengers: messengers as unknown as Summary["messengers"],
   };
 }
