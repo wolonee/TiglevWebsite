@@ -237,10 +237,10 @@ export default function UiKitPage() {
 
           <Section
             title="Знаки мессенджеров"
-            note="Один набор на кнопки у покупателя и на заготовки в админке. У Telegram и WhatsApp знак рисуется, у VK и MAX знак — это сами буквы названия. Незнакомому сервису достаётся название и нейтральный цвет: кривой самодельный логотип узнаётся хуже честной надписи."
+            note="Один набор на кнопки у покупателя и на заготовки в админке. У Telegram, WhatsApp и MAX это настоящий логотип из их фирменных файлов, у VK знак — сами буквы названия. Незнакомому сервису достаётся название и нейтральный цвет: кривой самодельный логотип узнаётся хуже честной надписи."
           >
             <div className="flex flex-wrap items-center gap-2">
-              {[["telegram", "Telegram"], ["max", "MAX"], ["vk", "VK"], ["whatsapp", "WhatsApp"], ["viber", "Viber"]].map(([id, label]) => (
+              {[["telegram", "Telegram"], ["max", "MAX"], ["vk", "VK"], ["whatsapp", "WhatsApp"], ["signal", "Signal"]].map(([id, label]) => (
                 <span
                   key={id}
                   style={{ color: colorOf(id) }}
