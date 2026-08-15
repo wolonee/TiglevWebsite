@@ -5,7 +5,8 @@
 от её смерти — если прокси кончится, а сайт продолжит показывать вчерашние
 цены, узнаем об этом от клиента, а не от мониторинга.
 
-Отправляется тем же ботом и тем же подписчикам, что и заявки с сайта
+Отправляется тем же ботом, что и заявки с сайта, и тем же получателям:
+администратору из TELEGRAM_ADMIN_CHAT_IDS. Пусто — всем подписчикам бота
 (`public.telegram_subscribers`, кто отправил боту /start).
 
 Два режима:
@@ -65,6 +66,20 @@ def send(text: str, token: str, chat_ids: list[int]) -> int:
 
 
 def subscribers(conn) -> list[int]:
+    """
+    Кому писать. По умолчанию — только администратору.
+
+    Подписчиком бота становится любой, кто нажал «Старт»: в базе их оказалось
+    двое, и сообщения о работе сайта уходили постороннему. Список задаётся
+    той же переменной, что и у бэкенда, — TELEGRAM_ADMIN_CHAT_IDS.
+    """
+    allowed = [
+        int(part) for part in os.environ.get("TELEGRAM_ADMIN_CHAT_IDS", "324430515").split(",")
+        if part.strip().lstrip("-").isdigit() and int(part) != 0
+    ]
+    if allowed:
+        return allowed
+
     with conn.cursor() as cur:
         # Схема указана явно: search_path в пуле Neon бывает чужим.
         cur.execute("SELECT chat_id FROM public.telegram_subscribers")
