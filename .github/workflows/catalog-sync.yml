@@ -84,8 +84,10 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PROXY_URL: ${{ secrets.PROXY_URL }}
         run: |
-          python carclick.py --target pg --delay 0.15 fresh
-          python carclick.py --target pg --delay 0.05 detail --concurrency 8 --limit-lots 3000
+          set -o pipefail
+          { python carclick.py --target pg --delay 0.15 fresh
+            python carclick.py --target pg --delay 0.05 detail --concurrency 8 --limit-lots 3000
+          } 2>&1 | tee -a /tmp/sync.log
 
       # Полный обход: обновляет цены у всех лотов и снимает проданные.
       # Внутри есть защита — если обход соберёт меньше 80% известных живых лотов,
@@ -96,7 +98,8 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PROXY_URL: ${{ secrets.PROXY_URL }}
         run: |
-          python carclick.py --target pg --delay 0.1 sweep
+          set -o pipefail
+          python carclick.py --target pg --delay 0.1 sweep 2>&1 | tee -a /tmp/sync.log
 
       # Отдельный прогон карточек — на случай большого отставания, когда порции
       # в `fresh` не хватает. По расписанию не нужен, запускается кнопкой.
@@ -106,7 +109,8 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PROXY_URL: ${{ secrets.PROXY_URL }}
         run: |
-          python carclick.py --target pg --delay 0.05 detail --concurrency 8 --limit-lots 20000
+          set -o pipefail
+          python carclick.py --target pg --delay 0.05 detail --concurrency 8 --limit-lots 20000 2>&1 | tee -a /tmp/sync.log
 
       # Проданные лоты копятся вечно. Строка остаётся (история цен, ссылки
       # в поисковом индексе), но галерея и опции — 3.4 КБ из 4.8 — убираются.
@@ -160,8 +164,12 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
+          # Причину берём из вывода упавшего шага: сообщение «задача упала»
+          # без неё заставляет лезть в Actions за каждой мелочью, а самая
+          # частая поломка — прокси, и её видно первой же строкой.
+          REASON=$(grep -E "ProxyAuthError|RuntimeError|Error" /tmp/sync.log 2>/dev/null | tail -2 | tr '\n' ' ' | cut -c1-400)
           python notify.py --failed "${{ steps.pick.outputs.job }}" \
-            --details "Прогон ${{ github.run_id }}, см. Actions в репозитории." || true
+            --details "${REASON:-Подробностей нет.} (прогон ${{ github.run_id }})" || true
 
       # Плановая проверка того, что ломается тихо: устаревшие данные, кончающийся
       # пакет прокси, подросшая база. Молчит, если всё в порядке.

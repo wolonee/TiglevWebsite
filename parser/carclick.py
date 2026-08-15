@@ -165,6 +165,10 @@ class ProxyPool:
 PROXIES = ProxyPool(os.environ.get("PROXY_URL", ""))
 
 
+class ProxyAuthError(RuntimeError):
+    """Прокси не пускает. Отдельный тип, чтобы не путать с отказом CarClick."""
+
+
 class RateLimiter:
     """Минимальный интервал между запросами на весь пул потоков."""
 
@@ -223,6 +227,16 @@ def get_json(url: str, limiter: RateLimiter, retries: int = 6) -> dict[str, Any]
                 backoff = 2.0 ** attempt * (3.0 if error.code in (429, 503) else 1.0)
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as error:
             last_error = error
+            # 407 на CONNECT приходит не как HTTPError, а текстом внутри URLError.
+            # Отказ в авторизации одинаков на всех 150 узлах — они делят один
+            # логин, поэтому перебирать их бессмысленно: это кончилась подписка,
+            # сменился пароль или выбран трафик. Падаем сразу и говорим, почему.
+            if proxy_url and "407" in str(error):
+                raise ProxyAuthError(
+                    "прокси отклонил авторизацию (407 Proxy Authentication Required). "
+                    "Проверьте в личном кабинете: активна ли подписка, остался ли трафик, "
+                    "не сменился ли пароль. Секрет PROXY_URL в настройках репозитория."
+                ) from error
             if proxy_url:
                 PROXIES.penalize(proxy_url)
             backoff = 2.0 ** attempt
