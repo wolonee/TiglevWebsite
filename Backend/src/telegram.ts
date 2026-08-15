@@ -69,8 +69,25 @@ function formatRequest(data: SellRequest): string {
   ].filter((item): item is string => item !== null).join("\n");
 }
 
+/**
+ * Кому слать уведомление.
+ *
+ * Подписчиком бота становится любой, кто нажал «Старт», поэтому по умолчанию
+ * список сужен до администратора из `TELEGRAM_ADMIN_CHAT_IDS`: заявки клиентов
+ * с телефонами не должны уходить случайным людям. Имя и ник подтягиваем из
+ * подписчиков, если человек там есть, — они нужны только для логов.
+ */
+async function getRecipients(): Promise<{ chat_id: number }[]> {
+  const allowed = config.TELEGRAM_ADMIN_CHAT_IDS
+    .split(",")
+    .map((id) => Number(id.trim()))
+    .filter((id) => Number.isFinite(id) && id !== 0);
+
+  return allowed.length ? allowed.map((chat_id) => ({ chat_id })) : await subscribers.all();
+}
+
 export async function broadcastSellRequest(data: SellRequest, photos: Express.Multer.File[]) {
-  const recipients = await subscribers.all();
+  const recipients = await getRecipients();
   const text = formatRequest(data);
   let delivered = 0;
 
@@ -94,7 +111,7 @@ export async function broadcastSellRequest(data: SellRequest, photos: Express.Mu
 }
 
 export async function broadcastContactRequest(data: ContactRequest) {
-  const recipients = await subscribers.all();
+  const recipients = await getRecipients();
   const text = [
     data.carTitle ? "🚗 *Заявка на автомобиль*" : "💬 *Новая заявка с формы «Написать нам»*",
     "",
@@ -142,7 +159,7 @@ export async function broadcastMessengerLead(data: {
   /** Своя машина из салона или импорт под заказ. */
   own?: boolean;
 }) {
-  const recipients = await subscribers.all();
+  const recipients = await getRecipients();
   const where = { telegram: "Telegram", vk: "VK", max: "Max" }[data.messenger] ?? data.messenger;
   const lines = [
     `💬 Переход в ${where}`,
