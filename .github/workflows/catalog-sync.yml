@@ -1,0 +1,206 @@
+name: Синхронизация каталога CarClick
+
+# Каталог обновляется прямо в Neon, без промежуточного SQLite: состояние
+# (известные лоты, очередь на карточки, номер последнего обхода) живёт в самой
+# базе, поэтому задача не привязана к чьему-то компьютеру.
+#
+# Витрина читает из той же схемы в этот же момент, поэтому синхронизация
+# обновляет строки на месте и ничего не удаляет (см. parser/pgsync.py).
+
+on:
+  schedule:
+    # Время UTC. Тольятти — UTC+4.
+    - cron: "0 1 * * *"      # 05:00 МСК — полный обход: цены и снятые с продажи
+    - cron: "0 */4 * * *"    # каждые 4 часа — новинки вместе с их фотографиями
+    - cron: "0 3 1 * *"      # 1-го числа 07:00 МСК — чистка проданных
+  workflow_dispatch:
+    inputs:
+      job:
+        description: "Что запустить вручную"
+        required: true
+        default: fresh
+        type: choice
+        options: [fresh, sweep, detail, prune, facets]
+
+# Обходы пишут в одни и те же строки: если `sweep` и `fresh` пересекутся,
+# они могут наступить друг на друга при снятии лотов с продажи.
+concurrency:
+  group: catalog-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Обновление каталога
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: parser
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Установка psycopg
+        run: pip install --quiet "psycopg[binary]"
+
+      - name: Какую задачу запускаем
+        id: pick
+        working-directory: .
+        env:
+          EVENT: ${{ github.event_name }}
+          CRON: ${{ github.event.schedule }}
+          MANUAL: ${{ inputs.job }}
+        run: |
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            JOB="$MANUAL"
+          else
+            case "$CRON" in
+              "0 1 * * *")   JOB=sweep ;;
+              "0 */4 * * *") JOB=fresh ;;
+              "0 3 1 * *")   JOB=prune ;;
+              *)             JOB=fresh ;;
+            esac
+          fi
+          echo "job=$JOB" >> "$GITHUB_OUTPUT"
+          echo "Запускаем: $JOB"
+
+      # Новинки и сразу их галереи: карточка товара должна открываться
+      # с полным набором фотографий, а не с одной обложкой.
+      #
+      # `detail` берёт все лоты в продаже без галереи, а не только что добавленные,
+      # поэтому прогон сам догоняет отставание, если предыдущий запуск падал.
+      # Ограничение в 3000 держит один прогон в пределах десяти минут:
+      # каталог прирастает на ~120 машин за четыре часа, запас пятнадцатикратный.
+      - name: Новинки и их фотографии
+        if: steps.pick.outputs.job == 'fresh'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PROXY_URL: ${{ secrets.PROXY_URL }}
+        run: |
+          set -o pipefail
+          { python carclick.py --target pg --delay 0.15 fresh
+            python carclick.py --target pg --delay 0.05 detail --concurrency 8 --limit-lots 3000
+          } 2>&1 | tee -a /tmp/sync.log
+
+      # Полный обход: обновляет цены у всех лотов и снимает проданные.
+      # Внутри есть защита — если обход соберёт меньше 80% известных живых лотов,
+      # снятие пропускается, чтобы сетевой сбой не «продал» весь каталог.
+      - name: Полный обход
+        if: steps.pick.outputs.job == 'sweep'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PROXY_URL: ${{ secrets.PROXY_URL }}
+        run: |
+          set -o pipefail
+          python carclick.py --target pg --delay 0.1 sweep 2>&1 | tee -a /tmp/sync.log
+
+      # Отдельный прогон карточек — на случай большого отставания, когда порции
+      # в `fresh` не хватает. По расписанию не нужен, запускается кнопкой.
+      - name: Догнать карточки (вручную)
+        if: steps.pick.outputs.job == 'detail'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PROXY_URL: ${{ secrets.PROXY_URL }}
+        run: |
+          set -o pipefail
+          python carclick.py --target pg --delay 0.05 detail --concurrency 8 --limit-lots 20000 2>&1 | tee -a /tmp/sync.log
+
+      # Проданные лоты копятся вечно. Строка остаётся (история цен, ссылки
+      # в поисковом индексе), но галерея и опции — 3.4 КБ из 4.8 — убираются.
+      # Вернувшийся в продажу лот снова попадёт в очередь на карточку:
+      # `pending_detail_ids` смотрит на наличие галереи, а не только на метку.
+      - name: Чистка проданных
+        if: steps.pick.outputs.job == 'prune'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python carclick.py --target pg prune --older-than 30
+
+      # Панель фильтров рисуется по этому файлу. Пересобирается после обхода,
+      # потому что счётчики меняются вместе с каталогом.
+      - name: Пересборка фильтров
+        if: steps.pick.outputs.job == 'sweep' || steps.pick.outputs.job == 'facets'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python carclick.py --target pg facets --out ../facets.json
+
+      - name: Выложить facets.json
+        if: steps.pick.outputs.job == 'sweep' || steps.pick.outputs.job == 'facets'
+        uses: actions/upload-artifact@v4
+        with:
+          name: facets
+          path: facets.json
+          retention-days: 14
+
+      # 144 посадочные страницы и сравнение цен по странам считаются по базе.
+      # Пересобирать вместе с фильтрами: цены и остатки уезжают одинаково,
+      # а числа стоят прямо в заголовках страниц.
+      - name: Пересборка посадочных страниц
+        if: steps.pick.outputs.job == 'sweep' || steps.pick.outputs.job == 'facets'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python carclick.py --target pg seo --out ../seo.json
+
+      - name: Выложить seo.json
+        if: steps.pick.outputs.job == 'sweep' || steps.pick.outputs.job == 'facets'
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo
+          path: seo.json
+          retention-days: 14
+
+      # Молчание системы неотличимо от её смерти: если прокси кончится, сайт
+      # продолжит показывать вчерашние цены, и узнаем мы об этом от клиента.
+      # Поэтому о падении пишем в тот же телеграм-бот, что и о заявках.
+      - name: Сообщить о падении
+        if: failure()
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          # Причину берём из вывода упавшего шага: сообщение «задача упала»
+          # без неё заставляет лезть в Actions за каждой мелочью, а самая
+          # частая поломка — прокси, и её видно первой же строкой.
+          REASON=$(grep -E "ProxyAuthError|RuntimeError|Error" /tmp/sync.log 2>/dev/null | tail -2 | tr '\n' ' ' | cut -c1-400)
+          python notify.py --failed "${{ steps.pick.outputs.job }}" \
+            --details "${REASON:-Подробностей нет.} (прогон ${{ github.run_id }})" || true
+
+      # Плановая проверка того, что ломается тихо: устаревшие данные, кончающийся
+      # пакет прокси, подросшая база. Молчит, если всё в порядке.
+      - name: Проверка состояния
+        if: success() && steps.pick.outputs.job == 'sweep'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          PROXY_EXPIRES: ${{ secrets.PROXY_EXPIRES }}
+        run: python notify.py --check || true
+
+      # Neon на тарифе Free даёт 512 МБ на проект, и в этой же базе живут заявки
+      # с сайта. Если упереться в квоту, база переходит в read-only и приём
+      # заявок ломается — поэтому следим и предупреждаем заранее.
+      - name: Проверка размера базы
+        if: always() && steps.pick.outputs.job != 'facets'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          python - <<'PY'
+          import os, psycopg
+          with psycopg.connect(os.environ["DATABASE_URL"], connect_timeout=30) as conn:
+              cur = conn.cursor()
+              cur.execute("SELECT pg_database_size(current_database())/1024.0/1024")
+              size = cur.fetchone()[0]
+              cur.execute("SELECT COUNT(*) FROM catalog.lots WHERE gone_at IS NULL")
+              live = cur.fetchone()[0]
+          print(f"::notice::База {size:.0f} МБ из 512 ({size/512*100:.0f}%), в продаже {live} лотов")
+          if size > 460:
+              print("::error::Меньше 50 МБ до лимита Neon. Запустите prune или поднимите тариф.")
+              raise SystemExit(1)
+          if size > 400:
+              print("::warning::Больше 400 МБ — пора запустить prune.")
+          PY

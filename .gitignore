@@ -51,3 +51,7 @@ next-env.d.ts
 
 # local archives
 Archive.zip
+
+# Выгрузка старого VK-сайта, 131 МБ — в репозиторий не нужна
+vk-site-ready-hq*/
+tiglev-svg-kit/
