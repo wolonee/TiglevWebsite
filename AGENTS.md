@@ -1,5 +1,9 @@
 # Repository Guidelines
 
+Also read `/Users/tiglev/dev/AGENTS.md` and
+`/Users/tiglev/dev/AgentContext/SKILLS.md`. This repository's rules take
+priority when they differ.
+
 ## Project Structure & Module Organization
 
 This repository contains two TypeScript applications:
