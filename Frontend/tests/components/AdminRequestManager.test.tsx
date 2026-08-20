@@ -23,10 +23,21 @@ describe("AdminRequestManager", () => {
   it("opens every request on its own details page", async () => {
     render(<AdminRequestManager />);
 
-    expect(await screen.findByRole("link", { name: /продать авто/i })).toHaveAttribute(
+    // Карточка кликабельна целиком — это показывает ховер на рамке.
+    // Стрелка в углу убрана: она повторяла то же самое и занимала место статуса.
+    expect(await screen.findByRole("link", { name: /Иван/ })).toHaveAttribute(
       "href",
       "/admin/requests/request-1",
     );
-    expect(screen.getByText("Перезвонить после обеда")).toBeInTheDocument();
+    expect(screen.getByText(/Перезвонить после обеда/)).toBeInTheDocument();
+  });
+
+  it("называет состояние заявки словом, а не только цветом", async () => {
+    render(<AdminRequestManager />);
+
+    // Цвет метки — подсказка, но не единственный носитель смысла:
+    // так состояние доступно и при монохромном зрении, и читалке экрана.
+    expect(await screen.findByText("Новая")).toBeInTheDocument();
+    expect(screen.getByText(/Новых: 1 из 1/)).toBeInTheDocument();
   });
 });

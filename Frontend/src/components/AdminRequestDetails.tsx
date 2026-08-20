@@ -4,10 +4,13 @@ import Image from "next/image";
 import { imageVariants } from "@/data/imageVariants";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, LoaderCircle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Badge from "@/components/ui/Badge";
 import {
   requestFieldLabels,
+  requestStatusHints,
   requestStatusLabels,
+  requestStatusTones,
   type CustomerRequest,
   type RequestStatus,
 } from "@/data/adminRequests";
@@ -19,6 +22,35 @@ export default function AdminRequestDetails({ initialRequest }: { initialRequest
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
+
+  /**
+   * Открыли новую заявку — она становится просмотренной.
+   *
+   * Единственный переход, который делается сам: он отвечает на вопрос «до
+   * этой уже дошли руки?», и требовать ради него отдельного нажатия значит
+   * получать список, где половина заявок вечно «новые». Всё остальное —
+   * «в работе», «завершена», «архив» — администратор ставит сам.
+   */
+  const marked = useRef(false);
+  useEffect(() => {
+    if (request.status !== "new" || marked.current) return;
+    marked.current = true;
+    void fetch(`/api/admin/requests/${request.id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ status: "viewed" }),
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((result) => {
+        if (!result?.request) return;
+        setRequest(result.request);
+        // Значение в селекте двигаем только если администратор его ещё не трогал.
+        setStatus((current) => (current === "new" ? "viewed" : current));
+      })
+      .catch(() => {
+        // Молча: пометка о просмотре не стоит того, чтобы пугать ошибкой.
+      });
+  }, [request.id, request.status]);
 
   async function save() {
     setSaving(true);
@@ -64,16 +96,26 @@ export default function AdminRequestDetails({ initialRequest }: { initialRequest
                 {new Date(request.createdAt).toLocaleString("ru-RU")}
               </p>
             </div>
-            <span className="rounded-lg bg-gray-bg px-3 py-1.5 text-sm font-semibold text-dark">
+            <Badge tone={requestStatusTones[request.status]} className="h-7 px-3 text-sm">
               {requestStatusLabels[request.status]}
-            </span>
+            </Badge>
           </div>
 
           <dl className="mt-7 divide-y divide-gray-border">
             {Object.entries(request.payload).map(([key, value]) => (
               <div key={key} className="grid gap-1 py-3 text-sm sm:grid-cols-[160px_1fr] sm:gap-5">
                 <dt className="text-gray-text">{requestFieldLabels[key] ?? key}</dt>
-                <dd className="whitespace-pre-wrap font-medium text-dark">{String(value || "Не указано")}</dd>
+                <dd className="whitespace-pre-wrap font-medium text-dark">
+                  {/* Ссылку на автомобиль менеджер открывает — не заставляем копировать её руками.
+                      Схему проверяет backend, сюда доходят только http(s). */}
+                  {typeof value === "string" && /^https?:\/\//.test(value) ? (
+                    <a href={value} target="_blank" rel="noreferrer" className="break-all text-primary hover:underline">
+                      {value}
+                    </a>
+                  ) : (
+                    String(value || "Не указано")
+                  )}
+                </dd>
               </div>
             ))}
           </dl>
@@ -130,6 +172,9 @@ export default function AdminRequestDetails({ initialRequest }: { initialRequest
                   <option key={value} value={value}>{label}</option>
                 ))}
               </select>
+              <span className="mt-1.5 block text-xs font-normal text-gray-text">
+                {requestStatusHints[status]}
+              </span>
             </label>
 
             <label className="block text-sm font-medium text-dark">
