@@ -1,4 +1,5 @@
 import { normalizeCarImages, type CarImage } from "./carImages";
+import type { CarSource } from "./catalogSource";
 
 export type Car = {
   id: string;
@@ -19,6 +20,29 @@ export type Car = {
   wheel?: string;
   color?: string;
   damage?: string;
+  // Поля из каталога CarClick (см. parser/). Все опциональные: локальные
+  // машины их не заполняют, карточка показывает только то, что есть.
+  fuel?: string;
+  country?: string;
+  countryCode?: string;
+  deliveryTime?: number;
+  condition?: "new" | "used";
+  generation?: string;
+  /** Комплектация как её пишет источник: «2.0L petrol AT 150hp». Показываем, не фильтруем. */
+  equipment?: string;
+  /** Коды для фильтрации — совпадают со значениями в facets.json. */
+  brandCode?: string;
+  modelCode?: string;
+  /** HEX цвета кузова; для фильтра-образца. */
+  colorHex?: string;
+  /** id опций из справочника CarClick — для фильтра «Опции». */
+  options?: number[];
+  /**
+   * Откуда машина. Не указан — значит наша, в наличии: девять локальных
+   * записей появились раньше, чем каталог CarClick, и переписывать их
+   * ради поля со значением по умолчанию незачем.
+   */
+  source?: CarSource;
 };
 
 type CatalogCar = Omit<Car, "image" | "images" | "bodyType" | "engine"> & {
@@ -163,6 +187,18 @@ export const formatPrice = (price: number): string => {
   return price.toLocaleString("ru-RU") + " \u20BD";
 };
 
+/**
+ * Свои машины из бэкенда.
+ *
+ * При сбое отдаём список из кода: девять машин, они меняются редко, и главная
+ * страница ценнее точности этой выборки. Но откат обязан быть слышным —
+ * однажды бэкенд был закрыт защитой Vercel и молча отдавал 302, сайт выглядел
+ * рабочим, а показывал данные из кода вместо добавленных через админку.
+ * Понять это можно было только сравнив вручную.
+ *
+ * Для каталога CarClick такого отката нет и быть не может: 84 тысячи лотов
+ * в коде не лежат, и при сбое там честная ошибка (см. `catalogRepo`).
+ */
 export async function getCatalogCars(): Promise<Car[]> {
   const backendUrl = process.env.BACKEND_URL;
   if (!backendUrl) return cars;
@@ -170,14 +206,18 @@ export async function getCatalogCars(): Promise<Car[]> {
     const response = await fetch(`${backendUrl}/api/cars`, {
       next: { revalidate: catalogRevalidateSeconds, tags: ["catalog"] },
     });
-    if (!response.ok) return cars;
+    if (!response.ok) {
+      console.error(`[cars] бэкенд ответил ${response.status}; показываем список из кода`);
+      return cars;
+    }
     const payload = await response.json() as { cars?: Array<Omit<Car, "image" | "images"> & { images: Array<string | CarImage> }> };
     const stored = (payload.cars ?? []).map((car) => {
       const images = normalizeCarImages(car.images ?? []);
       return { ...car, images, image: images[0]?.url ?? "" };
     });
     return stored;
-  } catch {
+  } catch (error) {
+    console.error("[cars] бэкенд недоступен; показываем список из кода:", error);
     return cars;
   }
 }
@@ -186,16 +226,16 @@ export async function getCar(id: string): Promise<Car | undefined> {
   const backendUrl = process.env.BACKEND_URL;
   const local = cars.find((car) => car.id === id);
   if (!backendUrl) return local;
-  try {
-    const response = await fetch(`${backendUrl}/api/cars/${id}`, {
-      next: { revalidate: catalogRevalidateSeconds, tags: ["catalog", `car:${id}`] },
-    });
-    if (response.status === 404) return undefined;
-    if (!response.ok) return local;
-    const { car } = await response.json() as { car: Omit<Car, "image" | "images"> & { images: Array<string | CarImage> } };
-    const images = normalizeCarImages(car.images ?? []);
-    return { ...car, images, image: images[0]?.url ?? "" };
-  } catch {
+  const response = await fetch(`${backendUrl}/api/cars/${id}`, {
+    next: { revalidate: catalogRevalidateSeconds, tags: ["catalog", `car:${id}`] },
+  });
+  // 404 — законный ответ «такой машины нет», а не сбой.
+  if (response.status === 404) return undefined;
+  if (!response.ok) {
+    console.error(`[cars] бэкенд ответил ${response.status} на машину ${id}`);
     return local;
   }
+  const { car } = await response.json() as { car: Omit<Car, "image" | "images"> & { images: Array<string | CarImage> } };
+  const images = normalizeCarImages(car.images ?? []);
+  return { ...car, images, image: images[0]?.url ?? "" };
 }

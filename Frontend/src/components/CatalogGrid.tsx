@@ -1,75 +1,210 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { type Car } from "@/data/cars";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import type { Car } from "@/data/cars";
+import {
+  countActive,
+  emptyFilters,
+  serializeFilters,
+  type CatalogFilters,
+} from "@/lib/catalogFilters";
 import CarCard from "./CarCard";
+import FilterPanel from "./filters/FilterPanel";
 import SectionHeading from "./SectionHeading";
 
-type CatalogFilters = { max: string };
-const emptyFilters: CatalogFilters = { max: "" };
+type CatalogGridProps = {
+  /** Первая страница: свои машины плюс начало каталога. Отдаётся сервером. */
+  initialCars: Car[];
+  /** id последней карточки; с ним лента просит продолжение. */
+  initialCursor: number | null;
+  /** Сколько всего машин под фильтром — цифра в заголовке и на кнопке. */
+  total: number;
+  initialFilters: CatalogFilters;
+  /**
+   * Заголовок ленты. На посадочной странице он свой («KIA Carnival из Кореи»),
+   * и заголовок страницы там уже стоит выше — поэтому его можно убрать совсем.
+   */
+  heading?: { eyebrow: string; title: string } | null;
+  /**
+   * Адрес посадочной страницы. Пока её собственный фильтр не снят, менять
+   * фильтры нужно, не уходя со страницы.
+   */
+  basePath?: string;
+  /** Фильтр самой посадочной: страна, марка, модель или условие сегмента. */
+  baseFilters?: CatalogFilters;
+};
 
-function filtersFromUrl(): CatalogFilters {
-  const params = new URLSearchParams(window.location.search);
-  return { max: params.get("max") ?? "" };
-}
+/**
+ * Остались ли в фильтре все условия посадочной страницы.
+ *
+ * Раньше любое движение фильтра уводило на `/?…`: человек читал «Hyundai
+ * Elantra из Кореи» со сравнением цен, нажимал «Под заказ» — и оказывался
+ * в общем каталоге без заголовка и без сравнения. Пока подборка не нарушена,
+ * остаёмся на её адресе; снял марку — ушёл в общий каталог, и это честно.
+ */
+const keepsBase = (next: CatalogFilters, base?: CatalogFilters): boolean => {
+  if (!base) return false;
+  const lists = ["country", "brand", "model", "body", "condition", "fuel", "drive"] as const;
+  const sameLists = lists.every((key) => base[key].every((value) => next[key].includes(value)));
+  const sameRange = (a: CatalogFilters["price"], b: CatalogFilters["price"]) =>
+    a == null || (b != null && b.from === a.from && b.to === a.to);
+  return sameLists && sameRange(base.price, next.price) && sameRange(base.mileage, next.mileage);
+};
 
-export default function CatalogGrid({ cars }: { cars: Car[] }) {
-  const catalogMaxPrice = useMemo(() => Math.max(0, ...cars.map((car) => car.price)), [cars]);
-  const [max, setMax] = useState(emptyFilters.max);
-  const [appliedMax, setAppliedMax] = useState(catalogMaxPrice); const [visible, setVisible] = useState(6);
-  const [isUpdating, startCatalogTransition] = useTransition();
+const plural = (count: number) => {
+  const tail = count % 100;
+  if (tail > 10 && tail < 20) return "автомобилей";
+  switch (count % 10) {
+    case 1: return "автомобиль";
+    case 2:
+    case 3:
+    case 4: return "автомобиля";
+    default: return "автомобилей";
+  }
+};
+
+/**
+ * Каталог на 83 тысячи машин.
+ *
+ * Фильтрация серверная: столько карточек в браузер не отдают. Смена фильтра
+ * меняет адрес, страница пересобирается на сервере — заодно работают «назад»,
+ * «поделиться ссылкой» и индексация страниц фильтров.
+ *
+ * Лента листается курсором, а не OFFSET: каталог живой, и при OFFSET на
+ * середине ленты появлялись бы дубли и пропуски.
+ */
+export default function CatalogGrid({
+  initialCars,
+  initialCursor,
+  total,
+  initialFilters,
+  heading = { eyebrow: "Каталог", title: "Автомобили в наличии и под заказ" },
+  basePath,
+  baseFilters,
+}: CatalogGridProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const [cars, setCars] = useState(initialCars);
+  const [cursor, setCursor] = useState(initialCursor);
+  const [isLoadingMore, setLoadingMore] = useState(false);
   const sentinel = useRef<HTMLDivElement>(null);
-  const priceDebounceTimer = useRef<number | undefined>(undefined);
-  const filtered = useMemo(() => cars.filter((car) => car.price <= appliedMax), [cars, appliedMax]);
-  const commitMaxPrice = (nextMax: number) => {
-    const clampedMax = Math.min(Math.max(0, nextMax), catalogMaxPrice);
 
-    startCatalogTransition(() => {
-      setAppliedMax(clampedMax); setVisible(6);
-    });
-    const params = new URLSearchParams();
-    if (clampedMax < catalogMaxPrice) params.set("max", String(clampedMax));
-    window.history.replaceState(null, "", params.size ? `/?${params.toString()}#catalog` : "/#catalog");
-  };
-  const scheduleMaxPriceUpdate = (nextMax: number) => {
-    setMax(String(nextMax));
-    if (priceDebounceTimer.current !== undefined) window.clearTimeout(priceDebounceTimer.current);
-    priceDebounceTimer.current = window.setTimeout(() => {
-      commitMaxPrice(nextMax);
-      priceDebounceTimer.current = undefined;
-    }, 400);
-  };
+  // Сервер прислал новую выдачу (сменили фильтр или нажали «назад») —
+  // лента начинается заново.
   useEffect(() => {
-    const syncFromUrl = () => {
-      if (priceDebounceTimer.current !== undefined) window.clearTimeout(priceDebounceTimer.current);
-      priceDebounceTimer.current = undefined;
-      const filters = filtersFromUrl();
-      const urlMax = Number(filters.max);
-      const nextMax = filters.max && Number.isFinite(urlMax) ? urlMax : catalogMaxPrice;
-      const clampedMax = Math.min(Math.max(0, nextMax), catalogMaxPrice);
+    setCars(initialCars);
+    setCursor(initialCursor);
+  }, [initialCars, initialCursor]);
 
-      setMax(String(clampedMax)); setAppliedMax(clampedMax); setVisible(6);
-    };
-    syncFromUrl();
-    window.addEventListener("popstate", syncFromUrl);
-    return () => window.removeEventListener("popstate", syncFromUrl);
-  }, [catalogMaxPrice]);
-  useEffect(() => () => {
-    if (priceDebounceTimer.current !== undefined) window.clearTimeout(priceDebounceTimer.current);
-  }, []);
-  useEffect(() => { const node = sentinel.current; if (!node) return; const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) setVisible(v => Math.min(v + 3, filtered.length)); }, { rootMargin: "600px" }); observer.observe(node); return () => observer.disconnect(); }, [filtered.length]);
-  const selectedMax = Number(max || catalogMaxPrice);
-  const sliderProgress = catalogMaxPrice ? Math.round((selectedMax / catalogMaxPrice) * 100) : 0;
-  const sliderBackground = `linear-gradient(to right, #C41E24 0%, #C41E24 ${sliderProgress}%, #E2E8F0 ${sliderProgress}%, #E2E8F0 100%)`;
-  const formatPrice = (price: number) => new Intl.NumberFormat("ru-RU").format(price);
-  return <section id="catalog" className="section-space bg-gray-bg"><div className="shell">
-    <div className="mb-5 sm:mb-10"><SectionHeading eyebrow="Каталог" title="Автомобили в наличии" description={`${filtered.length} автомобилей`} align="left"/></div>
-    <div id="catalog-filters" className="mb-5 rounded-[20px] border border-gray-border bg-white p-3 shadow-sm sm:mb-10 sm:p-5">
-      <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-semibold text-dark"><label htmlFor="catalog-price" className="cursor-pointer">Цена до</label><output htmlFor="catalog-price" className="rounded-lg bg-primary/10 px-3 py-1.5 text-primary">{formatPrice(selectedMax)} ₽</output></div>
-      <input id="catalog-price" aria-label="Цена до" type="range" min="0" max={catalogMaxPrice} step="10000" value={selectedMax} onChange={(event) => scheduleMaxPriceUpdate(Number(event.target.value))} className="mt-4 h-2 w-full cursor-pointer appearance-none rounded-full accent-primary" style={{ background: sliderBackground }} />
-      <div className="mt-2 flex justify-between text-xs text-gray-text"><span>0 ₽</span><span>{formatPrice(catalogMaxPrice)} ₽</span></div>
-    </div>
-    <div className="catalog-results" data-updating={isUpdating}>{filtered.length ? <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 lg:gap-8">{filtered.slice(0, visible).map((car) => <CarCard key={car.id} car={car} />)}</div> : <div className="rounded-[20px] border border-gray-border bg-white px-5 py-16 text-center"><h3 className="text-xl font-bold text-dark">Автомобили не найдены</h3><p className="mt-2 text-sm text-gray-text">Попробуйте изменить параметры фильтра</p></div>}</div>
-    <div ref={sentinel} className="h-1" />{visible < filtered.length && <p className="mt-8 text-center text-sm text-gray-text">Загружаем ещё автомобили…</p>}
-  </div></section>;
+  const applyFilters = useCallback(
+    (next: CatalogFilters) => {
+      const query = serializeFilters(next).toString();
+      const stays = basePath && keepsBase(next, baseFilters);
+      const target = stays
+        ? `${basePath}${query ? `?${query}` : ""}#catalog`
+        : query
+          ? `/?${query}#catalog`
+          : "/#catalog";
+      startTransition(() => router.replace(target, { scroll: false }));
+    },
+    [router, basePath, baseFilters],
+  );
+
+  const loadMore = useCallback(async () => {
+    if (cursor == null || isLoadingMore) return;
+    setLoadingMore(true);
+    try {
+      const query = serializeFilters(initialFilters);
+      query.set("cursor", String(cursor));
+      const response = await fetch(`/api/catalog?${query}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const page = (await response.json()) as { cars: Car[]; nextCursor: number | null };
+      setCars((shown) => [...shown, ...page.cars]);
+      setCursor(page.nextCursor);
+    } catch (error) {
+      console.error("Не удалось догрузить каталог:", error);
+      // Курсор не трогаем: следующая попытка повторит тот же запрос.
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [cursor, isLoadingMore, initialFilters]);
+
+  useEffect(() => {
+    const node = sentinel.current;
+    if (!node || cursor == null) return;
+    // Запас в две с лишним высоты карточки: при быстрой прокрутке человек
+    // обгонял догрузку и упирался в конец списка. Чем раньше начинается
+    // запрос, тем реже видно «дно».
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) void loadMore(); },
+      { rootMargin: "1400px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [cursor, loadMore]);
+
+  const active = countActive(initialFilters);
+
+  return (
+    <section id="catalog" className="section-space bg-gray-bg">
+      <div className="shell">
+        {heading ? (
+          <div className="mb-5 sm:mb-8">
+            <SectionHeading
+              eyebrow={heading.eyebrow}
+              title={heading.title}
+              description={`${total.toLocaleString("ru-RU")} ${plural(total)}`}
+              align="left"
+            />
+          </div>
+        ) : null}
+
+        <FilterPanel filters={initialFilters} onChange={applyFilters} resultCount={total} />
+
+        <div className="catalog-results" data-updating={isPending}>
+          {cars.length ? (
+            <>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-8">
+                {cars.map((car, index) => (
+                  <CarCard key={car.id} car={car} preloadCover={index < 3} />
+                ))}
+              </div>
+              <div ref={sentinel} className="h-1" />
+              {cursor != null ? (
+                <>
+                  <p className="mt-8 text-center text-sm text-gray-text">Загружаем ещё автомобили…</p>
+                  {/*
+                    Запас пустоты под лентой. При быстрой прокрутке человек
+                    обгоняет догрузку, и раньше снизу выскакивал подвал — конец
+                    сайта посреди каталога из 83 тысяч машин читается как ошибка.
+                    Запас держим только пока есть что грузить: на последней
+                    странице подвал должен идти сразу за карточками.
+                  */}
+                  <div aria-hidden className="h-[45vh]" />
+                </>
+              ) : null}
+            </>
+          ) : (
+            <div className="rounded-[20px] border border-gray-border bg-white px-5 py-16 text-center">
+              <h3 className="text-xl font-bold text-dark">Автомобили не найдены</h3>
+              <p className="mt-2 text-sm text-gray-text">
+                {active > 0 ? "Попробуйте снять часть фильтров" : "Попробуйте изменить параметры поиска"}
+              </p>
+              {active > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => applyFilters({ ...emptyFilters, opt: [] })}
+                  className="mt-4 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
+                >
+                  Сбросить фильтры
+                </button>
+              ) : null}
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
 }

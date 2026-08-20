@@ -11,6 +11,8 @@ export const imageVariants = {
   full: {
     quality: 90,
     gallerySizes: "(max-width: 1023px) 100vw, 65vw",
+    /** Галерея страницы автомобиля: левая колонка при блоке сделки справа. */
+    wideGallerySizes: "(max-width: 1023px) 100vw, 62vw",
     lightboxSizes: "100vw",
   },
 } as const;
