@@ -7,8 +7,12 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { config } from "./config.js";
 import { sendContactRequestEmail, sendSellRequestEmail } from "./email.js";
-import { bot, broadcastContactRequest, broadcastSellRequest } from "./telegram.js";
+import { bot, broadcastContactRequest, broadcastMessengerLead, broadcastSellRequest } from "./telegram.js";
 import { carRecords, carStatuses, customerRequests } from "./database.js";
+import { PAGE_SIZE, countCatalog, fetchCatalogPage, fetchLot, parseFilters } from "./catalog.js";
+import { recordEvent, rollup, summary } from "./analytics.js";
+import { messengerChannels } from "./messengers.js";
+import { siteContent } from "./content.js";
 
 export const app = express();
 app.set("trust proxy", 1);
@@ -39,6 +43,16 @@ const contactRequestSchema = z.object({
   phone: z.string().trim().min(7).max(30),
   message: z.string().trim().max(2000).optional(),
   source: z.string().trim().max(100).optional(),
+  // Заявка со страницы автомобиля. Плоские строки, а не вложенный объект:
+  // админка, Telegram и письмо печатают значения payload как есть.
+  carTitle: z.string().trim().max(200).optional(),
+  carPrice: z.string().trim().max(50).optional(),
+  // Ссылку админ открывает из Telegram и письма, поэтому кроме http(s) ничего
+  // не принимаем: `javascript:` и `data:` — валидные URL с точки зрения парсера.
+  carUrl: z.union([
+    z.literal(""),
+    z.url().max(500).refine((value) => /^https?:$/.test(new URL(value).protocol), "Unsupported protocol"),
+  ]).optional(),
 });
 const optionalText = z.string().trim().max(200).optional();
 const carImageUrlSchema = z.string().refine(
@@ -65,7 +79,7 @@ const carSchema = z.object({
   wheel: optionalText, color: optionalText, damage: optionalText,
   status: z.enum(carStatuses).default("active"),
 });
-const requestUpdateSchema = z.object({ status: z.enum(["new", "in_progress", "completed", "archived"]), note: z.string().trim().max(4000).optional() });
+const requestUpdateSchema = z.object({ status: z.enum(["new", "viewed", "in_progress", "completed", "archived"]), note: z.string().trim().max(4000).optional() });
 const orderSchema = z.object({ ids: z.array(z.string().min(1)).min(1).max(500) });
 const paginationSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
@@ -74,10 +88,221 @@ const paginationSchema = z.object({
 
 app.get("/health", (_request, response) => response.json({ ok: true }));
 app.get("/api/cars", async (_request, response) => response.json({ cars: await carRecords.active() }));
+
+// Каталог CarClick. Витрина ходит сюда вместо прямых запросов к схеме `catalog`:
+// у данных должен быть один владелец, иначе структуру таблиц знают два проекта.
+app.get("/api/catalog/lots", async (request, response) => {
+  const filters = parseFilters(request.query as Record<string, unknown>);
+  const cursorRaw = Number(request.query.cursor);
+  const cursor = Number.isFinite(cursorRaw) && cursorRaw > 0 ? cursorRaw : undefined;
+  const limitRaw = Number(request.query.limit);
+  const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : PAGE_SIZE;
+  return response.json(await fetchCatalogPage(filters, cursor, limit));
+});
+
+app.get("/api/catalog/count", async (request, response) => {
+  const filters = parseFilters(request.query as Record<string, unknown>);
+  return response.json({ total: await countCatalog(filters) });
+});
+
+// Сбор посещений. Открыт наружу — его зовёт браузер посетителя; пишем только
+// обезличенное (страница, источник перехода, тип устройства), без IP и куки.
+app.post("/api/analytics/event", limiter, async (request, response) => {
+  const body = request.body as Record<string, unknown>;
+  const result = await recordEvent(
+    {
+      type: String(body.type ?? ""),
+      path: String(body.path ?? "/"),
+      referrer: typeof body.referrer === "string" ? body.referrer : undefined,
+      visitor: typeof body.visitor === "string" ? body.visitor : undefined,
+      lotId: Number.isFinite(Number(body.lotId)) ? Number(body.lotId) : undefined,
+      country: typeof body.country === "string" ? body.country : undefined,
+      messenger: typeof body.messenger === "string" ? body.messenger : undefined,
+    },
+    request.header("user-agent"),
+  );
+  // Переход в мессенджер — это заявка, о ней администратор должен узнать сразу,
+  // а не когда человек сам напишет. Название машины берём из базы, а не из тела
+  // запроса: текст уходит в Telegram, и доверять ему присланному нельзя.
+  if (result.ok && String(body.type) === "outbound" && typeof body.messenger === "string") {
+    try {
+      // Импортный лот или своя машина — определяем по числовому id.
+      // У лотов CarClick он есть, у своих машин id текстовый (`kia-sorento-2017`).
+      const lotId = Number.isFinite(Number(body.lotId)) ? Number(body.lotId) : null;
+      const carId = typeof body.carId === "string" ? body.carId.slice(0, 100) : undefined;
+
+      let title = "Автомобиль из каталога";
+      let price: string | undefined;
+      let partnerUrl: string | undefined;
+      let own = false;
+
+      if (lotId) {
+        const lot = await fetchLot(lotId);
+        const row = lot?.row as Record<string, unknown> | undefined;
+        if (row) {
+          title = [row.brand, row.model, row.year ? `${row.year} г.` : ""].filter(Boolean).join(" ");
+          if (row.price_individual) price = `${Number(row.price_individual).toLocaleString("ru-RU")} ₽`;
+        }
+        // Ссылка на лот у партнёра. Реферальная метка добавляется, только когда
+        // партнёрка подтверждена: без неё переход всё равно не оплачивается.
+        const ref = config.CARCLICK_REF_CODE
+          ? `?${config.CARCLICK_REF_PARAM}=${encodeURIComponent(config.CARCLICK_REF_CODE)}`
+          : "";
+        partnerUrl = `https://carclick.ru/marketplace/${lotId}${ref}`;
+      } else if (carId) {
+        own = true;
+        const car = await carRecords.find(carId);
+        if (car) {
+          title = [car.brand, car.model, car.year ? `${car.year} г.` : ""].filter(Boolean).join(" ");
+          price = `${car.price.toLocaleString("ru-RU")} ₽`;
+        }
+      }
+
+      await broadcastMessengerLead({
+        messenger: String(body.messenger),
+        title,
+        price,
+        own,
+        partnerUrl,
+        url: typeof body.pageUrl === "string" ? body.pageUrl.slice(0, 300) : undefined,
+      });
+    } catch (error) {
+      // Уведомление не должно ломать приём события: статистика важнее.
+      console.error("Messenger lead notification failed:", error);
+    }
+  }
+
+  // Всегда 204: счётчик не должен ломать страницу и не должен подсказывать
+  // роботу, что его отсеяли.
+  return response.status(204).end();
+});
+
+// Сводка для админки. Закрыта тем же ключом, что и остальная админская часть.
+app.get("/api/analytics/summary", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  const days = Number(request.query.days);
+  return response.json(await summary(Number.isFinite(days) && days > 0 ? days : 30));
+});
+
+// Свёртка суток в итоги и чистка сырых событий. Дёргается по расписанию.
+app.post("/api/analytics/rollup", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  return response.json(await rollup());
+});
+
+app.get("/api/catalog/lots/:id", async (request, response) => {
+  const lotId = Number(request.params.id);
+  if (!Number.isFinite(lotId)) return response.status(400).json({ error: "Bad lot id" });
+  const lot = await fetchLot(lotId);
+  return lot ? response.json(lot) : response.status(404).json({ error: "Lot not found" });
+});
 app.get("/api/cars/:id", async (request, response) => {
   const car = await carRecords.find(request.params.id);
   return car?.status === "active" ? response.json({ car }) : response.status(404).json({ error: "Car not found" });
 });
+/**
+ * Каналы связи для сайта. Без ключа: список публичный — эти же ссылки видит
+ * любой посетитель карточки.
+ */
+app.get("/api/messengers", async (_request, response) => {
+  return response.json({ channels: await messengerChannels.enabled() });
+});
+
+const messengerSchema = z.object({
+  // Слаг, а не произвольная строка: он попадает в разметку и в статистику.
+  id: z.string().trim().regex(/^[a-z0-9_-]{2,20}$/, "Латиница, цифры, дефис"),
+  label: z.string().trim().min(1).max(30),
+  handle: z.string().trim().min(1).max(80),
+  // Шаблон ограничен https: ссылка ведёт покупателя наружу, и `javascript:`
+  // в поле админки превратился бы в дыру на каждой карточке машины.
+  urlTemplate: z.string().trim().url().startsWith("https://").max(300)
+    .refine((value) => value.includes("{handle}"), "Нужен {handle}"),
+  prefillsMessage: z.boolean(),
+  enabled: z.boolean(),
+});
+
+/**
+ * Ссылка из формы админки. Внутренний путь, телефон, почта или https —
+ * и ничего больше: `javascript:` в пункте меню выполнялся бы у каждого
+ * посетителя сайта.
+ */
+const linkHref = z.string().trim().min(1).max(300)
+  .refine((value) => /^(\/|#|tel:|mailto:|https:\/\/)/.test(value), "Недопустимая ссылка");
+
+const navLink = z.object({ href: linkHref, label: z.string().trim().min(1).max(40) });
+
+const contentSchema = z.object({
+  header: z.object({
+    nav: z.array(navLink).max(8),
+    ctaLabel: z.string().trim().min(1).max(30),
+    ctaHref: linkHref,
+  }),
+  hero: z.object({
+    badge: z.string().trim().max(60),
+    titleLead: z.string().trim().min(1).max(80),
+    titleAccent: z.string().trim().max(80),
+    description: z.string().trim().max(400),
+    stats: z.array(z.object({
+      value: z.string().trim().min(1).max(20),
+      label: z.string().trim().min(1).max(40),
+    })).max(4),
+  }),
+  company: z.object({
+    name: z.string().trim().min(1).max(60),
+    about: z.string().trim().max(400),
+    address: z.string().trim().max(160),
+    phones: z.array(z.object({ label: z.string().trim().min(1).max(30), href: linkHref })).max(4),
+    email: z.object({ label: z.string().trim().max(80), href: linkHref }),
+    workHours: z.array(z.string().trim().min(1).max(60)).max(7),
+    vkUrl: linkHref,
+  }),
+  footer: z.object({
+    sections: z.array(z.object({
+      title: z.string().trim().min(1).max(40),
+      links: z.array(navLink).max(8),
+    })).max(4),
+  }),
+});
+
+/** Тексты сайта. Без ключа: это ровно то, что видит любой посетитель. */
+app.get("/api/content", async (_request, response) => {
+  return response.json({ content: await siteContent.get() });
+});
+
+app.get("/api/admin/content", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  return response.json({ content: await siteContent.get(), history: await siteContent.history() });
+});
+
+app.put("/api/admin/content", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  const parsed = contentSchema.safeParse((request.body as { content?: unknown })?.content);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    return response.status(400).json({ error: `${issue?.path.join(".") ?? "content"}: ${issue?.message ?? "некорректные данные"}` });
+  }
+  return response.json({ content: await siteContent.save(parsed.data) });
+});
+
+app.get("/api/admin/messengers", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  return response.json({ channels: await messengerChannels.all() });
+});
+
+app.put("/api/admin/messengers", async (request, response) => {
+  if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
+  const parsed = z.object({ channels: z.array(messengerSchema).max(10) }).safeParse(request.body);
+  if (!parsed.success) return response.status(400).json({ error: parsed.error.issues[0]?.message ?? "Некорректные данные" });
+
+  const ids = parsed.data.channels.map((channel) => channel.id);
+  if (new Set(ids).size !== ids.length) return response.status(400).json({ error: "Повторяющийся идентификатор" });
+
+  const channels = await messengerChannels.replace(
+    parsed.data.channels.map((channel, index) => ({ ...channel, position: index })),
+  );
+  return response.json({ channels });
+});
+
 app.get("/api/admin/cars", async (request, response) => {
   if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
   return response.json({ cars: await carRecords.all(request.query.deleted === "true") });

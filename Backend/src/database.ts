@@ -13,13 +13,14 @@ export type CarRecord = {
   transmission?: string; mileage?: number; drive?: string; wheel?: string; color?: string; damage?: string;
   status: CarStatus; sortOrder: number; deletedAt?: string;
 };
-export type RequestStatus = "new" | "in_progress" | "completed" | "archived";
+// `viewed` ставится сам, когда администратор открыл заявку. Остальные — руками.
+export type RequestStatus = "new" | "viewed" | "in_progress" | "completed" | "archived";
 export type AdminRequest = { id: string; kind: "contact" | "sell"; status: RequestStatus; payload: Record<string, unknown>; photoCount: number; photoUrls: string[]; note?: string; createdAt: string; updatedAt: string };
 
 let sqlClient: Sql | null = null;
 let schemaPromise: Promise<void> | null = null;
 
-function getSql() {
+export function getSql() {
   if (!sqlClient) sqlClient = postgres(config.DATABASE_URL, { max: 1, prepare: false, idle_timeout: 20 });
   return sqlClient;
 }
@@ -70,7 +71,7 @@ export function migrateDatabase() {
         CREATE TABLE IF NOT EXISTS customer_requests (
           id TEXT PRIMARY KEY,
           kind TEXT NOT NULL CHECK (kind IN ('contact', 'sell')),
-          status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'in_progress', 'completed', 'archived')),
+          status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'viewed', 'in_progress', 'completed', 'archived')),
           payload JSONB NOT NULL,
           photo_count INTEGER NOT NULL DEFAULT 0,
           photo_urls JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -80,6 +81,14 @@ export function migrateDatabase() {
         )
       `;
       await transaction`ALTER TABLE customer_requests ADD COLUMN IF NOT EXISTS photo_urls JSONB NOT NULL DEFAULT '[]'::jsonb`;
+      // `CREATE TABLE IF NOT EXISTS` существующую таблицу не трогает, поэтому
+      // список статусов в ограничении обновляем отдельно. Без этого добавленный
+      // «Просмотрена» падал с 500: значение не проходило CHECK.
+      await transaction`ALTER TABLE customer_requests DROP CONSTRAINT IF EXISTS customer_requests_status_check`;
+      await transaction`
+        ALTER TABLE customer_requests ADD CONSTRAINT customer_requests_status_check
+        CHECK (status IN ('new', 'viewed', 'in_progress', 'completed', 'archived'))
+      `;
       await transaction`CREATE INDEX IF NOT EXISTS customer_requests_created_at_idx ON customer_requests (created_at DESC)`;
       await transaction`CREATE TABLE IF NOT EXISTS app_migrations (key TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`;
       const [catalogMigration] = await transaction`
@@ -312,9 +321,19 @@ export const customerRequests = {
     const [row] = await sql`SELECT * FROM customer_requests WHERE id = ${id}`;
     return row ? mapRequest(row) : null;
   },
+  /**
+   * Заметка не передана — значит её не трогали.
+   *
+   * Раньше отсутствующее поле записывалось как NULL, и запрос, меняющий только
+   * статус, стирал заметку администратора. Пустую строку COALESCE пропускает,
+   * поэтому очистить заметку по-прежнему можно — надо прислать `note: ""`.
+   */
   async update(id: string, data: { status: RequestStatus; note?: string }) {
     const sql = getSql();
-    const [row] = await sql`UPDATE customer_requests SET status = ${data.status}, note = ${data.note ?? null}, updated_at = NOW() WHERE id = ${id} RETURNING *`;
+    const [row] = await sql`
+      UPDATE customer_requests
+      SET status = ${data.status}, note = COALESCE(${data.note ?? null}, note), updated_at = NOW()
+      WHERE id = ${id} RETURNING *`;
     return row ? mapRequest(row) : null;
   },
 };

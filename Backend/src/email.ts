@@ -69,7 +69,7 @@ export async function sendContactRequestEmail(data: ContactRequest) {
   const { data: result, error } = await resend.emails.send({
     from: config.EMAIL_FROM,
     to: config.EMAIL_RECIPIENT,
-    subject: `Новая заявка от ${data.name}`,
+    subject: data.carTitle ? `Заявка на ${data.carTitle} от ${data.name}` : `Новая заявка от ${data.name}`,
     html: `<!doctype html>
       <html lang="ru">
         <body style="margin:0;background:#f8fafc;font-family:Arial,sans-serif;color:#0f172a">
@@ -77,14 +77,17 @@ export async function sendContactRequestEmail(data: ContactRequest) {
             <div style="overflow:hidden;border:1px solid #e2e8f0;border-radius:16px;background:#fff">
               <div style="padding:24px;background:#c41e24;color:#fff">
                 <div style="font-size:13px;letter-spacing:.12em">TIGLEV.COM</div>
-                <h1 style="margin:8px 0 0;font-size:24px">Новая заявка с формы «Написать нам»</h1>
+                <h1 style="margin:8px 0 0;font-size:24px">${data.carTitle ? "Заявка на автомобиль" : "Новая заявка с формы «Написать нам»"}</h1>
               </div>
               <div style="padding:24px">
                 <table style="width:100%;border-collapse:collapse">
+                  ${row("Автомобиль", data.carTitle)}
+                  ${row("Цена", data.carPrice)}
+                  ${row("Ссылка", data.carUrl)}
                   ${row("Имя", data.name)}
                   ${row("Телефон", data.phone)}
                   ${row("Сообщение", data.message)}
-                  ${row("Страница", data.source)}
+                  ${row("Страница", data.carUrl ? undefined : data.source)}
                 </table>
               </div>
             </div>

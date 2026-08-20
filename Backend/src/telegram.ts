@@ -51,6 +51,10 @@ export type ContactRequest = {
   phone: string;
   message?: string;
   source?: string;
+  /** Заполнено, когда заявку оставили со страницы конкретного автомобиля. */
+  carTitle?: string;
+  carPrice?: string;
+  carUrl?: string;
 };
 
 const line = (label: string, value?: string) => value ? `*${escapeMarkdown(label)}:* ${escapeMarkdown(value)}` : null;
@@ -65,8 +69,25 @@ function formatRequest(data: SellRequest): string {
   ].filter((item): item is string => item !== null).join("\n");
 }
 
+/**
+ * Кому слать уведомление.
+ *
+ * Подписчиком бота становится любой, кто нажал «Старт», поэтому по умолчанию
+ * список сужен до администратора из `TELEGRAM_ADMIN_CHAT_IDS`: заявки клиентов
+ * с телефонами не должны уходить случайным людям. Имя и ник подтягиваем из
+ * подписчиков, если человек там есть, — они нужны только для логов.
+ */
+async function getRecipients(): Promise<{ chat_id: number }[]> {
+  const allowed = config.TELEGRAM_ADMIN_CHAT_IDS
+    .split(",")
+    .map((id) => Number(id.trim()))
+    .filter((id) => Number.isFinite(id) && id !== 0);
+
+  return allowed.length ? allowed.map((chat_id) => ({ chat_id })) : await subscribers.all();
+}
+
 export async function broadcastSellRequest(data: SellRequest, photos: Express.Multer.File[]) {
-  const recipients = await subscribers.all();
+  const recipients = await getRecipients();
   const text = formatRequest(data);
   let delivered = 0;
 
@@ -90,14 +111,19 @@ export async function broadcastSellRequest(data: SellRequest, photos: Express.Mu
 }
 
 export async function broadcastContactRequest(data: ContactRequest) {
-  const recipients = await subscribers.all();
+  const recipients = await getRecipients();
   const text = [
-    "💬 *Новая заявка с формы «Написать нам»*",
+    data.carTitle ? "🚗 *Заявка на автомобиль*" : "💬 *Новая заявка с формы «Написать нам»*",
     "",
+    line("Автомобиль", data.carTitle),
+    line("Цена", data.carPrice),
+    line("Ссылка", data.carUrl),
+    data.carTitle ? "" : null,
     line("Имя", data.name),
     line("Телефон", data.phone),
     line("Сообщение", data.message),
-    line("Страница", data.source),
+    // Адрес страницы дублирует ссылку на лот — во второй раз его не печатаем.
+    data.carUrl ? null : line("Страница", data.source),
   ].filter((item): item is string => item !== null).join("\n");
   let delivered = 0;
 
@@ -107,6 +133,59 @@ export async function broadcastContactRequest(data: ContactRequest) {
       delivered += 1;
     } catch (error) {
       console.error(`Failed to deliver contact request to ${subscriber.chat_id}:`, error);
+      if (error instanceof GrammyError && [400, 403].includes(error.error_code)) await subscribers.remove(subscriber.chat_id);
+    }
+  }
+  return { recipients: recipients.length, delivered };
+}
+
+
+/**
+ * Переход в мессенджер — тоже заявка, просто разговор пойдёт не у нас.
+ *
+ * Без этого уведомления администратор узнаёт о человеке, только когда тот сам
+ * напишет, и не знает, из-за какой машины. Имени здесь быть не может: при
+ * переходе мы о человеке ничего не знаем. Опознать помогает сама машина —
+ * в мессенджер уходит заготовленный текст с ней же.
+ */
+export async function broadcastMessengerLead(data: {
+  messenger: string;
+  title: string;
+  price?: string;
+  /** Карточка на нашем сайте. */
+  url?: string;
+  /** Лот у партнёра. У своих машин его нет и быть не может. */
+  partnerUrl?: string;
+  /** Своя машина из салона или импорт под заказ. */
+  own?: boolean;
+}) {
+  const recipients = await getRecipients();
+  const where = { telegram: "Telegram", vk: "VK", max: "Max" }[data.messenger] ?? data.messenger;
+  const lines = [
+    `💬 Переход в ${where}`,
+    "",
+    data.title,
+    data.price ? `Цена: ${data.price}` : "",
+    // Разница важна на практике: свою машину показывают в Тольятти сегодня,
+    // импортную везут полтора месяца, и разговор строится иначе.
+    data.own ? "🏠 Наша машина, в наличии" : "🚢 Импорт под заказ",
+    "",
+    data.url ? `Карточка: ${data.url}` : "",
+    data.partnerUrl ? `У партнёра: ${data.partnerUrl}` : "",
+    "",
+    "Человек открыл чат с заготовленным сообщением. Ждите обращения.",
+  ].filter(Boolean);
+  const text = lines.join("\n");
+
+  let delivered = 0;
+  for (const subscriber of recipients) {
+    try {
+      // Без разметки: в названии машины попадаются символы, которые
+      // MarkdownV2 требует экранировать, и одна «(» роняет всю отправку.
+      await bot.api.sendMessage(subscriber.chat_id, text, { link_preview_options: { is_disabled: true } });
+      delivered += 1;
+    } catch (error) {
+      console.error(`Failed to deliver messenger lead to ${subscriber.chat_id}:`, error);
       if (error instanceof GrammyError && [400, 403].includes(error.error_code)) await subscribers.remove(subscriber.chat_id);
     }
   }
