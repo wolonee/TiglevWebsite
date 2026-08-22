@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, MessageCircle, Phone, X } from "lucide-react";
 import { type MouseEvent, useEffect, useState } from "react";
 import { useSiteContent } from "./SiteContentProvider";
+import TiglevWordmark from "./TiglevWordmark";
 
 export default function Header({ solid = false }: { solid?: boolean }) {
   // Пункты меню, подпись кнопки и телефон приходят из админки.
@@ -36,25 +37,35 @@ export default function Header({ solid = false }: { solid?: boolean }) {
 
   return <>
     <header className={`fixed inset-x-0 top-0 z-[60] transition-all duration-500 ${opaque ? "border-b border-gray-border/70 bg-white/95 shadow-sm backdrop-blur-xl" : "bg-transparent"}`}>
-    <div className="shell flex h-16 items-center justify-between lg:h-20">
+    <div className="shell flex h-[72px] items-center justify-between lg:h-20">
       <Link href="/" className="flex min-w-0 items-center gap-2.5" aria-label="TIGLEV.COM, главная">
+        {/*
+          Логотип — резкая графика с красно-белыми краями. next/image ужимал
+          его в webp q90 и на DPR=1 отдавал вовсе 48px, отчего на ретине была
+          каша по краям. `unoptimized` отдаёт готовый файл как есть; сам файл
+          заранее уменьшен из мастера 1254px до чёткого 192px без потерь.
+          Размер 60px подобран так, что буквы внутри восьмиугольника (≈39% его
+          высоты) выходят cap-height ~23px — вровень с надписью «TIGLEV.COM».
+        */}
         <Image
-          src="/logo-tiglev-clean.png"
+          src="/logo-tiglev-192.png"
           alt=""
-          width={44}
-          height={44}
+          width={60}
+          height={60}
           priority
-          quality={90}
-          sizes="44px"
-          className="h-11 w-11 shrink-0 rounded-lg"
+          unoptimized
+          className="h-[60px] w-[60px] shrink-0 rounded-lg"
         />
-        <Image
-          src="/assets/tiglev-wordmark-white.svg"
-          alt="TIGLEV"
-          width={980}
-          height={517}
-          priority
-          className={`h-7 w-auto shrink-0 transition-[filter] duration-300 lg:h-8 ${opaque ? "brightness-0" : ""}`}
+        {/*
+          Надпись «TIGLEV.COM» — кастомный wordmark: «TIGLEV» родными контурами
+          логотипа, «.COM» — обведённые буквы, нарисованные под этот шрифт.
+          Инлайн-SVG (см. TiglevWordmark), а не картинка/маска: чёткий на любом
+          размере и плотности, «O» с просветом, цвет наследуется от text-*.
+          Высота чуть больше букв в знаке; по вертикали надпись выровнена по
+          центру букв логотипа (заглавные SVG сами центрированы в боксе).
+        */}
+        <TiglevWordmark
+          className={`h-[26px] w-auto shrink-0 transition-colors duration-300 ${opaque ? "text-dark" : "text-white"}`}
         />
       </Link>
       <nav className="hidden items-center lg:flex" aria-label="Основная навигация">
@@ -67,8 +78,8 @@ export default function Header({ solid = false }: { solid?: boolean }) {
       <button className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg lg:hidden ${opaque ? "text-dark" : "text-white"}`} onClick={() => setOpen(v => !v)} aria-expanded={open} aria-label={open ? "Закрыть меню" : "Открыть меню"}>{open ? <X/> : <Menu/>}</button>
     </div>
     </header>
-    <div className={`fixed inset-0 top-16 z-40 bg-dark/30 transition-opacity lg:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"}`} onClick={() => setOpen(false)} />
-    <nav className={`fixed inset-x-0 bottom-0 top-16 z-50 flex flex-col overflow-y-auto border-t border-gray-border bg-white p-4 shadow-[0_18px_40px_rgb(15_23_42/0.18)] transition-transform duration-300 ease-out lg:hidden ${open ? "translate-x-0" : "translate-x-full"}`} aria-label="Мобильная навигация">
+    <div className={`fixed inset-0 top-[72px] z-40 bg-dark/30 transition-opacity lg:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"}`} onClick={() => setOpen(false)} />
+    <nav className={`fixed inset-x-0 bottom-0 top-[72px] z-50 flex flex-col overflow-y-auto border-t border-gray-border bg-white p-4 shadow-[0_18px_40px_rgb(15_23_42/0.18)] transition-transform duration-300 ease-out lg:hidden ${open ? "translate-x-0" : "translate-x-full"}`} aria-label="Мобильная навигация">
       <div className="space-y-1">
         {links.map(link => <Link key={link.href} href={link.href} onClick={(event) => handleNavigation(event, link.href)} className={`block rounded-xl px-4 py-3.5 font-medium transition-colors ${!link.href.includes("#") && pathname === link.href ? "bg-primary/10 text-primary" : "text-dark-light hover:bg-gray-bg"}`}>{link.label}</Link>)}
       </div>

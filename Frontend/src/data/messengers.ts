@@ -62,10 +62,13 @@ export function defaultChannels(): MessengerChannel[] {
     },
     {
       // У MAX нет публичных ников: человека находят по токену из личной ссылки
-      // вида max.ru/u/<токен>. Канал появляется, только если токен задали.
+      // вида max.ru/u/<токен>. Токен владельца уже опубликован — держим его
+      // дефолтом, как у Telegram и VK, чтобы кнопка не пропала без переменной.
       id: "max",
       label: "MAX",
-      handle: process.env.NEXT_PUBLIC_MAX_USERNAME ?? "",
+      handle:
+        process.env.NEXT_PUBLIC_MAX_USERNAME ||
+        "f9LHodD0cOLBHGiTyQ8i5DDZojLAxHUttCErWXfF2FuF4tD32nOYa8GxZ-w",
       urlTemplate: "https://max.ru/u/{handle}",
       prefillsMessage: false,
       enabled: true,

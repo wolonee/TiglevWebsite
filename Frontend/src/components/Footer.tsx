@@ -28,12 +28,11 @@ const Footer = () => {
           <div className="col-span-2">
             <div className="mb-5 flex items-center gap-2.5">
               <Image
-                src="/logo-tiglev-clean.png"
+                src="/logo-tiglev-192.png"
                 alt="TIGLEV.COM"
                 width={36}
                 height={36}
-                quality={90}
-                sizes="36px"
+                unoptimized
                 className="h-9 w-9 rounded-md"
               />
               <span className="text-lg font-extrabold text-white">
