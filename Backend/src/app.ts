@@ -24,7 +24,14 @@ const upload = multer({
   limits: { files: 10, fileSize: 8 * 1024 * 1024, fields: 20 },
   fileFilter: (_request, file, callback) => callback(null, file.mimetype.startsWith("image/")),
 });
-const limiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: "draft-8", legacyHeaders: false });
+// Отправка форм — редкое действие; строгий лимит гасит спам заявками.
+const formLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: "draft-8", legacyHeaders: false });
+// Сбор посещений — наоборот, частый: один посетитель за сессию легко даёт
+// десятки событий (просмотры страниц, лотов, каталога, переходы в мессенджер).
+// Прежний лимит 10/15 мин глушил их уже на второй странице, и клик по кнопке
+// мессенджера отбивался 429 — уведомление в бот не уходило. Даём щедрый лимит,
+// которого хватает живому человеку, но не потоковому боту.
+const eventLimiter = rateLimit({ windowMs: 60 * 1000, limit: 100, standardHeaders: "draft-8", legacyHeaders: false });
 const requestSchema = z.object({
   model: z.string().trim().min(1).max(100), year: z.string().regex(/^\d{4}$/),
   body: z.string().max(50).optional(), engine: z.string().max(50).optional(), wheel: z.string().max(50).optional(),
@@ -107,7 +114,7 @@ app.get("/api/catalog/count", async (request, response) => {
 
 // Сбор посещений. Открыт наружу — его зовёт браузер посетителя; пишем только
 // обезличенное (страница, источник перехода, тип устройства), без IP и куки.
-app.post("/api/analytics/event", limiter, async (request, response) => {
+app.post("/api/analytics/event", eventLimiter, async (request, response) => {
   const body = request.body as Record<string, unknown>;
   const result = await recordEvent(
     {
@@ -378,7 +385,7 @@ app.post("/api/telegram", (request, response) => {
   if (request.header("x-telegram-bot-api-secret-token") !== config.TELEGRAM_WEBHOOK_SECRET) return response.sendStatus(401);
   return webhookCallback(bot, "express")(request, response);
 });
-app.post("/api/sell-requests", limiter, upload.array("photos", 10), async (request, response) => {
+app.post("/api/sell-requests", formLimiter, upload.array("photos", 10), async (request, response) => {
   if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
   const parsed = requestSchema.safeParse(request.body);
   if (!parsed.success) return response.status(400).json({ error: "Validation failed", details: parsed.error.flatten().fieldErrors });
@@ -402,7 +409,7 @@ app.post("/api/sell-requests", limiter, upload.array("photos", 10), async (reque
     return response.status(500).json({ error: "Failed to deliver request" });
   }
 });
-app.post("/api/contact-requests", limiter, async (request, response) => {
+app.post("/api/contact-requests", formLimiter, async (request, response) => {
   if (request.header("x-api-key") !== config.BACKEND_API_KEY) return response.status(401).json({ error: "Unauthorized" });
   const parsed = contactRequestSchema.safeParse(request.body);
   if (!parsed.success) return response.status(400).json({ error: "Validation failed", details: parsed.error.flatten().fieldErrors });
