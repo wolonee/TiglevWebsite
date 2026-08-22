@@ -161,17 +161,22 @@ export async function broadcastMessengerLead(data: {
 }) {
   const recipients = await getRecipients();
   const where = { telegram: "Telegram", vk: "VK", max: "Max" }[data.messenger] ?? data.messenger;
+  // HTML, а не MarkdownV2: заголовок нужен жирным, а в названии машины и ссылках
+  // попадаются `.`, `-`, `(`, которые MarkdownV2 требует экранировать — одна
+  // такая роняет всю отправку. В HTML экранируем лишь `&`, `<`, `>`, а голые
+  // ссылки Telegram делает кликабельными сам.
+  const esc = (value: string) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const lines = [
-    `💬 Переход в ${where}`,
+    `<b>💬 Переход в ${esc(where)}</b>`,
     "",
-    data.title,
-    data.price ? `Цена: ${data.price}` : "",
+    esc(data.title),
+    data.price ? `Цена: ${esc(data.price)}` : "",
     // Разница важна на практике: свою машину показывают в Тольятти сегодня,
     // импортную везут полтора месяца, и разговор строится иначе.
     data.own ? "🏠 Наша машина, в наличии" : "🚢 Импорт под заказ",
     "",
-    data.url ? `Карточка: ${data.url}` : "",
-    data.partnerUrl ? `У партнёра: ${data.partnerUrl}` : "",
+    data.url ? `Карточка: ${esc(data.url)}` : "",
+    data.partnerUrl ? `У партнёра: ${esc(data.partnerUrl)}` : "",
     "",
     "Человек открыл чат с заготовленным сообщением. Ждите обращения.",
   ].filter(Boolean);
@@ -180,9 +185,7 @@ export async function broadcastMessengerLead(data: {
   let delivered = 0;
   for (const subscriber of recipients) {
     try {
-      // Без разметки: в названии машины попадаются символы, которые
-      // MarkdownV2 требует экранировать, и одна «(» роняет всю отправку.
-      await bot.api.sendMessage(subscriber.chat_id, text, { link_preview_options: { is_disabled: true } });
+      await bot.api.sendMessage(subscriber.chat_id, text, { parse_mode: "HTML", link_preview_options: { is_disabled: true } });
       delivered += 1;
     } catch (error) {
       console.error(`Failed to deliver messenger lead to ${subscriber.chat_id}:`, error);
