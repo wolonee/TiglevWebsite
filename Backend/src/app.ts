@@ -143,12 +143,21 @@ app.post("/api/analytics/event", limiter, async (request, response) => {
           title = [row.brand, row.model, row.year ? `${row.year} г.` : ""].filter(Boolean).join(" ");
           if (row.price_individual) price = `${Number(row.price_individual).toLocaleString("ru-RU")} ₽`;
         }
-        // Ссылка на лот у партнёра. Реферальная метка добавляется, только когда
-        // партнёрка подтверждена: без неё переход всё равно не оплачивается.
+        // Ссылка на лот у партнёра. CarClick отдаёт карточку по адресу
+        // /marketplace/{страна}/{марка}/{модель}/{id}; короткий /marketplace/{id}
+        // — это 404, поэтому коды берём из самой строки лота. Реферальная метка
+        // добавляется, только когда партнёрка подтверждена: без неё переход
+        // всё равно не оплачивается.
         const ref = config.CARCLICK_REF_CODE
           ? `?${config.CARCLICK_REF_PARAM}=${encodeURIComponent(config.CARCLICK_REF_CODE)}`
           : "";
-        partnerUrl = `https://carclick.ru/marketplace/${lotId}${ref}`;
+        const slug = (value: unknown) => (typeof value === "string" ? value.trim() : "");
+        const country = slug(row?.country_code);
+        const brand = slug(row?.brand_code);
+        const model = slug(row?.model_code);
+        partnerUrl = country && brand && model
+          ? `https://carclick.ru/marketplace/${country}/${brand}/${model}/${lotId}${ref}`
+          : undefined;
       } else if (carId) {
         own = true;
         const car = await carRecords.find(carId);

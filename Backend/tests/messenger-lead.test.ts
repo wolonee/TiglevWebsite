@@ -48,16 +48,30 @@ describe("уведомление о переходе в мессенджер", (
   });
 
   it("даёт ссылку на лот партнёра для импортной машины", async () => {
-    fetchLot.mockResolvedValue({ row: { brand: "MG", model: "MG3", year: 2026, price_individual: 2658854 } });
+    fetchLot.mockResolvedValue({ row: {
+      brand: "MG", model: "MG3", year: 2026, price_individual: 2658854,
+      country_code: "kitai", brand_code: "mg", model_code: "mg3",
+    } });
 
     await send({ type: "outbound", messenger: "telegram", path: "/catalog/cc-467643",
                  lotId: 467643, carId: "cc-467643", pageUrl: "https://tiglev.com/catalog/cc-467643" });
 
+    // Публичный адрес CarClick — /marketplace/{страна}/{марка}/{модель}/{id};
+    // по одному id он отдаёт 404.
     expect(broadcastMessengerLead).toHaveBeenCalledWith(expect.objectContaining({
       own: false,
       title: "MG MG3 2026 г.",
-      partnerUrl: "https://carclick.ru/marketplace/467643",
+      partnerUrl: "https://carclick.ru/marketplace/kitai/mg/mg3/467643",
     }));
+  });
+
+  it("не даёт битую ссылку, если у лота нет кодов страны/марки/модели", async () => {
+    fetchLot.mockResolvedValue({ row: { brand: "MG", model: "MG3", year: 2026 } });
+
+    await send({ type: "outbound", messenger: "telegram", path: "/catalog/cc-467643",
+                 lotId: 467643, pageUrl: "https://tiglev.com/catalog/cc-467643" });
+
+    expect(broadcastMessengerLead.mock.calls[0][0].partnerUrl).toBeUndefined();
   });
 
   it("не выдумывает ссылку на партнёра для своей машины", async () => {

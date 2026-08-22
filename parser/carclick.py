@@ -82,9 +82,25 @@ def open_store(args: argparse.Namespace):
     return Store(args.db)
 
 
-def lot_url(lot_id: int, ref_code: str | None = None) -> str:
+def lot_url(
+    lot_id: int,
+    country: str = "",
+    brand: str = "",
+    model: str = "",
+    ref_code: str | None = None,
+) -> str:
+    """
+    Публичный адрес карточки у CarClick.
+
+    Карточка живёт по /marketplace/{страна}/{марка}/{модель}/{id}; короткий
+    /marketplace/{id} отдаёт 404. Коды (countryCode, markCode, modelCode) лежат
+    в самом лоте — подставляем их, а без полного набора откатываемся на id,
+    чтобы ссылка хотя бы вела на маркетплейс.
+    """
     code = REF_CODE if ref_code is None else ref_code
-    url = f"{SITE}/marketplace/{lot_id}"
+    parts = [part.strip() for part in (country, brand, model) if part and part.strip()]
+    path = "/".join([*parts, str(lot_id)]) if len(parts) == 3 else str(lot_id)
+    url = f"{SITE}/marketplace/{path}"
     if code:
         url += "?" + urllib.parse.urlencode({REF_PARAM: code})
     return url
@@ -730,7 +746,13 @@ def cmd_export(args: argparse.Namespace) -> None:
         if not args.jsonl:
             out.write("[\n")
         for record in store.iter_export(live_only=not args.include_gone):
-            record["url"] = lot_url(record["id"], ref)
+            record["url"] = lot_url(
+                record["id"],
+                record.get("country_code") or "",
+                record.get("brand_code") or "",
+                record.get("model_code") or "",
+                ref,
+            )
             line = json.dumps(record, ensure_ascii=False)
             if args.jsonl:
                 out.write(line + "\n")
