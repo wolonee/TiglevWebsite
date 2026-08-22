@@ -18,10 +18,13 @@ describe("Header", () => {
     expect(screen.getAllByRole("link", { name: "Главная" })[0]).toHaveAttribute("aria-current", "page");
   });
 
-  it("uses the TIGLEV wordmark asset", () => {
+  it("uses the crisp logo and the TIGLEV.COM wordmark", () => {
     render(<Header solid />);
-    expect(screen.getByAltText("")).toHaveAttribute("src", expect.stringContaining("logo-tiglev-clean.png"));
-    expect(screen.getByAltText("TIGLEV")).toHaveAttribute("src", expect.stringContaining("tiglev-wordmark-white.svg"));
+    // Логотип — заранее уменьшенный PNG, отдаётся как есть (unoptimized).
+    expect(screen.getByAltText("")).toHaveAttribute("src", expect.stringContaining("logo-tiglev-192.png"));
+    // Надпись «TIGLEV.COM» — инлайновый SVG (TiglevWordmark) с aria-hidden;
+    // доступное имя бренда несёт сама ссылка-логотип.
+    expect(screen.getByRole("link", { name: "TIGLEV.COM, главная" })).toBeInTheDocument();
   });
 
   it("links the catalog navigation to the landing page section", () => {
