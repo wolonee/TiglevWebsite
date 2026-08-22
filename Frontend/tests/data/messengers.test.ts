@@ -21,14 +21,24 @@ describe("messengers", () => {
     expect(message).toContain("https://tiglev.com/catalog/cc-465823");
   });
 
-  it("не показывает мессенджер без ника", () => {
-    setHandles("", "", "vk_account");
-    const links = messengerLinks("привет");
+  it("подставляет ссылку владельца для MAX по умолчанию", () => {
+    setHandles("", "", "");
+    const max = messengerLinks("привет").find((link) => link.id === "max");
 
-    // MAX выпал намеренно: публичных ников там нет, человека ищут по номеру
-    // телефона. Раньше на его месте стояла заглушка на главную max.ru —
-    // покупатель нажимал и попадал в никуда, что хуже отсутствующей кнопки.
-    expect(links.map((link) => link.id)).toEqual(["telegram", "vk"]);
+    // У MAX нет публичных ников, но личная ссылка владельца уже опубликована —
+    // держим её дефолтом, как у Telegram и VK, чтобы кнопка не пропадала без
+    // переменной окружения (живое значение всё равно приходит из админки).
+    expect(max?.href).toMatch(/^https:\/\/max\.ru\/u\/.+/);
+  });
+
+  it("не показывает мессенджер без ника", () => {
+    // Пустой ник = канала на сайте нет: кнопка не должна вести в никуда.
+    const links = messengerLinks("привет", [
+      { id: "telegram", label: "Telegram", handle: "tiglev", urlTemplate: "https://t.me/{handle}?text={message}", prefillsMessage: true, enabled: true },
+      { id: "max", label: "MAX", handle: "", urlTemplate: "https://max.ru/u/{handle}", prefillsMessage: false, enabled: true },
+    ]);
+
+    expect(links.map((link) => link.id)).toEqual(["telegram"]);
   });
 
   it("оставляет Telegram и VK даже без переменных: эти аккаунты уже известны", () => {
